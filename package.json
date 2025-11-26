@@ -2,21 +2,19 @@
   "name": "proxy-server",
   "private": true,
   "scripts": {
-    "build": "turbo run build",
     "dev": "turbo run dev",
+    "build": "turbo run build",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "test": "turbo run test"
   },
   "devDependencies": {
-    "prettier": "^3.6.2",
-    "turbo": "^2.6.0",
-    "typescript": "5.9.2"
+    "turbo": "^2.6.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": "24.11.0",
+    "npm": "11.6.1"
   },
-  "packageManager": "npm@11.5.1",
+  "packageManager": "npm@11.6.1",
   "workspaces": [
     "apps/*",
     "packages/*"
