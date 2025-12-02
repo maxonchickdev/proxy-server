@@ -3,5 +3,8 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll": "always"
-  }
+  },
+  "idf.espIdfPath": "/Users/maxondev/esp/esp-idf",
+  "idf.toolsPath": "/Users/maxondev/.espressif",
+  "idf.pythonInstallPath": "/usr/local/bin/python"
 }
