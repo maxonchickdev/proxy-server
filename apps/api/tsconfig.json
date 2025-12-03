@@ -20,31 +20,30 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
-    "baseUrl": "./",
     "paths": {
       "@app/common": [
-        "libs/common/src"
+        "./libs/common/src"
       ],
       "@app/common/*": [
-        "libs/common/src/*"
+        "./libs/common/src/*"
       ],
       "@app/core": [
-        "libs/core/src"
+        "./libs/core/src"
       ],
       "@app/core/*": [
-        "libs/core/src/*"
+        "./libs/core/src/*"
       ],
       "@app/modules": [
-        "src/modules"
+        "./src/modules"
       ],
       "@app/modules/*": [
-        "src/modules/*"
+        "./src/modules/*"
       ],
       "@prisma/generated": [
-        "prisma/generated"
+        "./prisma/generated"
       ],
       "@prisma/generated/*": [
-        "prisma/generated/*"
+        "./prisma/generated/*"
       ]
     }
   }
