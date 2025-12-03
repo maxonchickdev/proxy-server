@@ -5,7 +5,12 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "prisma:studio": "npx prisma studio --browser none",
+    "docker-compose:local:up": "docker compose --progress tty -f docker-compose.local.yml up -d",
+    "docker-compose:local:down": "docker compose --progress tty -f docker-compose.local.yml down -v",
+    "docker-compose:prod:up": "docker compose --progress tty -f docker-compose.prod.yml up -d",
+    "docker-compose:prod:down": "docker compose --progress tty -f docker-compose.prod.yml down -v"
   },
   "devDependencies": {
     "turbo": "^2.6.0"

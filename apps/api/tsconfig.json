@@ -19,6 +19,33 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "baseUrl": "./",
+    "paths": {
+      "@app/common": [
+        "libs/common/src"
+      ],
+      "@app/common/*": [
+        "libs/common/src/*"
+      ],
+      "@app/core": [
+        "libs/core/src"
+      ],
+      "@app/core/*": [
+        "libs/core/src/*"
+      ],
+      "@app/modules": [
+        "src/modules"
+      ],
+      "@app/modules/*": [
+        "src/modules/*"
+      ],
+      "@prisma/generated": [
+        "prisma/generated"
+      ],
+      "@prisma/generated/*": [
+        "prisma/generated/*"
+      ]
+    }
   }
 }
