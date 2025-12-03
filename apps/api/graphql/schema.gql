@@ -1,0 +1,11 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Query {
+  """Health check endpoint"""
+  health: String!
+
+  """A simple hello world query"""
+  hello: String!
+}
