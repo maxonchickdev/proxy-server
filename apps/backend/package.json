@@ -1,7 +1,7 @@
 {
-  "name": "@proxy-server/web",
+  "name": "@proxy-server/backend",
   "version": "1.0.0",
-  "description": "Web application for Proxy Server",
+  "description": "Backend application for Proxy Server",
   "main": "src/index.ts",
   "author": "maxondev",
   "license": "ISC",

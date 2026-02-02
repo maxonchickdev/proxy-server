@@ -1,24 +1,27 @@
 {
   "name": "proxy-server",
-  "private": true,
+  "version": "1.0.0",
+  "description": "Proxy Server",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "devDependencies": {
-    "prettier": "^3.6.2",
-    "turbo": "^2.6.0",
-    "typescript": "5.9.2"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maxonchickdev/proxy-server.git"
   },
-  "engines": {
-    "node": ">=18"
+  "keywords": [],
+  "author": "maxondev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maxonchickdev/proxy-server/issues"
   },
-  "packageManager": "npm@11.5.1",
+  "homepage": "https://github.com/maxonchickdev/proxy-server#readme",
   "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+    "apps/web",
+    "apps/backend",
+    "libs/shared"
+  ],
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }

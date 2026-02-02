@@ -1,0 +1,8 @@
+{
+  "name": "@proxy-server/shared",
+  "version": "1.0.0",
+  "description": "Shared libs for Proxy Server",
+  "main": "src/index.ts",
+  "author": "maxondev",
+  "license": "ISC"
+}
