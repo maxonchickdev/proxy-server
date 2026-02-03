@@ -1,17 +1,3 @@
 {
-  "compilerOptions": {
-    "target": "esnext",
-    "module": "nodenext",
-    "sourceMap": true,
-    "strict": true,
-    "moduleResolution": "nodenext",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "incremental": true,
-    "skipLibCheck": true,
-    "noEmitOnError": true
-  }
+  "compilerOptions": {}
 }

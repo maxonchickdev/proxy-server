@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "description": "Proxy Server",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "docker:local:up": "docker compose -f docker-compose.local.yml up -d --no-color --timestamps --wait --wait-timeout 20",
+    "docker:local:down": "docker compose -f docker-compose.local.yml down -v",
+    "docker:local:start": "docker compose -f docker-compose.local.yml start",
+    "docker:local:stop": "docker compose -f docker-compose.local.yml stop -t 10",
+    "docker:prod:up": "docker compose -f docker-compose.prod.yml up -d --no-color --timestamps --wait --wait-timeout 20",
+    "docker:prod:down": "docker compose -f docker-compose.prod.yml down -v",
+    "docker:prod:start": "docker compose -f docker-compose.prod.yml start",
+    "docker:prod:stop": "docker compose -f docker-compose.prod.yml stop -t 10"
   },
   "repository": {
     "type": "git",

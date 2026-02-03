@@ -1,11 +1,22 @@
 {
-  "name": "@proxy-server/web",
-  "version": "1.0.0",
-  "description": "Web application for Proxy Server",
-  "main": "src/index.ts",
-  "author": "maxondev",
-  "license": "ISC",
+  "name": "web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview"
+  },
   "dependencies": {
-    "@proxy-server/shared": "^1.0.0"
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+    "vite": "^7.2.4"
   }
 }
