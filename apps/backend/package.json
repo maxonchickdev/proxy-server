@@ -2,10 +2,14 @@
   "name": "@proxy-server/backend",
   "version": "1.0.0",
   "description": "Backend application for Proxy Server",
-  "main": "src/index.ts",
+  "main": "src/main.ts",
   "author": "maxondev",
   "license": "ISC",
   "scripts": {
+    "lint:check": "eslint --max-warnings=0",
+    "lint:fix": "eslint --fix",
+    "lint:format:check": "prettier . -c --ignore-path $(npm prefix)/.prettierignore",
+    "lint:format:fix": "prettier . -w --ignore-path $(npm prefix)/.prettierignore",
     "build": "nest build",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -21,7 +25,6 @@
     "@proxy-server/shared": "^1.0.0",
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.0",
-    "D": "^1.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "source-map-support": "^0.5.21"

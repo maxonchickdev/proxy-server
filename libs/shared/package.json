@@ -4,5 +4,11 @@
   "description": "Shared libs for Proxy Server",
   "main": "src/index.ts",
   "author": "maxondev",
-  "license": "ISC"
+  "license": "ISC",
+  "scripts": {
+    "lint:check": "eslint --max-warnings=0",
+    "lint:fix": "eslint --fix",
+    "lint:format:check": "prettier . -c --ignore-path $(npm prefix)/.prettierignore",
+    "lint:format:fix": "prettier . -w --ignore-path $(npm prefix)/.prettierignore"
+  }
 }

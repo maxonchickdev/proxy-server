@@ -100,7 +100,7 @@ services:
     command: |
       sh -c " mkdir -p /usr/src/app/redisinsight/api/data && chown -R node:node /usr/src/app/redisinsight/api/data && ./docker-entry.sh "
     hostname: proxy-server-redis-insight
-    user: "0:0"
+    user: '0:0'
 
   proxy-server-postgres:
     container_name: proxy-server-postgres

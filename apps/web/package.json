@@ -4,11 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "lint:check": "eslint --max-warnings=0",
+    "lint:fix": "eslint --fix",
+    "lint:format:check": "prettier . -c --ignore-path $(npm prefix)/.prettierignore",
+    "lint:format:fix": "prettier . -w --ignore-path $(npm prefix)/.prettierignore",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@proxy-server/shared": "^1.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },

@@ -2,7 +2,15 @@
   "name": "proxy-server",
   "version": "1.0.0",
   "description": "Proxy Server",
+  "type": "module",
   "scripts": {
+    "lint:check": "eslint --max-warnings=0",
+    "lint:fix": "eslint --fix",
+    "lint:format:check": "prettier . -c",
+    "lint:format:fix": "prettier . -w",
+    "lint:cleanup": "knip",
+    "lint:editor": "editorconfig-checker",
+    "lint:fs": "ls-lint",
     "docker:local:up": "docker compose -f docker-compose.local.yml up -d --no-color --timestamps --wait --wait-timeout 20",
     "docker:local:down": "docker compose -f docker-compose.local.yml down -v",
     "docker:local:start": "docker compose -f docker-compose.local.yml start",
@@ -10,7 +18,10 @@
     "docker:prod:up": "docker compose -f docker-compose.prod.yml up -d --no-color --timestamps --wait --wait-timeout 20",
     "docker:prod:down": "docker compose -f docker-compose.prod.yml down -v",
     "docker:prod:start": "docker compose -f docker-compose.prod.yml start",
-    "docker:prod:stop": "docker compose -f docker-compose.prod.yml stop -t 10"
+    "docker:prod:stop": "docker compose -f docker-compose.prod.yml stop -t 10",
+    "hooks:init": "simple-git-hooks",
+    "hooks:precommit": "lint-staged",
+    "hooks:prepush": "concurrently 'npm run build -w libs/shared' 'npm run build -w apps/backend' 'npm run build -w apps/web'"
   },
   "repository": {
     "type": "git",
@@ -29,6 +40,19 @@
     "libs/shared"
   ],
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "@commitlint/cli": "^20.4.1",
+    "@commitlint/config-conventional": "^20.4.1",
+    "@ls-lint/ls-lint": "^2.3.1",
+    "concurrently": "^9.2.1",
+    "editorconfig-checker": "^6.1.1",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "knip": "^5.83.0",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.1",
+    "simple-git-hooks": "^2.13.1",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0"
   }
 }
