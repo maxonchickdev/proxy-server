@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "lint:check": "eslint --max-warnings=0",
-    "lint:fix": "eslint --fix",
-    "lint:format:check": "prettier . -c --ignore-path $(npm prefix)/.prettierignore",
-    "lint:format:fix": "prettier . -w --ignore-path $(npm prefix)/.prettierignore",
+    "lint:check": "eslint --max-warnings=0 -c $(npm prefix)/eslint.config.ts",
+    "lint:fix": "eslint --fix -c $(npm prefix)/eslint.config.ts",
+    "lint:format:check": "prettier . -c --config $(npm prefix)/prettier.config.ts --ignore-path $(npm prefix)/.prettierignore",
+    "lint:format:fix": "prettier . -w --config $(npm prefix)/prettier.config.ts --ignore-path $(npm prefix)/.prettierignore",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"

@@ -4,13 +4,13 @@
   "description": "Proxy Server",
   "type": "module",
   "scripts": {
-    "lint:check": "eslint --max-warnings=0",
-    "lint:fix": "eslint --fix",
-    "lint:format:check": "prettier . -c",
-    "lint:format:fix": "prettier . -w",
-    "lint:cleanup": "knip",
+    "lint:check": "eslint --max-warnings=0 -c eslint.config.ts",
+    "lint:fix": "eslint --fix -c eslint.config.ts",
+    "lint:format:check": "prettier . -c --config prettier.config.ts --ignore-path .prettierignore",
+    "lint:format:fix": "prettier . -w --config prettier.config.ts --ignore-path .prettierignore",
+    "lint:cleanup": "knip -c knip.config.ts",
     "lint:editor": "editorconfig-checker",
-    "lint:fs": "ls-lint",
+    "lint:fs": "ls-lint -config .ls-lint.yml",
     "docker:local:up": "docker compose -f docker-compose.local.yml up -d --no-color --timestamps --wait --wait-timeout 20",
     "docker:local:down": "docker compose -f docker-compose.local.yml down -v",
     "docker:local:start": "docker compose -f docker-compose.local.yml start",
@@ -20,7 +20,7 @@
     "docker:prod:start": "docker compose -f docker-compose.prod.yml start",
     "docker:prod:stop": "docker compose -f docker-compose.prod.yml stop -t 10",
     "hooks:init": "simple-git-hooks",
-    "hooks:precommit": "lint-staged",
+    "hooks:precommit": "lint-staged -c lint-staged.config.ts",
     "hooks:prepush": "concurrently 'npm run build -w apps/backend' 'npm run build -w apps/web'"
   },
   "repository": {

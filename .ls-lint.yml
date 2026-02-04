@@ -10,3 +10,4 @@ ignore:
   - node_modules
   - dist
   - .git
+  - .editorconfig
