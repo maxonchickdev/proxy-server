@@ -44,21 +44,6 @@ services:
   #     - proxy-server-network
   #   hostname: proxy-server-kafka-broker
 
-  # proxy-server-kafka-ui:
-  #   container_name: proxy-server-kafka-ui
-  #   image: provectuslabs/kafka-ui:latest
-  #   depends_on:
-  #     - proxy-server-kafka-broker
-  #   ports:
-  #     - ${KAFKA_UI_PORT}:${KAFKA_UI_PORT}
-  #   environment:
-  #     KAFKA_CLUSTERS_0_NAME: local
-  #     KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: proxy-server-kafka-broker:${KAFKA_PORT}
-  #   env_file: .env
-  #   networks:
-  #     - proxy-server-network
-  #   hostname: proxy-server-kafka-ui
-
   proxy-server-redis:
     container_name: proxy-server-redis
     image: redis:8.0.2-alpine
@@ -80,27 +65,6 @@ services:
       retries: 5
       start_period: 30s
     hostname: proxy-server-redis
-
-  proxy-server-redis-insight:
-    container_name: proxy-server-redis-insight
-    image: redislabs/redisinsight:latest
-    restart: always
-    depends_on:
-      proxy-server-redis:
-        condition: service_healthy
-    ports:
-      - ${RI_PORT}:${RI_PORT}
-    volumes:
-      - proxy-server-redis-insight-data:/usr/src/app/redisinsight/api/data
-    environment:
-      REDISINSIGHT_DISABLE_ENCRYPTION: ${RI_DISABLE_ENCRYPTION}
-    env_file: .env
-    networks:
-      - proxy-server-network
-    command: |
-      sh -c " mkdir -p /usr/src/app/redisinsight/api/data && chown -R node:node /usr/src/app/redisinsight/api/data && ./docker-entry.sh "
-    hostname: proxy-server-redis-insight
-    user: '0:0'
 
   proxy-server-postgres:
     container_name: proxy-server-postgres

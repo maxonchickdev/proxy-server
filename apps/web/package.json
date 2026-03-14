@@ -4,18 +4,19 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "lint:check": "eslint --max-warnings=0 -c $(npm prefix)/eslint.config.ts",
-    "lint:fix": "eslint --fix -c $(npm prefix)/eslint.config.ts",
-    "lint:format:check": "prettier . -c --config $(npm prefix)/prettier.config.ts --ignore-path $(npm prefix)/.prettierignore",
-    "lint:format:fix": "prettier . -w --config $(npm prefix)/prettier.config.ts --ignore-path $(npm prefix)/.prettierignore",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
     "@proxy-server/shared": "^1.0.0",
+    "@tailwindcss/vite": "^4.2.1",
+    "@tanstack/react-query": "^5.90.21",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.1",
+    "recharts": "^3.8.0",
+    "tailwindcss": "^4.2.1"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
