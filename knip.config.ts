@@ -1,27 +1,20 @@
-import { type KnipConfig } from 'knip';
+import { type KnipConfig } from "knip";
 
 const config: KnipConfig = {
-  $schema: 'https://unpkg.com/knip@5/schema.json',
+  $schema: "https://unpkg.com/knip@5/schema.json",
   workspaces: {
-    'apps/backend': {
-      entry: ['src/main.ts'],
-      project: ['src/**/*.ts'],
+    "apps/backend": {
+      project: ["src/**/*.ts"],
     },
-    'apps/web': {
-      entry: ['src/main.tsx', 'index.html'],
-      project: ['src/**/*.{ts,tsx}'],
+    "apps/web": {
+      project: ["src/**/*.{ts,tsx}"],
+      entry: ["index.html"],
     },
-    'libs/shared': {
-      project: ['src/**/*.ts'],
+    "libs/shared": {
+      project: ["src/**/*.ts"],
     },
   },
-  ignoreDependencies: [
-    '@types/express',
-    'source-map-support',
-    '@commitlint/cli',
-    '@commitlint/types',
-  ],
-  ignore: ['**/node_modules/**', '**/dist/**'],
+  ignoreDependencies: ["source-map-support", "@commitlint/types"],
 };
 
 export default config;

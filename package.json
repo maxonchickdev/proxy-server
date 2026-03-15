@@ -4,9 +4,9 @@
   "description": "Proxy Server",
   "type": "module",
   "scripts": {
-    "lint:cleanup": "knip -c knip.config.ts",
-    "lint:editor": "editorconfig-checker",
-    "lint:fs": "ls-lint -config .ls-lint.yml",
+    "lint:clean:check": "knip",
+    "lint:editor:check": "editorconfig-checker",
+    "lint:fs:check": "ls-lint",
     "docker:local:up": "docker compose -f docker-compose.local.yml up -d --no-color --timestamps --wait --wait-timeout 20",
     "docker:local:down": "docker compose -f docker-compose.local.yml down -v",
     "docker:local:start": "docker compose -f docker-compose.local.yml start",
@@ -16,8 +16,7 @@
     "docker:prod:start": "docker compose -f docker-compose.prod.yml start",
     "docker:prod:stop": "docker compose -f docker-compose.prod.yml stop -t 10",
     "hooks:init": "simple-git-hooks",
-    "hooks:precommit": "lint-staged -c lint-staged.config.ts",
-    "hooks:prepush": ""
+    "hooks:precommit": "lint-staged"
   },
   "repository": {
     "type": "git",

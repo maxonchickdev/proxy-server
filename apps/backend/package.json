@@ -11,12 +11,10 @@
     "db:push": "prisma db push",
     "build": "nest build",
     "start": "nest start",
-    "start:dev": "nodemon --exec \"ts-node -P tsconfig.dev.json -r tsconfig-paths/register\" --ext ts --watch src src/main.ts",
+    "start:dev": "nodemon --exec \"ts-node -r tsconfig-paths/register\" --ext ts --watch src src/main.ts",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "lint:types:check": "tsc --noEmit --pretty --diagnostics"
   },
   "dependencies": {
     "@nestjs/cli": "^11.0.16",
@@ -28,15 +26,12 @@
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/throttler": "^6.5.0",
     "@prisma/client": "^5.22.0",
-    "@proxy-server/shared": "^1.0.0",
     "@types/express": "^5.0.6",
     "@types/node": "^25.2.0",
     "axios": "^1.13.6",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
-    "http-proxy": "^1.18.1",
-    "ioredis": "^5.10.0",
     "nanoid": "^3.3.11",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -46,18 +41,13 @@
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
-    "@nestjs/testing": "^11.1.16",
     "@swc/cli": "^0.8.0",
     "@swc/core": "^1.15.18",
-    "@swc/helpers": "^0.5.19",
     "@types/bcrypt": "^6.0.0",
     "@types/jest": "^30.0.0",
     "@types/passport-jwt": "^4.0.1",
-    "jest": "^30.3.0",
     "nodemon": "^3.1.14",
-    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.21.0"
+    "tsconfig-paths": "^4.2.0"
   }
 }

@@ -1,8 +1,10 @@
 {
-  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src"
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "strict": true,
+    "skipLibCheck": true
   },
-  "references": [{ "path": "../../apps/backend" }, { "path": "../../apps/web" }]
+  "include": ["src"]
 }

@@ -1,4 +1,4 @@
 {
-  "pre-commit": "npm run hooks:precommit",
-  "pre-push": "npm run hooks:prepush"
+  "commit-msg": "npx --no -- commitlint --edit ${1}",
+  "pre-commit": "npm run hooks:precommit"
 }

@@ -53,11 +53,13 @@ npx prisma migrate dev
 ### 4. Run
 
 **Terminal 1 – Backend:**
+
 ```bash
 npm run start:dev -w apps/backend
 ```
 
 **Terminal 2 – Frontend:**
+
 ```bash
 npm run dev -w apps/web
 ```
@@ -77,20 +79,20 @@ npm run dev -w apps/web
 
 ### Auth
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/auth/register` | Register (body: `email`, `password`, `name?`) |
-| POST | `/auth/login` | Login (body: `email`, `password`) |
+| Method | Path             | Description                                   |
+| ------ | ---------------- | --------------------------------------------- |
+| POST   | `/auth/register` | Register (body: `email`, `password`, `name?`) |
+| POST   | `/auth/login`    | Login (body: `email`, `password`)             |
 
 ### Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/endpoints` | List user endpoints |
-| POST | `/endpoints` | Create (body: `name`, `targetUrl`, `isActive?`) |
-| GET | `/endpoints/:id` | Get one |
-| PATCH | `/endpoints/:id` | Update |
-| DELETE | `/endpoints/:id` | Delete |
+| Method | Path             | Description                                     |
+| ------ | ---------------- | ----------------------------------------------- |
+| GET    | `/endpoints`     | List user endpoints                             |
+| POST   | `/endpoints`     | Create (body: `name`, `targetUrl`, `isActive?`) |
+| GET    | `/endpoints/:id` | Get one                                         |
+| PATCH  | `/endpoints/:id` | Update                                          |
+| DELETE | `/endpoints/:id` | Delete                                          |
 
 All require `Authorization: Bearer <token>`.
 
@@ -100,27 +102,27 @@ Requests to `/r/{slug}/...` or `{slug}.your-domain.com/...` are proxied to the c
 
 ### Logs
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/logs/endpoint/:endpointId` | List logs (query: `limit`, `offset`, `method`, `status`) |
-| GET | `/logs/:id` | Get single log |
+| Method | Path                         | Description                                              |
+| ------ | ---------------------------- | -------------------------------------------------------- |
+| GET    | `/logs/endpoint/:endpointId` | List logs (query: `limit`, `offset`, `method`, `status`) |
+| GET    | `/logs/:id`                  | Get single log                                           |
 
 ### Analytics
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/analytics/:endpointId/summary` | Summary stats |
-| GET | `/analytics/:endpointId/timeseries` | Time-series (query: `bucket`, `limit`) |
-| GET | `/analytics/:endpointId/breakdown` | By method and status |
+| Method | Path                                | Description                            |
+| ------ | ----------------------------------- | -------------------------------------- |
+| GET    | `/analytics/:endpointId/summary`    | Summary stats                          |
+| GET    | `/analytics/:endpointId/timeseries` | Time-series (query: `bucket`, `limit`) |
+| GET    | `/analytics/:endpointId/breakdown`  | By method and status                   |
 
 ### Notifications
 
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/notifications/channels` | Create channel (body: `type`, `config`) |
-| GET | `/notifications/channels` | List channels |
-| POST | `/notifications/alert-rules` | Create rule (body: `endpointId`, `channelId`, `condition`) |
-| GET | `/notifications/alert-rules/endpoint/:id` | List rules for endpoint |
+| Method | Path                                      | Description                                                |
+| ------ | ----------------------------------------- | ---------------------------------------------------------- |
+| POST   | `/notifications/channels`                 | Create channel (body: `type`, `config`)                    |
+| GET    | `/notifications/channels`                 | List channels                                              |
+| POST   | `/notifications/alert-rules`              | Create rule (body: `endpointId`, `channelId`, `condition`) |
+| GET    | `/notifications/alert-rules/endpoint/:id` | List rules for endpoint                                    |
 
 ## Deployment
 
@@ -129,57 +131,62 @@ Requests to `/r/{slug}/...` or `{slug}.your-domain.com/...` are proxied to the c
 1. **Provision a VPS** (Ubuntu 22.04 recommended).
 
 2. **Install Node, Docker, Nginx, Certbot:**
-   ```bash
-   sudo apt update && sudo apt install -y nginx certbot python3-certbot-nginx docker.io
-   ```
+
+    ```bash
+    sudo apt update && sudo apt install -y nginx certbot python3-certbot-nginx docker.io
+    ```
 
 3. **DNS**: Add an A record for your domain (e.g. `proxy.example.com`) and a wildcard `*.proxy.example.com` pointing to the server IP.
 
 4. **Build and run:**
-   ```bash
-   npm run build -w apps/backend
-   npm run build -w apps/web
-   ```
+
+    ```bash
+    npm run build -w apps/backend
+    npm run build -w apps/web
+    ```
 
 5. **Nginx** – reverse proxy for API and frontend, SSL termination:
-   ```nginx
-   server {
-       listen 80;
-       server_name proxy.example.com *.proxy.example.com;
-       return 301 https://$host$request_uri;
-   }
-   server {
-       listen 443 ssl;
-       server_name proxy.example.com *.proxy.example.com;
-       ssl_certificate /etc/letsencrypt/live/proxy.example.com/fullchain.pem;
-       ssl_certificate_key /etc/letsencrypt/live/proxy.example.com/privkey.pem;
 
-       location / {
-           proxy_pass http://localhost:5173;  # or serve static from apps/web/dist
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-       }
-       location ~ ^/(auth|endpoints|logs|analytics|notifications|r) {
-           proxy_pass http://localhost:3000;
-           proxy_http_version 1.1;
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_set_header X-Forwarded-Proto $scheme;
-       }
-   }
-   ```
+    ```nginx
+    server {
+        listen 80;
+        server_name proxy.example.com *.proxy.example.com;
+        return 301 https://$host$request_uri;
+    }
+    server {
+        listen 443 ssl;
+        server_name proxy.example.com *.proxy.example.com;
+        ssl_certificate /etc/letsencrypt/live/proxy.example.com/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/proxy.example.com/privkey.pem;
+
+        location / {
+            proxy_pass http://localhost:5173;  # or serve static from apps/web/dist
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+        }
+        location ~ ^/(auth|endpoints|logs|analytics|notifications|r) {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+    ```
 
 6. **Wildcard SSL:**
-   ```bash
-   sudo certbot certonly --nginx -d proxy.example.com -d "*.proxy.example.com"
-   ```
+
+    ```bash
+    sudo certbot certonly --nginx -d proxy.example.com -d "*.proxy.example.com"
+    ```
 
 7. **Run backend** (e.g. with PM2):
-   ```bash
-   pm2 start dist/apps/backend/main.js --name api-observability
-   ```
+
+    ```bash
+    pm2 start dist/apps/backend/main.js --name api-observability
+    ```
 
 ## Project Structure
 

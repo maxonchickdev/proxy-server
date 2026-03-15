@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { authApi } from '../api/client';
-import { useAuth } from '../contexts/AuthContext';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { authApi } from "../api/client.api";
+import { useAuth } from "../contexts/auth.context";
 
-export function Register() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [error, setError] = useState('');
+export const RegisterPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
       const res = await authApi.register({
@@ -23,9 +23,9 @@ export function Register() {
         name: name || undefined,
       });
       login(res.accessToken, res.user);
-      navigate('/');
+      navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -36,7 +36,9 @@ export function Register() {
       <h1 className="mb-8 text-2xl font-medium">Create account</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="border border-white/40 p-3 text-white/80">{error}</div>
+          <div className="border border-white/40 p-3 text-white/80">
+            {error}
+          </div>
         )}
         <div>
           <label className="mb-1 block text-sm text-white/60">Email</label>
@@ -49,7 +51,9 @@ export function Register() {
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-white/60">Name (optional)</label>
+          <label className="mb-1 block text-sm text-white/60">
+            Name (optional)
+          </label>
           <input
             type="text"
             value={name}
@@ -73,15 +77,15 @@ export function Register() {
           disabled={loading}
           className="w-full border border-white py-2 font-medium hover:bg-white hover:text-black disabled:opacity-50"
         >
-          {loading ? 'Creating account...' : 'Create account'}
+          {loading ? "Creating account..." : "Create account"}
         </button>
       </form>
       <p className="mt-4 text-center text-white/60">
-        Already have an account?{' '}
+        Already have an account?{" "}
         <Link to="/login" className="underline hover:text-white">
           Sign in
         </Link>
       </p>
     </div>
   );
-}
+};

@@ -5,5 +5,7 @@
   "main": "src/index.ts",
   "author": "maxondev",
   "license": "ISC",
-  "scripts": {}
+  "scripts": {
+    "lint:types:check": "tsc --noEmit --pretty --diagnostics"
+  }
 }

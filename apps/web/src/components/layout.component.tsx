@@ -1,13 +1,13 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/auth.context";
 
-export function Layout() {
+export const LayoutComponent = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   return (
@@ -44,4 +44,4 @@ export function Layout() {
       </main>
     </div>
   );
-}
+};

@@ -1,7 +1,11 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
-export interface CreateAlertRuleDto {
+interface CreateAlertRuleDto {
   endpointId: string;
   channelId: string;
   condition: string;
@@ -15,12 +19,12 @@ export class AlertRulesService {
     const endpoint = await this.prisma.endpoint.findFirst({
       where: { id: dto.endpointId, userId },
     });
-    if (!endpoint) throw new ForbiddenException('Access denied');
+    if (!endpoint) throw new ForbiddenException("Access denied");
 
     const channel = await this.prisma.notificationChannel.findFirst({
       where: { id: dto.channelId, userId },
     });
-    if (!channel) throw new ForbiddenException('Channel not found');
+    if (!channel) throw new ForbiddenException("Channel not found");
 
     return this.prisma.alertRule.create({
       data: {
@@ -36,7 +40,7 @@ export class AlertRulesService {
     const endpoint = await this.prisma.endpoint.findFirst({
       where: { id: endpointId, userId },
     });
-    if (!endpoint) throw new ForbiddenException('Access denied');
+    if (!endpoint) throw new ForbiddenException("Access denied");
 
     return this.prisma.alertRule.findMany({
       where: { endpointId },
@@ -49,7 +53,7 @@ export class AlertRulesService {
       where: { id },
     });
     if (!rule || rule.userId !== userId) {
-      throw new NotFoundException('Alert rule not found');
+      throw new NotFoundException("Alert rule not found");
     }
     await this.prisma.alertRule.delete({ where: { id } });
     return { success: true };
