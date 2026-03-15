@@ -11,28 +11,28 @@ export function Layout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
-      <nav className="border-b border-slate-800 bg-slate-900/50">
+    <div className="min-h-screen bg-black text-white">
+      <nav className="border-b border-white/20">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
           <div className="flex items-center gap-8">
-            <Link to="/" className="text-lg font-semibold text-white">
+            <Link to="/" className="text-lg font-medium">
               API Observability
             </Link>
-            <Link to="/" className="text-slate-400 hover:text-white">
+            <Link to="/" className="text-white/60 hover:text-white">
               Dashboard
             </Link>
-            <Link to="/endpoints" className="text-slate-400 hover:text-white">
+            <Link to="/endpoints" className="text-white/60 hover:text-white">
               Endpoints
             </Link>
-            <Link to="/settings" className="text-slate-400 hover:text-white">
+            <Link to="/settings" className="text-white/60 hover:text-white">
               Settings
             </Link>
           </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-400">{user?.email}</span>
+            <span className="text-sm text-white/60">{user?.email}</span>
             <button
               onClick={handleLogout}
-              className="rounded bg-slate-700 px-3 py-1.5 text-sm hover:bg-slate-600"
+              className="border border-white/40 px-3 py-1.5 text-sm hover:bg-white hover:text-black"
             >
               Logout
             </button>

@@ -19,29 +19,24 @@ export function Logs() {
   if (!endpointId) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold text-white">Request logs</h1>
-        <p className="text-slate-400">Select an endpoint to view logs:</p>
+        <h1 className="text-2xl font-medium">Request logs</h1>
+        <p className="text-white/60">Select an endpoint:</p>
         <ul className="space-y-2">
           {endpoints.map((ep) => (
             <li key={ep.id}>
-              <Link
-                to={`/logs/${ep.id}`}
-                className="text-blue-400 hover:underline"
-              >
+              <Link to={`/logs/${ep.id}`} className="underline hover:no-underline">
                 {ep.name} ({ep.slug})
               </Link>
             </li>
           ))}
         </ul>
-        {endpoints.length === 0 && (
-          <p className="text-slate-500">No endpoints yet.</p>
-        )}
+        {endpoints.length === 0 && <p className="text-white/60">No endpoints yet.</p>}
       </div>
     );
   }
 
   if (isLoading) {
-    return <p className="text-slate-400">Loading logs...</p>;
+    return <p className="text-white/60">Loading logs...</p>;
   }
 
   const logs = data?.logs ?? [];
@@ -49,59 +44,33 @@ export function Logs() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-white">Request logs</h1>
-      <p className="text-slate-400">
-        {total} total requests
-      </p>
-      <div className="overflow-hidden rounded-lg border border-slate-800">
+      <h1 className="text-2xl font-medium">Request logs</h1>
+      <p className="text-white/60">{total} total requests</p>
+      <div className="overflow-hidden border border-white/20">
         <table className="w-full">
-          <thead className="bg-slate-800/50">
-            <tr>
-              <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                Time
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                Method
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                Path
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-sm font-medium text-slate-300">
-                Duration
-              </th>
+          <thead>
+            <tr className="border-b border-white/20">
+              <th className="px-4 py-3 text-left text-sm font-medium text-white/60">Time</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-white/60">Method</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-white/60">Path</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-white/60">Status</th>
+              <th className="px-4 py-3 text-left text-sm font-medium text-white/60">Duration</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800">
+          <tbody className="divide-y divide-white/10">
             {logs.map((log: Record<string, unknown>) => (
-              <tr key={String(log.id)} className="hover:bg-slate-800/30">
-                <td className="px-4 py-3 text-sm text-slate-300">
-                  {log.createdAt
-                    ? new Date(String(log.createdAt)).toLocaleString()
-                    : '—'}
+              <tr key={String(log.id)} className="hover:bg-white/5">
+                <td className="px-4 py-3 text-sm text-white/80">
+                  {log.createdAt ? new Date(String(log.createdAt)).toLocaleString() : '—'}
                 </td>
-                <td className="px-4 py-3 font-mono text-sm text-slate-300">
-                  {String(log.method)}
-                </td>
-                <td className="px-4 py-3 font-mono text-sm text-slate-400 truncate max-w-[300px]">
+                <td className="px-4 py-3 font-mono text-sm text-white/80">{String(log.method)}</td>
+                <td className="px-4 py-3 font-mono text-sm text-white/60 truncate max-w-[300px]">
                   {String(log.path)}
                 </td>
-                <td className="px-4 py-3">
-                  <span
-                    className={`inline-flex rounded px-2 py-0.5 text-xs ${
-                      (log.responseStatus as number) >= 500
-                        ? 'bg-red-900/50 text-red-300'
-                        : (log.responseStatus as number) >= 400
-                          ? 'bg-amber-900/50 text-amber-300'
-                          : 'bg-green-900/50 text-green-300'
-                    }`}
-                  >
-                    {String(log.responseStatus ?? '—')}
-                  </span>
+                <td className="px-4 py-3 text-sm text-white/80">
+                  {String(log.responseStatus ?? '—')}
                 </td>
-                <td className="px-4 py-3 text-sm text-slate-400">
+                <td className="px-4 py-3 text-sm text-white/60">
                   {log.durationMs != null ? `${log.durationMs}ms` : '—'}
                 </td>
               </tr>
