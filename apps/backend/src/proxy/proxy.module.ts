@@ -5,8 +5,8 @@ import { ProxyMiddleware } from "./proxy.middleware";
 import { ProxyService } from "./proxy.service";
 
 @Module({
-  imports: [EndpointsModule, NotificationsModule],
-  providers: [ProxyService, ProxyMiddleware],
-  exports: [ProxyService],
+	imports: [EndpointsModule, NotificationsModule],
+	providers: [ProxyService, ProxyMiddleware],
+	exports: [ProxyService],
 })
 export class ProxyModule {}

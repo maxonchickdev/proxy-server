@@ -7,14 +7,14 @@ import { SlackService } from "./slack.service";
 import { TelegramService } from "./telegram.service";
 
 @Module({
-  controllers: [NotificationsController],
-  providers: [
-    NotificationsService,
-    NotificationChannelsService,
-    AlertRulesService,
-    TelegramService,
-    SlackService,
-  ],
-  exports: [NotificationsService],
+	controllers: [NotificationsController],
+	providers: [
+		NotificationsService,
+		NotificationChannelsService,
+		AlertRulesService,
+		TelegramService,
+		SlackService,
+	],
+	exports: [NotificationsService],
 })
 export class NotificationsModule {}

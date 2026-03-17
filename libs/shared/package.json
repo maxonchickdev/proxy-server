@@ -1,11 +1,15 @@
 {
-  "name": "@proxy-server/shared",
-  "version": "1.0.0",
-  "description": "Shared libs for Proxy Server",
-  "main": "src/index.ts",
-  "author": "maxondev",
-  "license": "ISC",
-  "scripts": {
-    "lint:types:check": "tsc --noEmit --pretty --diagnostics"
-  }
+	"name": "@proxy-server/shared",
+	"version": "1.0.0",
+	"description": "Shared libs for Proxy Server",
+	"main": "src/index.ts",
+	"author": "maxondev",
+	"license": "ISC",
+	"scripts": {
+		"lint:types:check": "tsc --noEmit --pretty --diagnostics",
+		"lint:check": "biome lint",
+		"lint:fix": "biome lint --write",
+		"lint:format:check": "biome format",
+		"lint:format:fix": "biome format --write"
+	}
 }

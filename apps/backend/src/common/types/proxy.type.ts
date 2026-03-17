@@ -1,3 +1,3 @@
 export type ProxyType = {
-  baseDomain: string;
+	baseDomain: string;
 };

@@ -1,3 +1,3 @@
 export type EnvironmentType = {
-  nodeEnv: string;
+	nodeEnv: string;
 };

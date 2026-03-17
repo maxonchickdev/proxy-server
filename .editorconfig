@@ -1,6 +1,6 @@
 root = true
 
-[{*,!README.md,apps/backend/prisma/generated}]
+[{*,!README.md,!apps/backend/prisma/generated,!.simple-git-hooks.json,!biome.json,!commitlint.config.ts,!lint-staged.config.ts}]
 indent_style = space
 indent_size = 2
 tab_width = 2

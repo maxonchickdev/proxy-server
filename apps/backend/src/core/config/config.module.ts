@@ -11,22 +11,22 @@ import { rateLimitRegister } from "src/common/registers/rate-limit.register";
 import { swaggerRegister } from "src/common/registers/swagger.register";
 
 @Module({
-  imports: [
-    CoreConfigModule.forRoot({
-      envFilePath: [".env", "../.env", "../../.env"],
-      isGlobal: true,
-      load: [
-        swaggerRegister,
-        dbRegister,
-        environmentRegister,
-        appRegister,
-        jwtRegister,
-        cacheRegister,
-        rateLimitRegister,
-        proxyRegister,
-      ],
-      validationSchema: Joi.object({}),
-    }),
-  ],
+	imports: [
+		CoreConfigModule.forRoot({
+			envFilePath: [".env", "../.env", "../../.env"],
+			isGlobal: true,
+			load: [
+				swaggerRegister,
+				dbRegister,
+				environmentRegister,
+				appRegister,
+				jwtRegister,
+				cacheRegister,
+				rateLimitRegister,
+				proxyRegister,
+			],
+			validationSchema: Joi.object({}),
+		}),
+	],
 })
 export class ConfigModule {}

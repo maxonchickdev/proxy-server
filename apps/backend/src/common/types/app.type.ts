@@ -1,4 +1,4 @@
 export type AppType = {
-  appPort: number;
-  appRequestTimeout: number;
+	appPort: number;
+	appRequestTimeout: number;
 };

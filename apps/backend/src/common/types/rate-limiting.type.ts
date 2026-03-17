@@ -1,4 +1,4 @@
 export type RateLimitType = {
-  ttl: number;
-  limit: number;
+	ttl: number;
+	limit: number;
 };

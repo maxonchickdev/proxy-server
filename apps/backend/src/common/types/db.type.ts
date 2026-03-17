@@ -1,3 +1,3 @@
 export type DbType = {
-  postgresUrl: string;
+	postgresUrl: string;
 };

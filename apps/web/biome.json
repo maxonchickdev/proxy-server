@@ -1,0 +1,21 @@
+{
+	"root": false,
+	"extends": "//",
+	"files": { "includes": ["**", "!dist"] },
+	"css": {
+		"parser": {
+			"tailwindDirectives": true
+		}
+	},
+	"linter": {
+		"rules": {
+			"a11y": {
+				"noLabelWithoutControl": "off",
+				"useButtonType": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off"
+			}
+		}
+	}
+}

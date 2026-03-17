@@ -1,0 +1,22 @@
+{
+	"root": false,
+	"extends": "//",
+	"files": {
+		"includes": ["**", "!prisma", "!dist"]
+	},
+	"linter": {
+		"rules": {
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "off"
+			}
+		}
+	},
+	"javascript": {
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		}
+	}
+}

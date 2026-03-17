@@ -1,6 +1,6 @@
 export type SwaggerType = {
-  swaggerPath: string;
-  swaggerName: string;
-  swaggerDescr: string;
-  swaggerSiteTitle: string;
+	swaggerPath: string;
+	swaggerName: string;
+	swaggerDescr: string;
+	swaggerSiteTitle: string;
 };

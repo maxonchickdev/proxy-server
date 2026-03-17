@@ -13,53 +13,53 @@ import { SettingsPage } from "./pages/settings.page";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isReady } = useAuth();
-  if (!isReady) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <p className="text-white">Loading...</p>
-      </div>
-    );
-  }
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
+	const { user, isReady } = useAuth();
+	if (!isReady) {
+		return (
+			<div className="flex min-h-screen items-center justify-center bg-black">
+				<p className="text-white">Loading...</p>
+			</div>
+		);
+	}
+	if (!user) {
+		return <Navigate to="/login" replace />;
+	}
+	return <>{children}</>;
 }
 
 function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <LayoutComponent />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<DashboardPage />} />
-        <Route path="endpoints" element={<EndpointsPage />} />
-        <Route path="endpoints/:id" element={<EndpointDetailPage />} />
-        <Route path="logs" element={<LogsPage />} />
-        <Route path="logs/:endpointId" element={<LogsPage />} />
-        <Route path="settings" element={<SettingsPage />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+	return (
+		<Routes>
+			<Route path="/login" element={<LoginPage />} />
+			<Route path="/register" element={<RegisterPage />} />
+			<Route
+				path="/"
+				element={
+					<ProtectedRoute>
+						<LayoutComponent />
+					</ProtectedRoute>
+				}
+			>
+				<Route index element={<DashboardPage />} />
+				<Route path="endpoints" element={<EndpointsPage />} />
+				<Route path="endpoints/:id" element={<EndpointDetailPage />} />
+				<Route path="logs" element={<LogsPage />} />
+				<Route path="logs/:endpointId" element={<LogsPage />} />
+				<Route path="settings" element={<SettingsPage />} />
+			</Route>
+			<Route path="*" element={<Navigate to="/" replace />} />
+		</Routes>
+	);
 }
 
 export default function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<BrowserRouter>
+				<AuthProvider>
+					<AppRoutes />
+				</AuthProvider>
+			</BrowserRouter>
+		</QueryClientProvider>
+	);
 }
