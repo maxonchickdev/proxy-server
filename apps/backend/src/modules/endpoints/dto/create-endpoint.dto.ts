@@ -1,11 +1,17 @@
-import { IsBoolean, IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MinLength,
+} from "class-validator";
 
 export class CreateEndpointDto {
   @IsString()
-  @MinLength(1, { message: 'Name is required' })
+  @MinLength(1, { message: "Name is required" })
   name!: string;
 
-  @IsUrl({}, { message: 'Target URL must be a valid URL' })
+  @IsUrl({}, { message: "Target URL must be a valid URL" })
   targetUrl!: string;
 
   @IsOptional()
