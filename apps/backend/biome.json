@@ -2,7 +2,7 @@
 	"root": false,
 	"extends": "//",
 	"files": {
-		"includes": ["**", "!prisma", "!dist"]
+		"includes": ["**", "!prisma", "!dist", "!documentation"]
 	},
 	"linter": {
 		"rules": {
@@ -10,7 +10,8 @@
 				"noNonNullAssertion": "off"
 			},
 			"suspicious": {
-				"noExplicitAny": "off"
+				"noExplicitAny": "off",
+				"noThenProperty": "off"
 			}
 		}
 	},

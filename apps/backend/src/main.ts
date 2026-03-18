@@ -11,6 +11,11 @@ import { EnvironmentsEnum } from "./common/enums/environments.enum";
 import { CatchEverythingFilter } from "./common/filters/catch-everything.filter";
 import { LoggingInterceptor } from "./common/interceptors/logger.interceptor";
 import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor";
+import {
+	AuthResponseSchema,
+	AuthUserSchema,
+} from "./common/swagger/schemas/auth-response.schema";
+import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.schema";
 
 const logger: Logger = new Logger("Bootstrap");
 
@@ -32,8 +37,9 @@ const logger: Logger = new Logger("Bootstrap");
 		type: VersioningType.URI,
 	});
 
+	let swaggerPath = "";
 	if (!isProduction) {
-		const swaggerPath: string = configService.getOrThrow<string>(
+		swaggerPath = configService.getOrThrow<string>(
 			`${ConfigKeyEnum.SWAGGER}.swaggerPath`,
 		);
 		const appName: string = configService.getOrThrow<string>(
@@ -50,11 +56,15 @@ const logger: Logger = new Logger("Bootstrap");
 			.setTitle(appName)
 			.setDescription(appDescription)
 			.setVersion("1.0")
+			.setContact("Proxy Server", "", "")
+			.setLicense("ISC", "")
 			.addServer(`http://localhost:${appPort}`, EnvironmentsEnum.DEVELOPMENT)
+			.addServer(`http://lvh.me:${appPort}`, EnvironmentsEnum.PRODUCTION)
 			.addBearerAuth(
 				{
 					bearerFormat: "JWT",
-					description: "Enter JWT token",
+					description:
+						"Enter JWT token obtained from /auth/login or /auth/register",
 					in: "header",
 					name: "Authorization",
 					scheme: "bearer",
@@ -63,23 +73,36 @@ const logger: Logger = new Logger("Bootstrap");
 				"Bearer",
 			)
 			.addSecurityRequirements("Bearer")
+			.addTag("Auth", "Authentication endpoints (no Bearer token required)")
+			.addTag("Endpoints", "Proxy endpoint management")
+			.addTag("Analytics", "Request analytics and metrics")
+			.addTag("Logs", "Request log access")
+			.addTag("Notifications", "Alert rules and notification channels")
 			.build();
 
 		const document = SwaggerModule.createDocument(app, swaggerConfig, {
 			deepScanRoutes: true,
 			ignoreGlobalPrefix: false,
-			operationIdFactory: (methodKey: string) => methodKey,
+			operationIdFactory: (controllerKey: string, methodKey: string) =>
+				`${controllerKey}_${methodKey}`,
+			extraModels: [AuthResponseSchema, AuthUserSchema, ErrorResponseSchema],
 		});
 
 		SwaggerModule.setup(swaggerPath, app, document, {
 			customSiteTitle: siteTitle,
+			customCss: ".swagger-ui .topbar { display: none }",
 			explorer: true,
 			jsonDocumentUrl: `${swaggerPath}/json`,
+			yamlDocumentUrl: `${swaggerPath}/yaml`,
 			swaggerOptions: {
 				filter: true,
 				showRequestDuration: true,
+				persistAuthorization: true,
+				docExpansion: "list",
+				syntaxHighlight: { activate: true, theme: "monokai" },
+				tryItOutEnabled: true,
+				displayRequestDuration: true,
 			},
-			yamlDocumentUrl: `${swaggerPath}/yaml`,
 		});
 	}
 
@@ -99,7 +122,11 @@ const logger: Logger = new Logger("Bootstrap");
 
 	app.enableCors({ origin: true, credentials: true });
 
-	app.use(helmet());
+	app.use(
+		helmet({
+			contentSecurityPolicy: isProduction,
+		}),
+	);
 
 	app.enableShutdownHooks();
 
@@ -112,8 +139,10 @@ const logger: Logger = new Logger("Bootstrap");
 
 	logger.log(`Proxy Server application is running on: ${await app.getUrl()}`);
 
-	if (!isProduction) {
-		logger.log(`Swagger docs available at: ${await app.getUrl()}`);
+	if (!isProduction && swaggerPath) {
+		logger.log(
+			`Swagger docs available at: ${await app.getUrl()}/${swaggerPath}`,
+		);
 	}
 })().catch((e) => {
 	logger.error(`Failed to start nestjs boilerplate admin application: ${e}`);

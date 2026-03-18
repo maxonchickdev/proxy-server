@@ -7,22 +7,10 @@ import {
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import type { LoginDto } from "./dto/login.dto";
-import type { RegisterDto } from "./dto/register.dto";
-
-export interface JwtPayload {
-	sub: string;
-	email: string;
-}
-
-export interface AuthResponse {
-	accessToken: string;
-	user: {
-		id: string;
-		email: string;
-		name: string | null;
-	};
-}
+import type { AuthResponseType } from "./types/auth-response.type";
+import type { JwtPayloadType } from "./types/jwt-payload.type";
+import type { SignUpDto } from "./dto/sign-up.dto";
+import type { SignInDto } from "./dto/sign-in.dto";
 
 @Injectable()
 export class AuthService {
@@ -33,35 +21,39 @@ export class AuthService {
 		@Inject(JwtService) private readonly jwtService: JwtService,
 	) {}
 
-	async register(dto: RegisterDto): Promise<AuthResponse> {
+	async signUp(signUpDto: SignUpDto): Promise<AuthResponseType> {
 		const existing = await this.prisma.user.findUnique({
-			where: { email: dto.email.toLowerCase() },
+			where: { email: signUpDto.email.toLowerCase() },
 		});
+
 		if (existing) {
 			throw new ConflictException("User with this email already exists");
 		}
 
-		const passwordHash = await bcrypt.hash(dto.password, this.saltRounds);
+		const passwordHash = await bcrypt.hash(signUpDto.password, this.saltRounds);
+
 		const user = await this.prisma.user.create({
 			data: {
-				email: dto.email.toLowerCase(),
+				email: signUpDto.email.toLowerCase(),
 				passwordHash,
-				name: dto.name ?? null,
+				name: signUpDto.name ?? null,
 			},
 		});
 
 		return this.buildAuthResponse(user);
 	}
 
-	async login(dto: LoginDto): Promise<AuthResponse> {
+	async signIn(signInDto: SignInDto): Promise<AuthResponseType> {
 		const user = await this.prisma.user.findUnique({
-			where: { email: dto.email.toLowerCase() },
+			where: { email: signInDto.email.toLowerCase() },
 		});
+
 		if (!user) {
 			throw new UnauthorizedException("Invalid email or password");
 		}
 
-		const valid = await bcrypt.compare(dto.password, user.passwordHash);
+		const valid = await bcrypt.compare(signInDto.password, user.passwordHash);
+
 		if (!valid) {
 			throw new UnauthorizedException("Invalid email or password");
 		}
@@ -80,8 +72,8 @@ export class AuthService {
 		id: string;
 		email: string;
 		name: string | null;
-	}): AuthResponse {
-		const payload: JwtPayload = { sub: user.id, email: user.email };
+	}): AuthResponseType {
+		const payload: JwtPayloadType = { sub: user.id, email: user.email };
 		const accessToken = this.jwtService.sign(payload);
 		return {
 			accessToken,

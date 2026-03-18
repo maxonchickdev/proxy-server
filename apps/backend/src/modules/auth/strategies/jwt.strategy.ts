@@ -3,7 +3,8 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { ConfigKeyEnum } from "../../../common/enums/config.enum";
-import { AuthService, type JwtPayload } from "../auth.service";
+import { AuthService } from "../auth.service";
+import type { JwtPayloadType } from "../types/jwt-payload.type";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
@@ -22,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
 		});
 	}
 
-	async validate(payload: JwtPayload) {
+	async validate(payload: JwtPayloadType) {
 		const user = await this.authService.validateUserById(payload.sub);
 		if (!user) {
 			throw new UnauthorizedException();

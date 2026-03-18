@@ -20,3 +20,7 @@
 # Misc
 #
 **/.DS_Store
+#
+# Docs
+#
+apps/backend/documentation

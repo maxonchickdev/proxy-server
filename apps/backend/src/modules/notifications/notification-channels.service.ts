@@ -1,12 +1,6 @@
 import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../../core/prisma/prisma.service";
-
-export type ChannelType = "TELEGRAM" | "SLACK";
-
-export interface CreateChannelDto {
-	type: ChannelType;
-	config: Record<string, string>;
-}
+import type { CreateChannelDto } from "./dto/create-channel.dto.js";
 
 @Injectable()
 export class NotificationChannelsService {
