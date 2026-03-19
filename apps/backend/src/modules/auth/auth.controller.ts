@@ -34,7 +34,7 @@ export class AuthController {
 	})
 	@ApiCreatedResponse({
 		description: "User successfully registered",
-		schema: { $ref: "#/components/schemas/AuthResponseSchema" },
+		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiConflictResponse({
 		description: "Conflict - Resource already exists or state conflict",
@@ -67,7 +67,7 @@ export class AuthController {
 	})
 	@ApiOkResponse({
 		description: "Successfully authenticated",
-		schema: { $ref: "#/components/schemas/AuthResponseSchema" },
+		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
 		description: "Unauthorized - Missing or invalid authentication",
