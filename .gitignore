@@ -1,26 +1,13 @@
-#
-# Dependencies
-#
 **/node_modules/**
-#
-# Local env files
-#
+
 **/.env*
 !.env.example
-#
-# Build Outputs
-#
+
 **/dist/**
 **/tsconfig.tsbuildinfo
-#
-# Debug
-#
+
 **/npm-debug.log*
-#
-# Misc
-#
+
 **/.DS_Store
-#
-# Docs
-#
+
 apps/backend/documentation

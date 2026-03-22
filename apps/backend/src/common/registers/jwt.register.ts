@@ -4,7 +4,8 @@ import type { JwtType } from "../types/jwt.type.js";
 
 export const jwtRegister = registerAs(ConfigKeyEnum.JWT, (): JwtType => {
 	return {
-		expiresIn: Number(process.env.JWT_EXPIRES_IN) || 0,
-		secret: process.env.JWT_SECRET || "",
+		secret: process.env.JWT_SECRET ?? "",
+		accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? "15m",
+		refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN ?? "7d",
 	};
 });

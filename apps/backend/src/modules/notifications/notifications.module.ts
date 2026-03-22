@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AlertThrottleService } from "./alert-throttle.service";
 import { AlertRulesService } from "./alert-rules.service";
 import { NotificationChannelsService } from "./notification-channels.service";
 import { NotificationsController } from "./notifications.controller";
@@ -12,6 +13,7 @@ import { TelegramService } from "./telegram.service";
 		NotificationsService,
 		NotificationChannelsService,
 		AlertRulesService,
+		AlertThrottleService,
 		TelegramService,
 		SlackService,
 	],

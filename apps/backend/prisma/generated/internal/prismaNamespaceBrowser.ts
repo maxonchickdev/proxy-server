@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  RefreshToken: 'RefreshToken',
   Endpoint: 'Endpoint',
   RequestLog: 'RequestLog',
   NotificationChannel: 'NotificationChannel',
@@ -79,10 +80,27 @@ export const UserScalarFieldEnum = {
   email: 'email',
   passwordHash: 'passwordHash',
   name: 'name',
+  isEmailVerified: 'isEmailVerified',
+  verificationCodeHash: 'verificationCodeHash',
+  verificationExpiresAt: 'verificationExpiresAt',
+  passwordResetCodeHash: 'passwordResetCodeHash',
+  passwordResetExpiresAt: 'passwordResetExpiresAt',
   createdAt: 'createdAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const RefreshTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  isRevoked: 'isRevoked',
+  createdAt: 'createdAt'
+} as const
+
+export type RefreshTokenScalarFieldEnum = (typeof RefreshTokenScalarFieldEnum)[keyof typeof RefreshTokenScalarFieldEnum]
 
 
 export const EndpointScalarFieldEnum = {

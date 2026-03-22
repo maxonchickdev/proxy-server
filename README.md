@@ -13,7 +13,7 @@ A user-centric proxy, monitoring, and analytics platform for external APIs. Regi
 ## Tech Stack
 
 - **Backend**: NestJS, Prisma, PostgreSQL, JWT auth
-- **Frontend**: React, Vite, NodeJS fetch, Recharts, Tailwind CSS
+- **Frontend**: React, Vite, TanStack Query, Recharts, Tailwind CSS
 - **Infra**: Docker Compose (Postgres, Redis)
 
 ## Quick Start
@@ -36,19 +36,23 @@ npm install
 
 Copy `.env.example` to `.env` and set:
 
-```env
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/proxy_server?schema=public
-JWT_SECRET=your-secret-key
-```
+Use `.env.example` as a template. Important variables:
+
+- `POSTGRES_URL` – Prisma connection string
+- `JWT_SECRET` – required; access tokens use `JWT_ACCESS_EXPIRES_IN` (e.g. `15m`), refresh cookies use `JWT_REFRESH_EXPIRES_IN` (e.g. `7d`)
+- `CORS_ORIGIN` – comma-separated allowed origins (e.g. `http://localhost:5173`)
+- `REDIS_URL` or `REDIS_HOST` – optional; enables distributed alert throttling
+- `SMTP_*` – optional; without SMTP, verification/reset codes are logged by the backend
 
 ### 3. Database
 
 Ensure Postgres is running (e.g. `npm run docker:local:up`), then:
 
 ```bash
-cd apps/backend
-npx prisma migrate dev
+npm run db:migrate:dev -w apps/backend
 ```
+
+After pulling changes, apply new migrations (adds email verification, refresh tokens, etc.).
 
 ### 4. Run
 
@@ -69,7 +73,7 @@ npm run dev -w apps/web
 
 ### 5. Test the proxy
 
-1. Register and log in via the web UI.
+1. Register, verify email with the 6-digit code (check server logs if SMTP is not configured), then sign in.
 2. Create an endpoint (e.g. name: "Test", target: `https://httpbin.org`).
 3. Copy the proxy URL (e.g. `http://localhost:3000/r/abc123xyz`).
 4. Send a request: `curl http://localhost:3000/r/abc123xyz/get`
@@ -79,10 +83,19 @@ npm run dev -w apps/web
 
 ### Auth
 
-| Method | Path             | Description                                   |
-| ------ | ---------------- | --------------------------------------------- |
-| POST   | `/auth/register` | Register (body: `email`, `password`, `name?`) |
-| POST   | `/auth/login`    | Login (body: `email`, `password`)             |
+Base path: `/api/v1/auth`. Public routes use `@Public()`; other API routes require `Authorization: Bearer <accessToken>`. Refresh token is an **httpOnly** cookie (`refresh_token`, path `/`).
+
+| Method | Path                       | Description |
+| ------ | -------------------------- | ----------- |
+| POST   | `/auth/sign-up`            | Register; sends verification email (or logs code) |
+| POST   | `/auth/verify-email`       | Body: `email`, `code` — returns access token + sets refresh cookie |
+| POST   | `/auth/resend-verification`| Body: `email` |
+| POST   | `/auth/sign-in`            | Login (verified email only); sets refresh cookie |
+| POST   | `/auth/refresh`            | Rotate refresh cookie; new access token in body |
+| POST   | `/auth/logout`             | Revoke refresh session (Bearer + cookie) |
+| GET    | `/auth/me`                 | Current user |
+| POST   | `/auth/forgot-password`    | Body: `email` |
+| POST   | `/auth/reset-password`     | Body: `email`, `code`, `newPassword` |
 
 ### Endpoints
 

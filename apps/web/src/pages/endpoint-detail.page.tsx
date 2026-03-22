@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
 	Area,
@@ -9,62 +9,32 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { analyticsApi, endpointsApi, logsApi } from "../api/client.api";
-
-type EndpointDto = Awaited<ReturnType<typeof endpointsApi.get>>;
-type SummaryDto = Awaited<ReturnType<typeof analyticsApi.summary>>;
-type TimeseriesDto = Awaited<ReturnType<typeof analyticsApi.timeseries>>;
-type LogsEnvelope = Awaited<ReturnType<typeof logsApi.byEndpoint>>;
+import { RequestLogsTableComponent } from "../components/request-logs-table.component";
+import { ButtonComponent } from "../components/ui/button.component";
+import { CardComponent } from "../components/ui/card.component";
+import {
+	useAnalyticsSummary,
+	useAnalyticsTimeseries,
+} from "../hooks/analytics.hooks";
+import { useEndpointDetail, useUpdateEndpoint } from "../hooks/endpoints.hooks";
+import { useLogsByEndpoint } from "../hooks/logs.hooks";
 
 export const EndpointDetailPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const [copied, setCopied] = useState(false);
-	const [endpoint, setEndpoint] = useState<EndpointDto | undefined>(undefined);
-	const [isLoading, setIsLoading] = useState(true);
-	const [summary, setSummary] = useState<SummaryDto | undefined>(undefined);
-	const [timeseries, setTimeseries] = useState<TimeseriesDto>([]);
-	const [logsData, setLogsData] = useState<LogsEnvelope | undefined>(undefined);
-	const [updatePending, setUpdatePending] = useState(false);
 
-	useEffect(() => {
-		if (!id) return;
-		let cancelled = false;
-		setIsLoading(true);
-		setEndpoint(undefined);
-		endpointsApi
-			.get(id)
-			.then((ep) => {
-				if (!cancelled) setEndpoint(ep);
-			})
-			.catch(() => {
-				if (!cancelled) setEndpoint(undefined);
-			})
-			.finally(() => {
-				if (!cancelled) setIsLoading(false);
-			});
-		return () => {
-			cancelled = true;
-		};
-	}, [id]);
-
-	useEffect(() => {
-		if (!id || !endpoint) return;
-		let cancelled = false;
-		Promise.all([
-			analyticsApi.summary(id),
-			analyticsApi.timeseries(id, { limit: 24 }),
-			logsApi.byEndpoint(id, { limit: 20 }),
-		]).then(([s, ts, lg]) => {
-			if (!cancelled) {
-				setSummary(s);
-				setTimeseries(ts);
-				setLogsData(lg);
-			}
-		});
-		return () => {
-			cancelled = true;
-		};
-	}, [id, endpoint]);
+	const {
+		data: endpoint,
+		isLoading: epLoading,
+		isError: epError,
+		error: epErr,
+	} = useEndpointDetail(id);
+	const { data: summary } = useAnalyticsSummary(id);
+	const { data: timeseries = [] } = useAnalyticsTimeseries(id, {
+		limit: 24,
+	});
+	const { data: logsData } = useLogsByEndpoint(id, { limit: 20 });
+	const updateMutation = useUpdateEndpoint();
 
 	const apiBase =
 		import.meta.env.VITE_API_URL ??
@@ -72,19 +42,25 @@ export const EndpointDetailPage = () => {
 	const proxyUrl = endpoint ? `${apiBase}/r/${endpoint.slug}` : "";
 
 	const copyProxyUrl = () => {
-		navigator.clipboard.writeText(proxyUrl);
+		void navigator.clipboard.writeText(proxyUrl);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	};
 
-	if (!id || (isLoading && !endpoint)) {
+	if (!id) {
+		return <div className="text-white/60">Invalid route</div>;
+	}
+
+	if (epLoading) {
 		return <div className="text-white/60">Loading...</div>;
 	}
 
-	if (!endpoint) {
+	if (epError || !endpoint) {
 		return (
 			<div>
-				<p className="text-white/80">Endpoint not found</p>
+				<p className="text-white/80">
+					{epErr instanceof Error ? epErr.message : "Endpoint not found"}
+				</p>
 				<Link
 					to="/endpoints"
 					className="mt-4 inline-block underline hover:no-underline"
@@ -107,43 +83,35 @@ export const EndpointDetailPage = () => {
 					</Link>
 					<h1 className="mt-2 text-2xl font-medium">{endpoint.name}</h1>
 				</div>
-				<button
-					onClick={async () => {
+				<ButtonComponent
+					type="button"
+					onClick={() => {
 						if (!id) return;
-						setUpdatePending(true);
-						try {
-							const updated = await endpointsApi.update(id, {
-								isActive: !endpoint.isActive,
-							});
-							setEndpoint(updated);
-						} finally {
-							setUpdatePending(false);
-						}
+						void updateMutation.mutateAsync({
+							id,
+							data: { isActive: !endpoint.isActive },
+						});
 					}}
-					disabled={updatePending}
-					className="border border-white/40 px-4 py-2 text-sm font-medium hover:bg-white hover:text-black disabled:opacity-50"
+					disabled={updateMutation.isPending}
 				>
 					{endpoint.isActive ? "Deactivate" : "Activate"}
-				</button>
+				</ButtonComponent>
 			</div>
 
-			<div className="border border-white/20 p-6">
+			<CardComponent>
 				<h3 className="mb-2 text-sm font-medium text-white/60">Proxy URL</h3>
 				<div className="flex items-center gap-2">
 					<code className="flex-1 border border-white/20 bg-black px-3 py-2 font-mono text-sm text-white/80">
 						{proxyUrl}
 					</code>
-					<button
-						onClick={copyProxyUrl}
-						className="border border-white/40 px-3 py-2 text-sm hover:bg-white hover:text-black"
-					>
+					<ButtonComponent type="button" onClick={copyProxyUrl}>
 						{copied ? "Copied!" : "Copy"}
-					</button>
+					</ButtonComponent>
 				</div>
 				<p className="mt-2 text-sm text-white/60">
 					Target: {endpoint.targetUrl}
 				</p>
-			</div>
+			</CardComponent>
 
 			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 				<div className="border border-white/20 p-4">
@@ -175,7 +143,7 @@ export const EndpointDetailPage = () => {
 			</div>
 
 			{timeseries.length > 0 && (
-				<div className="border border-white/20 p-6">
+				<CardComponent>
 					<h3 className="mb-4 text-lg font-medium">Request volume</h3>
 					<div className="h-64">
 						<ResponsiveContainer width="100%" height="100%">
@@ -204,67 +172,13 @@ export const EndpointDetailPage = () => {
 							</AreaChart>
 						</ResponsiveContainer>
 					</div>
-				</div>
+				</CardComponent>
 			)}
 
-			<div className="border border-white/20 p-6">
+			<CardComponent>
 				<h3 className="mb-4 text-lg font-medium">Recent requests</h3>
-				{logsData?.logs && logsData.logs.length > 0 ? (
-					<div className="overflow-x-auto">
-						<table className="w-full">
-							<thead>
-								<tr className="border-b border-white/20">
-									<th className="px-4 py-2 text-left text-sm font-medium text-white/60">
-										Time
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-medium text-white/60">
-										Method
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-medium text-white/60">
-										Path
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-medium text-white/60">
-										Status
-									</th>
-									<th className="px-4 py-2 text-left text-sm font-medium text-white/60">
-										Duration
-									</th>
-								</tr>
-							</thead>
-							<tbody>
-								{logsData.logs.map((log: Record<string, unknown>) => (
-									<tr
-										key={String(log.id)}
-										className="border-b border-white/10 hover:bg-white/5"
-									>
-										<td className="px-4 py-2 text-sm text-white/80">
-											{log.createdAt
-												? new Date(String(log.createdAt)).toLocaleString()
-												: "—"}
-										</td>
-										<td className="px-4 py-2 font-mono text-sm text-white/80">
-											{String(log.method)}
-										</td>
-										<td className="px-4 py-2 font-mono text-sm text-white/60 truncate max-w-[200px]">
-											{String(log.path)}
-										</td>
-										<td className="px-4 py-2 text-sm text-white/80">
-											{String(log.responseStatus ?? "—")}
-										</td>
-										<td className="px-4 py-2 text-sm text-white/60">
-											{log.durationMs != null ? `${log.durationMs}ms` : "—"}
-										</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				) : (
-					<p className="text-white/60">
-						No requests yet. Use the proxy URL to send traffic.
-					</p>
-				)}
-			</div>
+				<RequestLogsTableComponent logs={logsData?.logs ?? []} />
+			</CardComponent>
 		</div>
 	);
 };

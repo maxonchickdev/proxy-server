@@ -12,6 +12,7 @@ export class TelegramService {
 				text: message,
 				parse_mode: "HTML",
 			}),
+			signal: AbortSignal.timeout(10_000),
 		});
 		if (!res.ok) {
 			throw new Error(`Telegram API error: ${res.status}`);

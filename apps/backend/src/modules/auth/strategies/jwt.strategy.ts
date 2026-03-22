@@ -12,10 +12,9 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
 		@Inject(AuthService) private readonly authService: AuthService,
 		@Inject(ConfigService) readonly configService: ConfigService,
 	) {
-		const secret =
-			configService.get<string>(`${ConfigKeyEnum.JWT}.secret`) ??
-			process.env.JWT_SECRET ??
-			"default-secret-change-me";
+		const secret = configService.getOrThrow<string>(
+			`${ConfigKeyEnum.JWT}.secret`,
+		);
 		super({
 			jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 			ignoreExpiration: false,

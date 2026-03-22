@@ -1,11 +1,4 @@
-import {
-	Controller,
-	Get,
-	Inject,
-	Param,
-	Query,
-	UseGuards,
-} from "@nestjs/common";
+import { Controller, Get, Inject, Param, Query } from "@nestjs/common";
 import {
 	ApiBearerAuth,
 	ApiForbiddenResponse,
@@ -19,14 +12,12 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { AnalyticsService } from "./analytics.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 @ApiTags("Analytics")
 @ApiBearerAuth("Bearer")
 @Controller("analytics")
-@UseGuards(JwtAuthGuard)
 export class AnalyticsController {
 	constructor(
 		@Inject(AnalyticsService)

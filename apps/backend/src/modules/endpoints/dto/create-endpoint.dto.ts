@@ -15,7 +15,7 @@ export class CreateEndpointDto {
 	})
 	@IsString()
 	@MinLength(1, { message: "Name is required" })
-	name: string;
+	name!: string;
 
 	@ApiProperty({
 		description: "Target URL to proxy requests to",
@@ -23,7 +23,7 @@ export class CreateEndpointDto {
 		format: "uri",
 	})
 	@IsUrl({}, { message: "Target URL must be a valid URL" })
-	targetUrl: string;
+	targetUrl!: string;
 
 	@ApiProperty({
 		description: "Whether the endpoint is active and accepting requests",
@@ -33,11 +33,5 @@ export class CreateEndpointDto {
 	})
 	@IsOptional()
 	@IsBoolean()
-	isActive: boolean;
-
-	constructor(name: string, targetUrl: string, isActive: boolean) {
-		this.name = name;
-		this.targetUrl = targetUrl;
-		this.isActive = isActive;
-	}
+	isActive?: boolean;
 }

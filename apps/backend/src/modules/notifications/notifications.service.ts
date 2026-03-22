@@ -1,33 +1,25 @@
-import { Inject, Injectable } from "@nestjs/common";
+import {
+	BadRequestException,
+	Inject,
+	Injectable,
+	Logger,
+} from "@nestjs/common";
 import type { NotificationChannel, RequestLog } from "@prisma/generated/client";
 import { PrismaService } from "../../core/prisma/prisma.service";
+import { AlertThrottleService } from "./alert-throttle.service";
 import { SlackService } from "./slack.service";
 import { TelegramService } from "./telegram.service";
 
-const THROTTLE_MS = 5 * 60 * 1000;
-const throttleMap = new Map<string, number>();
-
-function throttleKey(endpointId: string, channelId: string): string {
-	return `${endpointId}:${channelId}`;
-}
-
-function shouldThrottle(endpointId: string, channelId: string): boolean {
-	const key = throttleKey(endpointId, channelId);
-	const last = throttleMap.get(key);
-	if (!last) return false;
-	return Date.now() - last < THROTTLE_MS;
-}
-
-function markThrottle(endpointId: string, channelId: string) {
-	throttleMap.set(throttleKey(endpointId, channelId), Date.now());
-}
-
 @Injectable()
 export class NotificationsService {
+	private readonly logger = new Logger(NotificationsService.name);
+
 	constructor(
 		@Inject(PrismaService) private readonly prisma: PrismaService,
 		@Inject(TelegramService) private readonly telegram: TelegramService,
 		@Inject(SlackService) private readonly slack: SlackService,
+		@Inject(AlertThrottleService)
+		private readonly throttle: AlertThrottleService,
 	) {}
 
 	async evaluateAndNotify(
@@ -41,16 +33,18 @@ export class NotificationsService {
 
 		for (const rule of rules) {
 			if (!rule.channel.isActive) continue;
-			if (shouldThrottle(endpointId, rule.channelId)) continue;
+			if (await this.throttle.isThrottled(endpointId, rule.channelId)) continue;
 
 			const matches = this.evaluateCondition(rule.condition, log);
 			if (!matches) continue;
 
 			const message = this.formatAlert(log, rule.condition);
-			await this.sendToChannel(rule.channel, message).catch((err) =>
-				console.error("Notification failed:", err),
+			await this.sendToChannel(rule.channel, message).catch((err: unknown) =>
+				this.logger.error(
+					`Notification failed: ${err instanceof Error ? err.message : err}`,
+				),
 			);
-			markThrottle(endpointId, rule.channelId);
+			await this.throttle.markSent(endpointId, rule.channelId);
 		}
 	}
 
@@ -83,14 +77,26 @@ export class NotificationsService {
 		channel: NotificationChannel,
 		message: string,
 	): Promise<void> {
-		const config = channel.config as Record<string, string>;
+		const config = channel.config as Record<string, unknown>;
 		if (channel.type === "TELEGRAM") {
-			await this.telegram.send(
-				{ botToken: config.botToken!, chatId: config.chatId! },
-				message,
-			);
+			const botToken =
+				typeof config.botToken === "string" ? config.botToken : "";
+			const chatId = typeof config.chatId === "string" ? config.chatId : "";
+			if (!botToken || !chatId) {
+				throw new BadRequestException(
+					"Telegram channel requires botToken and chatId in config",
+				);
+			}
+			await this.telegram.send({ botToken, chatId }, message);
 		} else if (channel.type === "SLACK") {
-			await this.slack.send({ webhookUrl: config.webhookUrl! }, message);
+			const webhookUrl =
+				typeof config.webhookUrl === "string" ? config.webhookUrl : "";
+			if (!webhookUrl) {
+				throw new BadRequestException(
+					"Slack channel requires webhookUrl in config",
+				);
+			}
+			await this.slack.send({ webhookUrl }, message);
 		}
 	}
 }

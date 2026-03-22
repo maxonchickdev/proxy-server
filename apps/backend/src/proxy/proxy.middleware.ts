@@ -1,4 +1,9 @@
-import { Inject, Injectable, type NestMiddleware } from "@nestjs/common";
+import {
+	Inject,
+	Injectable,
+	Logger,
+	type NestMiddleware,
+} from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import type { NextFunction, Request, Response } from "express";
 import { ConfigKeyEnum } from "../common/enums/config.enum";
@@ -8,6 +13,8 @@ const BODY_LIMIT = 1024 * 1024;
 
 @Injectable()
 export class ProxyMiddleware implements NestMiddleware {
+	private readonly logger = new Logger(ProxyMiddleware.name);
+
 	constructor(
 		@Inject(ProxyService) private readonly proxyService: ProxyService,
 		@Inject(ConfigService) private readonly config: ConfigService,
@@ -109,13 +116,18 @@ export class ProxyMiddleware implements NestMiddleware {
 					req.headers as Record<string, string | string[] | undefined>,
 				),
 			});
-		} catch {
+		} catch (err: unknown) {
 			const durationMs = Date.now() - startTime;
 			const status = 502;
 			const body = {
 				error: "Bad Gateway",
 				message: "Could not reach target",
 			};
+
+			this.logger.error(
+				`Upstream fetch failed: ${err instanceof Error ? err.message : err}`,
+				err instanceof Error ? err.stack : undefined,
+			);
 
 			res.status(status).json(body);
 

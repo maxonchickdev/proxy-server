@@ -7,7 +7,6 @@ import {
 	Param,
 	Patch,
 	Post,
-	UseGuards,
 } from "@nestjs/common";
 import {
 	ApiBearerAuth,
@@ -24,7 +23,6 @@ import {
 } from "@nestjs/swagger";
 import type { CurrentUserPayload } from "../../common/decorators/current-user.decorator";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import type { CreateEndpointDto } from "./dto/create-endpoint.dto";
 import type { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import { EndpointsService } from "./endpoints.service";
@@ -33,7 +31,6 @@ import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.s
 @ApiTags("Endpoints")
 @ApiBearerAuth("Bearer")
 @Controller("endpoints")
-@UseGuards(JwtAuthGuard)
 export class EndpointsController {
 	constructor(
 		@Inject(EndpointsService)

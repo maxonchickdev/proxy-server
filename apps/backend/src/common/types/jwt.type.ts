@@ -1,4 +1,5 @@
 export type JwtType = {
 	secret: string;
-	expiresIn: number;
+	accessExpiresIn: string;
+	refreshExpiresIn: string;
 };

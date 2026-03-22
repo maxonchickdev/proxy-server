@@ -11,17 +11,38 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String  @map("password_hash")
-  name         String?
-  createdAt    DateTime @default(now()) @map("created_at")
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  passwordHash           String    @map("password_hash")
+  name                   String?
+  isEmailVerified        Boolean   @default(false) @map("is_email_verified")
+  verificationCodeHash   String?   @map("verification_code_hash")
+  verificationExpiresAt  DateTime? @map("verification_expires_at")
+  passwordResetCodeHash  String?   @map("password_reset_code_hash")
+  passwordResetExpiresAt DateTime? @map("password_reset_expires_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
 
-  endpoints           Endpoint[]
+  endpoints            Endpoint[]
   notificationChannels NotificationChannel[]
-  alertRules          AlertRule[]
+  alertRules           AlertRule[]
+  refreshTokens        RefreshToken[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  tokenHash String   @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at")
+  isRevoked Boolean  @default(false) @map("is_revoked")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
 }
 
 model Endpoint {
@@ -33,7 +54,7 @@ model Endpoint {
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   requestLogs RequestLog[]
   alertRules  AlertRule[]
 
@@ -65,12 +86,12 @@ model RequestLog {
 model NotificationChannel {
   id        String   @id @default(uuid())
   userId    String   @map("user_id")
-  type      String   // TELEGRAM | SLACK
-  config    Json     // { botToken, chatId } or { webhookUrl }
+  type      String // TELEGRAM | SLACK
+  config    Json // { botToken, chatId } or { webhookUrl }
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   alertRules AlertRule[]
 
   @@map("notification_channels")
@@ -80,14 +101,14 @@ model AlertRule {
   id         String   @id @default(uuid())
   endpointId String   @map("endpoint_id")
   userId     String   @map("user_id")
-  channelId String   @map("channel_id")
-  condition  String   // e.g. "status >= 500", "latency > 2000"
+  channelId  String   @map("channel_id")
+  condition  String // e.g. "status >= 500", "latency > 2000"
   isActive   Boolean  @default(true) @map("is_active")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  endpoint   Endpoint           @relation(fields: [endpointId], references: [id], onDelete: Cascade)
-  user       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  channel    NotificationChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  endpoint Endpoint            @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+  user     User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  channel  NotificationChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
   @@map("alert_rules")
 }

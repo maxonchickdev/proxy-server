@@ -8,7 +8,7 @@ export class CreateAlertRuleDto {
 		format: "uuid",
 	})
 	@IsUUID()
-	endpointId: string;
+	endpointId!: string;
 
 	@ApiProperty({
 		description: "ID of the notification channel to use",
@@ -16,7 +16,7 @@ export class CreateAlertRuleDto {
 		format: "uuid",
 	})
 	@IsUUID()
-	channelId: string;
+	channelId!: string;
 
 	@ApiProperty({
 		description:
@@ -26,11 +26,5 @@ export class CreateAlertRuleDto {
 	})
 	@IsString()
 	@MinLength(1, { message: "Condition is required" })
-	condition: string;
-
-	constructor(endpointId: string, channelId: string, condition: string) {
-		this.endpointId = endpointId;
-		this.channelId = channelId;
-		this.condition = condition;
-	}
+	condition!: string;
 }

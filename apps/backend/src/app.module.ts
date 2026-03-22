@@ -3,12 +3,15 @@ import {
 	Module,
 	type NestModule,
 } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { ConfigKeyEnum } from "./common/enums/config.enum";
 import { CoreModule } from "./core/core.module";
 import { PrismaModule } from "./core/prisma/prisma.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
+import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 import { EndpointsModule } from "./modules/endpoints/endpoints.module";
 import { LogsModule } from "./modules/logs/logs.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
@@ -17,11 +20,17 @@ import { ProxyModule } from "./proxy/proxy.module";
 
 @Module({
 	imports: [
-		ThrottlerModule.forRoot([
-			{ name: "short", ttl: 1000, limit: 10 },
-			{ name: "medium", ttl: 10000, limit: 50 },
-			{ name: "long", ttl: 60000, limit: 200 },
-		]),
+		CoreModule,
+		ThrottlerModule.forRootAsync({
+			inject: [ConfigService],
+			useFactory: (config: ConfigService) => {
+				const ttl =
+					config.get<number>(`${ConfigKeyEnum.RATE_LIMIT}.ttl`) ?? 60_000;
+				const limit =
+					config.get<number>(`${ConfigKeyEnum.RATE_LIMIT}.limit`) ?? 100;
+				return [{ name: "default", ttl, limit }];
+			},
+		}),
 		PrismaModule,
 		AuthModule,
 		EndpointsModule,
@@ -29,9 +38,11 @@ import { ProxyModule } from "./proxy/proxy.module";
 		AnalyticsModule,
 		NotificationsModule,
 		ProxyModule,
-		CoreModule,
 	],
-	providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+	providers: [
+		{ provide: APP_GUARD, useClass: ThrottlerGuard },
+		{ provide: APP_GUARD, useClass: JwtAuthGuard },
+	],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {

@@ -6,7 +6,6 @@ import {
 	Inject,
 	Param,
 	Post,
-	UseGuards,
 } from "@nestjs/common";
 import {
 	ApiBearerAuth,
@@ -22,17 +21,15 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { AlertRulesService } from "./alert-rules.service";
-import type { CreateAlertRuleDto } from "./dto/create-alert-rule.dto.js";
-import type { CreateChannelDto } from "./dto/create-channel.dto.js";
+import type { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
+import type { CreateChannelDto } from "./dto/create-channel.dto";
 import { NotificationChannelsService } from "./notification-channels.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 @ApiTags("Notifications")
 @ApiBearerAuth("Bearer")
 @Controller("notifications")
-@UseGuards(JwtAuthGuard)
 export class NotificationsController {
 	constructor(
 		@Inject(NotificationChannelsService)

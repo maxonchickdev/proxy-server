@@ -24,6 +24,9 @@ export const LayoutComponent = () => {
 						<Link to="/endpoints" className="text-white/60 hover:text-white">
 							Endpoints
 						</Link>
+						<Link to="/logs" className="text-white/60 hover:text-white">
+							Logs
+						</Link>
 						<Link to="/settings" className="text-white/60 hover:text-white">
 							Settings
 						</Link>

@@ -7,4 +7,5 @@ export enum ConfigKeyEnum {
 	PROXY = "proxy",
 	RATE_LIMIT = "rate-limit",
 	SWAGGER = "swagger",
+	EMAIL = "email",
 }

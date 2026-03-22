@@ -5,6 +5,7 @@ import { appRegister } from "src/common/registers/app.register";
 import { cacheRegister } from "src/common/registers/cache.register";
 import { dbRegister } from "src/common/registers/db.register";
 import { environmentRegister } from "src/common/registers/environment.register";
+import { emailRegister } from "src/common/registers/email.register";
 import { jwtRegister } from "src/common/registers/jwt.register";
 import { proxyRegister } from "src/common/registers/proxy.register";
 import { rateLimitRegister } from "src/common/registers/rate-limit.register";
@@ -21,6 +22,7 @@ import { swaggerRegister } from "src/common/registers/swagger.register";
 				environmentRegister,
 				appRegister,
 				jwtRegister,
+				emailRegister,
 				cacheRegister,
 				rateLimitRegister,
 				proxyRegister,

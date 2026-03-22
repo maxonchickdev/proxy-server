@@ -422,10 +422,6 @@ export type EndpointUncheckedUpdateManyWithoutUserNestedInput = {
   deleteMany?: Prisma.EndpointScalarWhereInput | Prisma.EndpointScalarWhereInput[]
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
 export type EndpointCreateNestedOneWithoutRequestLogsInput = {
   create?: Prisma.XOR<Prisma.EndpointCreateWithoutRequestLogsInput, Prisma.EndpointUncheckedCreateWithoutRequestLogsInput>
   connectOrCreate?: Prisma.EndpointCreateOrConnectWithoutRequestLogsInput

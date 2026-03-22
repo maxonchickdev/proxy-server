@@ -1,11 +1,4 @@
-import {
-	Controller,
-	Get,
-	Inject,
-	Param,
-	Query,
-	UseGuards,
-} from "@nestjs/common";
+import { Controller, Get, Inject, Param, Query } from "@nestjs/common";
 import {
 	ApiBearerAuth,
 	ApiForbiddenResponse,
@@ -21,14 +14,12 @@ import {
 } from "@nestjs/swagger";
 import type { CurrentUserPayload } from "../../common/decorators/current-user.decorator";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { LogsService } from "./logs.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 @ApiTags("Logs")
 @ApiBearerAuth("Bearer")
 @Controller("logs")
-@UseGuards(JwtAuthGuard)
 export class LogsController {
 	constructor(@Inject(LogsService) private readonly logsService: LogsService) {}
 

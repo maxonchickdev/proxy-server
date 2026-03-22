@@ -67,47 +67,38 @@ export class AnalyticsService {
 
 		const limit = Math.min(options.limit ?? 24, 168);
 		const bucket = options.bucket ?? "hour";
+		const truncUnit = bucket === "hour" ? "hour" : "day";
 
-		const logs = await this.prisma.requestLog.findMany({
-			where: { endpointId },
-			select: {
-				createdAt: true,
-				durationMs: true,
-				responseStatus: true,
-			},
-			orderBy: { createdAt: "desc" },
-			take: 10000,
-		});
-
-		const buckets = new Map<string, { count: number; totalLatency: number }>();
-		const formatKey = (d: Date) => {
-			if (bucket === "hour") {
-				d.setMinutes(0, 0, 0);
-				return d.toISOString().slice(0, 13);
-			}
-			d.setHours(0, 0, 0, 0);
-			return d.toISOString().slice(0, 10);
+		type Row = {
+			bucket: Date;
+			requests: bigint;
+			avgLatencyMs: bigint | null;
 		};
 
-		for (const log of logs) {
-			const key = formatKey(new Date(log.createdAt));
-			const cur = buckets.get(key) ?? { count: 0, totalLatency: 0 };
-			cur.count += 1;
-			cur.totalLatency += log.durationMs ?? 0;
-			buckets.set(key, cur);
-		}
+		const rows = await this.prisma.$queryRawUnsafe<Row[]>(
+			`SELECT * FROM (
+				SELECT date_trunc($1::text, "created_at") AS bucket,
+					COUNT(*)::bigint AS requests,
+					COALESCE(ROUND(AVG("duration_ms"))::bigint, 0) AS "avgLatencyMs"
+				FROM "request_logs"
+				WHERE "endpoint_id" = $2::uuid
+				GROUP BY 1
+				ORDER BY 1 DESC
+				LIMIT $3
+			) sub ORDER BY 1 ASC`,
+			truncUnit,
+			endpointId,
+			limit,
+		);
 
-		const sorted = [...buckets.entries()]
-			.sort(([a], [b]) => a.localeCompare(b))
-			.slice(-limit)
-			.map(([bucketKey, data]) => ({
-				bucket: bucketKey,
-				requests: data.count,
-				avgLatencyMs:
-					data.count > 0 ? Math.round(data.totalLatency / data.count) : 0,
-			}));
-
-		return sorted;
+		return rows.map((r) => ({
+			bucket:
+				bucket === "hour"
+					? r.bucket.toISOString().slice(0, 13)
+					: r.bucket.toISOString().slice(0, 10),
+			requests: Number(r.requests),
+			avgLatencyMs: Number(r.avgLatencyMs ?? 0),
+		}));
 	}
 
 	async getBreakdown(endpointId: string, userId: string) {
@@ -127,14 +118,14 @@ export class AnalyticsService {
 		]);
 
 		return {
-			byMethod: byMethod.map((m: { method: any; _count: { id: any } }) => ({
+			byMethod: byMethod.map((m) => ({
 				method: m.method,
 				count: m._count.id,
 			})),
 			byStatus: byStatus
 				.filter((s) => s.responseStatus != null)
-				.map((s: { responseStatus: any; _count: { id: any } }) => ({
-					status: s.responseStatus,
+				.map((s) => ({
+					status: s.responseStatus as number,
 					count: s._count.id,
 				})),
 		};

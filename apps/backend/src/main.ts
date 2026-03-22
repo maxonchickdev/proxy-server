@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import cookieParser from "cookie-parser";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { ConfigKeyEnum } from "./common/enums/config.enum";
@@ -22,7 +23,12 @@ const logger: Logger = new Logger("Bootstrap");
 (async () => {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+	app.use(cookieParser());
+
 	const configService = app.get(ConfigService);
+	const corsOrigins = configService.getOrThrow<string[]>(
+		`${ConfigKeyEnum.APP}.corsOrigins`,
+	);
 	const isProduction =
 		configService.getOrThrow<string>(`${ConfigKeyEnum.ENVIRONMENT}.nodeEnv`) ===
 		EnvironmentsEnum.PRODUCTION;
@@ -64,7 +70,7 @@ const logger: Logger = new Logger("Bootstrap");
 				{
 					bearerFormat: "JWT",
 					description:
-						"Enter JWT token obtained from /auth/login or /auth/register",
+						"Enter JWT access token from /auth/sign-in, /auth/verify-email, or /auth/refresh",
 					in: "header",
 					name: "Authorization",
 					scheme: "bearer",
@@ -120,7 +126,10 @@ const logger: Logger = new Logger("Bootstrap");
 		}),
 	);
 
-	app.enableCors({ origin: true, credentials: true });
+	app.enableCors({
+		origin: corsOrigins,
+		credentials: true,
+	});
 
 	app.use(
 		helmet({

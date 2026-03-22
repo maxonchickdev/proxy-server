@@ -5,9 +5,11 @@ import type { RateLimitType } from "../types/rate-limiting.type.js";
 export const rateLimitRegister = registerAs(
 	ConfigKeyEnum.RATE_LIMIT,
 	(): RateLimitType => {
+		const ttl = Number(process.env.THROTTLE_TTL_MS);
+		const limit = Number(process.env.THROTTLE_LIMIT);
 		return {
-			limit: Number(process.env.THROTTLE_LIMIT) || 0,
-			ttl: Number(process.env.THROTTLE_TTL) || 0,
+			ttl: Number.isFinite(ttl) && ttl > 0 ? ttl : 60_000,
+			limit: Number.isFinite(limit) && limit > 0 ? limit : 100,
 		};
 	},
 );

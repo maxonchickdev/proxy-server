@@ -1,0 +1,1210 @@
+{
+	"openapi": "3.0.0",
+	"paths": {
+		"/api/v1/auth/sign-up": {
+			"post": {
+				"description": "Sends a verification code to email. Use verify-email to complete registration.",
+				"operationId": "AuthController_signUp",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/SignUpDto" }
+						}
+					}
+				},
+				"responses": {
+					"201": { "description": "User created; check email for code" },
+					"409": {
+						"description": "Conflict - Resource already exists or state conflict",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [],
+				"summary": "Register a new user",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/verify-email": {
+			"post": {
+				"operationId": "AuthController_verifyEmail",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/VerifyEmailDto" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Verified; tokens issued",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/AuthResponseSchema" }
+							}
+						}
+					},
+					"401": {
+						"description": "Invalid or expired code",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [],
+				"summary": "Verify email with 6-digit code",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/resend-verification": {
+			"post": {
+				"operationId": "AuthController_resendVerification",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/ResendVerificationDto" }
+						}
+					}
+				},
+				"responses": { "200": { "description": "Generic success message" } },
+				"security": [],
+				"summary": "Resend verification code",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/sign-in": {
+			"post": {
+				"description": "Requires verified email. Refresh token is set as httpOnly cookie.",
+				"operationId": "AuthController_signIn",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/SignInDto" }
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Successfully authenticated",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/AuthResponseSchema" }
+							}
+						}
+					},
+					"401": {
+						"description": "Unauthorized - Missing or invalid authentication",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"403": {
+						"description": "Email not verified",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [],
+				"summary": "Authenticate user",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/forgot-password": {
+			"post": {
+				"operationId": "AuthController_forgotPassword",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/ForgotPasswordDto" }
+						}
+					}
+				},
+				"responses": {
+					"200": { "description": "Generic message (no email enumeration)" }
+				},
+				"security": [],
+				"summary": "Request password reset code",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/reset-password": {
+			"post": {
+				"operationId": "AuthController_resetPassword",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/ResetPasswordDto" }
+						}
+					}
+				},
+				"responses": {
+					"200": { "description": "Password reset" },
+					"401": {
+						"description": "Invalid or expired code",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [],
+				"summary": "Reset password with code",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/refresh": {
+			"post": {
+				"description": "Uses httpOnly refresh cookie; rotates refresh token.",
+				"operationId": "AuthController_refresh",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "New access token",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/AuthResponseSchema" }
+							}
+						}
+					},
+					"401": {
+						"description": "Invalid session",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [],
+				"summary": "Refresh access token",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/logout": {
+			"post": {
+				"operationId": "AuthController_logout",
+				"parameters": [],
+				"responses": { "200": { "description": "Logged out" } },
+				"security": [],
+				"summary": "Revoke refresh session",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/auth/me": {
+			"get": {
+				"operationId": "AuthController_me",
+				"parameters": [],
+				"responses": {
+					"200": { "description": "Current user profile" },
+					"401": {
+						"description": "Unauthorized",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [],
+				"summary": "Current user",
+				"tags": ["Auth"]
+			}
+		},
+		"/api/v1/endpoints": {
+			"post": {
+				"description": "Creates a new proxy endpoint. A unique slug is auto-generated.",
+				"operationId": "EndpointsController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/Function" }
+						}
+					}
+				},
+				"responses": {
+					"201": { "description": "Endpoint created successfully" },
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Create endpoint",
+				"tags": ["Endpoints"]
+			},
+			"get": {
+				"description": "Returns all proxy endpoints for the authenticated user.",
+				"operationId": "EndpointsController_findAll",
+				"parameters": [],
+				"responses": {
+					"200": { "description": "List of endpoints" },
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "List endpoints",
+				"tags": ["Endpoints"]
+			}
+		},
+		"/api/v1/endpoints/{id}": {
+			"get": {
+				"description": "Returns a single endpoint by ID. User must own the endpoint.",
+				"operationId": "EndpointsController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Endpoint details" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found - Resource does not exist",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Get endpoint by ID",
+				"tags": ["Endpoints"]
+			},
+			"patch": {
+				"description": "Updates an existing endpoint. Only provided fields are updated.",
+				"operationId": "EndpointsController_update",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/Function" }
+						}
+					}
+				},
+				"responses": {
+					"200": { "description": "Endpoint updated successfully" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found - Resource does not exist",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Update endpoint",
+				"tags": ["Endpoints"]
+			},
+			"delete": {
+				"description": "Permanently deletes an endpoint and its associated data.",
+				"operationId": "EndpointsController_remove",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Endpoint deleted successfully" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found - Resource does not exist",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Delete endpoint",
+				"tags": ["Endpoints"]
+			}
+		},
+		"/api/v1/logs/endpoint/{endpointId}": {
+			"get": {
+				"description": "Returns request logs for an endpoint with optional filtering.",
+				"operationId": "LogsController_findByEndpoint",
+				"parameters": [
+					{
+						"name": "endpointId",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					},
+					{
+						"name": "limit",
+						"required": false,
+						"in": "query",
+						"description": "Max results (default: 50)",
+						"schema": { "type": "string" }
+					},
+					{
+						"name": "offset",
+						"required": false,
+						"in": "query",
+						"description": "Pagination offset",
+						"schema": { "type": "string" }
+					},
+					{
+						"name": "method",
+						"required": false,
+						"in": "query",
+						"description": "Filter by HTTP method",
+						"schema": { "type": "string" }
+					},
+					{
+						"name": "status",
+						"required": false,
+						"in": "query",
+						"description": "Filter by response status",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "List of request logs" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "List logs by endpoint",
+				"tags": ["Logs"]
+			}
+		},
+		"/api/v1/logs/{id}": {
+			"get": {
+				"description": "Returns a single request log by ID.",
+				"operationId": "LogsController_findOne",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "Log UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Request log details" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"404": {
+						"description": "Not Found - Resource does not exist",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Get log by ID",
+				"tags": ["Logs"]
+			}
+		},
+		"/api/v1/analytics/{endpointId}/summary": {
+			"get": {
+				"description": "Returns aggregated analytics for an endpoint (status counts, latency, etc.).",
+				"operationId": "AnalyticsController_getSummary",
+				"parameters": [
+					{
+						"name": "endpointId",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Analytics summary" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Get analytics summary",
+				"tags": ["Analytics"]
+			}
+		},
+		"/api/v1/analytics/{endpointId}/timeseries": {
+			"get": {
+				"description": "Returns time-bucketed analytics for charts.",
+				"operationId": "AnalyticsController_getTimeseries",
+				"parameters": [
+					{
+						"name": "endpointId",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					},
+					{
+						"name": "bucket",
+						"required": false,
+						"in": "query",
+						"schema": { "enum": ["hour", "day"], "type": "string" }
+					},
+					{
+						"name": "limit",
+						"required": false,
+						"in": "query",
+						"description": "Max data points",
+						"schema": { "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Timeseries data" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Get timeseries data",
+				"tags": ["Analytics"]
+			}
+		},
+		"/api/v1/analytics/{endpointId}/breakdown": {
+			"get": {
+				"description": "Returns analytics broken down by status code and HTTP method.",
+				"operationId": "AnalyticsController_getBreakdown",
+				"parameters": [
+					{
+						"name": "endpointId",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Breakdown data" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Get breakdown by status/method",
+				"tags": ["Analytics"]
+			}
+		},
+		"/api/v1/notifications/channels": {
+			"post": {
+				"description": "Creates a Telegram or Slack notification channel.",
+				"operationId": "NotificationsController_createChannel",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/Function" }
+						}
+					}
+				},
+				"responses": {
+					"201": { "description": "Channel created successfully" },
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Create notification channel",
+				"tags": ["Notifications"]
+			},
+			"get": {
+				"description": "Returns all active notification channels for the user.",
+				"operationId": "NotificationsController_listChannels",
+				"parameters": [],
+				"responses": {
+					"200": { "description": "List of channels" },
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "List notification channels",
+				"tags": ["Notifications"]
+			}
+		},
+		"/api/v1/notifications/channels/{id}": {
+			"delete": {
+				"description": "Soft-deletes a notification channel (sets isActive to false).",
+				"operationId": "NotificationsController_deleteChannel",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "Channel UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Channel deleted successfully" },
+					"404": {
+						"description": "Not Found - Resource does not exist",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Delete notification channel",
+				"tags": ["Notifications"]
+			}
+		},
+		"/api/v1/notifications/alert-rules": {
+			"post": {
+				"description": "Creates an alert rule linking an endpoint to a notification channel.",
+				"operationId": "NotificationsController_createAlertRule",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": { "$ref": "#/components/schemas/Function" }
+						}
+					}
+				},
+				"responses": {
+					"201": { "description": "Alert rule created successfully" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Create alert rule",
+				"tags": ["Notifications"]
+			}
+		},
+		"/api/v1/notifications/alert-rules/endpoint/{endpointId}": {
+			"get": {
+				"description": "Returns all alert rules for a given endpoint.",
+				"operationId": "NotificationsController_getAlertRules",
+				"parameters": [
+					{
+						"name": "endpointId",
+						"required": true,
+						"in": "path",
+						"description": "Endpoint UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "List of alert rules" },
+					"403": {
+						"description": "Forbidden - Insufficient permissions",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "List alert rules for endpoint",
+				"tags": ["Notifications"]
+			}
+		},
+		"/api/v1/notifications/alert-rules/{id}": {
+			"delete": {
+				"description": "Permanently deletes an alert rule.",
+				"operationId": "NotificationsController_deleteAlertRule",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"description": "Alert rule UUID",
+						"schema": { "format": "uuid", "type": "string" }
+					}
+				],
+				"responses": {
+					"200": { "description": "Alert rule deleted successfully" },
+					"404": {
+						"description": "Not Found - Resource does not exist",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"429": {
+						"description": "Too Many Requests - Rate limit exceeded",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					},
+					"500": {
+						"description": "Internal Server Error - Unexpected server error",
+						"content": {
+							"application/json": {
+								"schema": { "$ref": "#/components/schemas/ErrorResponseSchema" }
+							}
+						}
+					}
+				},
+				"security": [{ "Bearer": [] }],
+				"summary": "Delete alert rule",
+				"tags": ["Notifications"]
+			}
+		}
+	},
+	"info": {
+		"title": "Proxy Server API",
+		"description": "API documentation for the Proxy Server backend",
+		"version": "1.0",
+		"contact": { "name": "Proxy Server", "url": "", "email": "" },
+		"license": { "name": "ISC", "url": "" }
+	},
+	"tags": [
+		{
+			"name": "Auth",
+			"description": "Authentication endpoints (no Bearer token required)"
+		},
+		{ "name": "Endpoints", "description": "Proxy endpoint management" },
+		{ "name": "Analytics", "description": "Request analytics and metrics" },
+		{ "name": "Logs", "description": "Request log access" },
+		{
+			"name": "Notifications",
+			"description": "Alert rules and notification channels"
+		}
+	],
+	"servers": [
+		{ "url": "http://localhost:3000", "description": "development" },
+		{ "url": "http://lvh.me:3000", "description": "production" }
+	],
+	"components": {
+		"securitySchemes": {
+			"Bearer": {
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"description": "Enter JWT access token from /auth/sign-in, /auth/verify-email, or /auth/refresh",
+				"in": "header",
+				"name": "Authorization",
+				"type": "http"
+			}
+		},
+		"schemas": {
+			"AuthUserSchema": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"description": "Unique user identifier (UUID)",
+						"example": "550e8400-e29b-41d4-a716-446655440000",
+						"format": "uuid"
+					},
+					"email": {
+						"type": "string",
+						"description": "User email address",
+						"example": "user@example.com",
+						"format": "email"
+					},
+					"name": {
+						"type": "object",
+						"description": "User display name",
+						"example": "John Doe",
+						"nullable": true
+					}
+				},
+				"required": ["id", "email", "name"]
+			},
+			"AuthResponseSchema": {
+				"type": "object",
+				"properties": {
+					"accessToken": {
+						"type": "string",
+						"description": "JWT access token for authenticated requests",
+						"example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+					},
+					"user": {
+						"description": "Authenticated user details",
+						"allOf": [{ "$ref": "#/components/schemas/AuthUserSchema" }]
+					}
+				},
+				"required": ["accessToken", "user"]
+			},
+			"SignUpDto": {
+				"type": "object",
+				"properties": {
+					"email": {
+						"type": "string",
+						"description": "User email address",
+						"example": "user@example.com",
+						"format": "email"
+					},
+					"password": {
+						"type": "string",
+						"description": "Password (minimum 8 characters)",
+						"example": "SecureP@ssw0rd",
+						"minLength": 8
+					},
+					"name": {
+						"type": "object",
+						"description": "Optional display name",
+						"example": "John Doe"
+					}
+				},
+				"required": ["email", "password"]
+			},
+			"VerifyEmailDto": {
+				"type": "object",
+				"properties": {
+					"email": { "type": "string", "example": "user@example.com" },
+					"code": {
+						"type": "string",
+						"example": "123456",
+						"description": "6-digit code"
+					}
+				},
+				"required": ["email", "code"]
+			},
+			"ResendVerificationDto": {
+				"type": "object",
+				"properties": {
+					"email": { "type": "string", "example": "user@example.com" }
+				},
+				"required": ["email"]
+			},
+			"SignInDto": {
+				"type": "object",
+				"properties": {
+					"email": {
+						"type": "string",
+						"description": "User email address",
+						"example": "user@example.com",
+						"format": "email"
+					},
+					"password": {
+						"type": "string",
+						"description": "User password",
+						"example": "SecureP@ssw0rd"
+					}
+				},
+				"required": ["email", "password"]
+			},
+			"ForgotPasswordDto": {
+				"type": "object",
+				"properties": {
+					"email": { "type": "string", "example": "user@example.com" }
+				},
+				"required": ["email"]
+			},
+			"ResetPasswordDto": {
+				"type": "object",
+				"properties": {
+					"email": { "type": "string", "example": "user@example.com" },
+					"code": { "type": "string", "example": "123456" },
+					"newPassword": { "type": "string", "minLength": 8 }
+				},
+				"required": ["email", "code", "newPassword"]
+			},
+			"Function": { "type": "object", "properties": {} },
+			"ErrorResponseSchema": {
+				"type": "object",
+				"properties": {
+					"statusCode": {
+						"type": "number",
+						"description": "HTTP status code",
+						"example": 400,
+						"minimum": 400,
+						"maximum": 599
+					},
+					"error": {
+						"type": "string",
+						"description": "Error type or exception name",
+						"example": "BadRequestException"
+					},
+					"message": {
+						"description": "Human-readable error message(s)",
+						"oneOf": [
+							{ "type": "string", "example": "Validation failed" },
+							{
+								"type": "array",
+								"items": { "type": "string" },
+								"example": [
+									"email must be an email",
+									"password must be longer than 8 characters"
+								]
+							}
+						]
+					},
+					"path": {
+						"type": "string",
+						"description": "Request path that triggered the error",
+						"example": "/api/v1/auth/register"
+					},
+					"timestamp": {
+						"type": "string",
+						"description": "ISO 8601 timestamp when the error occurred",
+						"example": "2025-03-18T12:00:00.000Z"
+					}
+				},
+				"required": ["statusCode", "error", "message"]
+			}
+		}
+	},
+	"security": [{ "Bearer": [] }]
+}

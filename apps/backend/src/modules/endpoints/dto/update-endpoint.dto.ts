@@ -17,7 +17,7 @@ export class UpdateEndpointDto {
 	@IsOptional()
 	@IsString()
 	@MinLength(1, { message: "Name cannot be empty" })
-	name: string;
+	name?: string;
 
 	@ApiProperty({
 		description: "Updated target URL to proxy requests to",
@@ -27,7 +27,7 @@ export class UpdateEndpointDto {
 	})
 	@IsOptional()
 	@IsUrl({}, { message: "Target URL must be a valid URL" })
-	targetUrl: string;
+	targetUrl?: string;
 
 	@ApiProperty({
 		description: "Whether the endpoint is active",
@@ -36,11 +36,5 @@ export class UpdateEndpointDto {
 	})
 	@IsOptional()
 	@IsBoolean()
-	isActive: boolean;
-
-	constructor(name: string, targetUrl: string, isActive: boolean) {
-		this.name = name;
-		this.targetUrl = targetUrl;
-		this.isActive = isActive;
-	}
+	isActive?: boolean;
 }

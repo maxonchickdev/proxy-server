@@ -1,32 +1,37 @@
+import type { UserDto } from "../types/user.type";
+import type { RequestLogDto } from "../types/request-log.type";
+
 const API_BASE = "";
 
-function getToken(): string | null {
-	return localStorage.getItem("token");
+const AUTH_401_NO_REFRESH = new Set([
+	"/auth/sign-in",
+	"/auth/sign-up",
+	"/auth/verify-email",
+	"/auth/resend-verification",
+	"/auth/forgot-password",
+	"/auth/reset-password",
+]);
+
+type ApiClientConfig = {
+	getAccessToken: () => string | null;
+	setSession: (accessToken: string | null, user: UserDto | null) => void;
+	onSessionExpired: () => void;
+};
+
+let clientConfig: ApiClientConfig | null = null;
+
+export function configureApiClient(c: ApiClientConfig): void {
+	clientConfig = c;
 }
 
-async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-	const token = getToken();
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json",
-		...(options.headers as Record<string, string>),
-	};
-	if (token) {
-		headers.Authorization = `Bearer ${token}`;
+function assertConfig(): ApiClientConfig {
+	if (!clientConfig) {
+		throw new Error("API client not configured");
 	}
+	return clientConfig;
+}
 
-	const res = await fetch(`${API_BASE}${path}`, {
-		...options,
-		headers,
-		credentials: "include",
-	});
-
-	if (res.status === 401) {
-		localStorage.removeItem("token");
-		localStorage.removeItem("user");
-		window.location.href = "/login";
-		throw new Error("Unauthorized");
-	}
-
+async function parseResponse<T>(res: Response): Promise<T> {
 	const text = await res.text();
 	if (!text) {
 		if (!res.ok) throw new Error(res.statusText || "Request failed");
@@ -48,17 +53,95 @@ async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
 	}
 }
 
+export async function refreshAccessToken(): Promise<{
+	accessToken: string;
+	user: UserDto;
+} | null> {
+	const res = await fetch(`${API_BASE}/auth/refresh`, {
+		method: "POST",
+		credentials: "include",
+	});
+	if (!res.ok) return null;
+	return parseResponse<{ accessToken: string; user: UserDto }>(res);
+}
+
+async function api<T>(
+	path: string,
+	options: RequestInit = {},
+	retried = false,
+): Promise<T> {
+	const cfg = assertConfig();
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		...(options.headers as Record<string, string>),
+	};
+	const token = cfg.getAccessToken();
+	if (token) {
+		headers.Authorization = `Bearer ${token}`;
+	}
+
+	const res = await fetch(`${API_BASE}${path}`, {
+		...options,
+		headers,
+		credentials: "include",
+	});
+
+	if (res.status === 401 && !retried && !AUTH_401_NO_REFRESH.has(path)) {
+		const refreshed = await refreshAccessToken();
+		if (refreshed) {
+			cfg.setSession(refreshed.accessToken, refreshed.user);
+			return api<T>(path, options, true);
+		}
+		cfg.onSessionExpired();
+		throw new Error("Unauthorized");
+	}
+
+	return parseResponse<T>(res);
+}
+
 export const authApi = {
 	register: (data: { email: string; password: string; name?: string }) =>
-		api<{
-			accessToken: string;
-			user: { id: string; email: string; name: string | null };
-		}>("/auth/register", { method: "POST", body: JSON.stringify(data) }),
+		api<{ message: string }>("/auth/sign-up", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
 	login: (data: { email: string; password: string }) =>
-		api<{
-			accessToken: string;
-			user: { id: string; email: string; name: string | null };
-		}>("/auth/login", { method: "POST", body: JSON.stringify(data) }),
+		api<{ accessToken: string; user: UserDto }>("/auth/sign-in", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	verifyEmail: (data: { email: string; code: string }) =>
+		api<{ accessToken: string; user: UserDto }>("/auth/verify-email", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	resendVerification: (data: { email: string }) =>
+		api<{ message: string }>("/auth/resend-verification", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	forgotPassword: (data: { email: string }) =>
+		api<{ message: string }>("/auth/forgot-password", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	resetPassword: (data: { email: string; code: string; newPassword: string }) =>
+		api<{ message: string }>("/auth/reset-password", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	me: () => api<UserDto>("/auth/me"),
+	logout: async (accessToken: string | null) => {
+		const headers: Record<string, string> = {
+			"Content-Type": "application/json",
+		};
+		if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+		await fetch(`${API_BASE}/auth/logout`, {
+			method: "POST",
+			credentials: "include",
+			headers,
+		});
+	},
 };
 
 export const endpointsApi = {
@@ -120,11 +203,11 @@ export const logsApi = {
 		if (params?.method) search.set("method", params.method);
 		if (params?.status) search.set("status", String(params.status));
 		const q = search.toString();
-		return api<{ logs: Array<Record<string, unknown>>; total: number }>(
+		return api<{ logs: RequestLogDto[]; total: number }>(
 			`/logs/endpoint/${endpointId}${q ? `?${q}` : ""}`,
 		);
 	},
-	get: (id: string) => api<Record<string, unknown>>(`/logs/${id}`),
+	get: (id: string) => api<RequestLogDto>(`/logs/${id}`),
 };
 
 export const analyticsApi = {

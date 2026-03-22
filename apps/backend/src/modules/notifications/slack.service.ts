@@ -9,6 +9,7 @@ export class SlackService {
 			body: JSON.stringify({
 				text: message,
 			}),
+			signal: AbortSignal.timeout(10_000),
 		});
 		if (!res.ok) {
 			throw new Error(`Slack webhook error: ${res.status}`);

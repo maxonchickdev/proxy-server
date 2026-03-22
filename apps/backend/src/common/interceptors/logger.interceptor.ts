@@ -1,4 +1,5 @@
 import {
+	HttpException,
 	type CallHandler,
 	type ExecutionContext,
 	Inject,
@@ -45,7 +46,12 @@ export class LoggingInterceptor implements NestInterceptor {
 			tap({
 				error: (e) => {
 					const duration = Date.now() - start;
-					const statusCode = response.statusCode;
+					// POST routes default to 201 on the response before the exception filter runs;
+					// prefer the real HTTP status from Nest exceptions.
+					const statusCode =
+						e instanceof HttpException
+							? e.getStatus()
+							: response.statusCode || 500;
 					this.logResponse(
 						"error",
 						method,

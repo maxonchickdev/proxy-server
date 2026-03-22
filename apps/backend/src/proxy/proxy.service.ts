@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { type Endpoint, Prisma } from "@prisma/generated/client";
 import { PrismaService } from "../core/prisma/prisma.service";
 import { EndpointsService } from "../modules/endpoints/endpoints.service";
@@ -6,6 +6,8 @@ import { NotificationsService } from "../modules/notifications/notifications.ser
 
 @Injectable()
 export class ProxyService {
+	private readonly logger = new Logger(ProxyService.name);
+
 	constructor(
 		@Inject(PrismaService) private readonly prisma: PrismaService,
 		@Inject(EndpointsService)
@@ -46,7 +48,12 @@ export class ProxyService {
 		};
 		this.prisma.requestLog
 			.create({ data: payload })
-			.catch((err: unknown) => console.error("Failed to log request:", err));
+			.catch((err: unknown) =>
+				this.logger.error(
+					`Failed to log request: ${err instanceof Error ? err.message : err}`,
+					err instanceof Error ? err.stack : undefined,
+				),
+			);
 
 		this.notifications
 			.evaluateAndNotify(data.endpointId, {
@@ -55,7 +62,12 @@ export class ProxyService {
 				method: data.method,
 				path: data.path,
 			})
-			.catch((err) => console.error("Notification evaluation failed:", err));
+			.catch((err: unknown) =>
+				this.logger.error(
+					`Notification evaluation failed: ${err instanceof Error ? err.message : err}`,
+					err instanceof Error ? err.stack : undefined,
+				),
+			);
 	}
 
 	truncateForLog(value: string | Buffer | null, limit: number): string | null {
