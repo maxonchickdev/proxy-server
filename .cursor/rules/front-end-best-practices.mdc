@@ -1,66 +1,163 @@
 ---
-description: General frontend principles for this monorepo. Pair with react-typescript-cursor-rules for stack detail.
+description: Single reference for apps/web — architecture, React 19, TypeScript, Tailwind v4, a11y, security, and workflow.
 globs: apps/web/**/*
 alwaysApply: true
 ---
 
-You apply solid frontend engineering: correct, maintainable UI that is accessible, type-safe, and safe by default.
+You build **correct, maintainable, accessible** UIs in this monorepo’s **Vite SPA** (not Next.js): **React 19**, **TypeScript**, **Tailwind v4**, **react-router-dom**, **TanStack Query**, and the centralized **`@/api/client.api.ts`** layer. Be direct and accurate; match real imports and folder layout over hypothetical stack upgrades.
+
+## Collaboration & delivery
+
+- Follow requirements precisely; think step-by-step when planning, then implement completely (no TODOs or placeholders).
+- Prefer readable code over micro-optimizations unless profiling shows a need.
+- If something is unknown or ambiguous, say so instead of guessing.
+- **Commits:** Conventional Commits — `fix:`, `feat:`, optional scope, imperative subject, no trailing period; body explains _what_ and _why_.
 
 ## Scope
 
-- Prefer **`react-typescript-cursor-rules.mdc`** where it matches this repo; **`apps/web`** uses **React 19**, **Vite**, **React Router**, fetch/TanStack Query-style hooks, and **Tailwind v4** (not necessarily Orval/TanStack Router—follow the web app’s actual imports).
-- This file is the **cross-cutting** baseline when those details do not apply or you need a short checklist.
+This file replaces separate “best practices”, “front-end workflow”, “react”, and “react-typescript” rules: use it as the **only** detailed frontend rule for `apps/web`.
 
-## Architecture and code organization
+**Today’s stack:** React v19+, Vite, TypeScript strict, **react-router-dom**, TanStack Query v5, **`fetch`** in `client.api.ts` (Bearer + refresh cookie), Tailwind v4 (`@tailwindcss/vite`), **npm** workspaces, **`@proxy-server/shared`** for shared DTOs where wired.
 
-- **Feature-first when it grows:** colocate routes, components, and hooks that change together; extract shared UI and utilities only when reused.
-- **Thin presentation:** keep view logic separate from data orchestration (hooks/query layer vs markup).
-- **One clear responsibility per module** (component, hook, or route file).
+**Optional / future (do not assume present):** TanStack Router, Orval + `src/api/generated/`, Axios, i18next — adopt only when the repo contains those files or dependencies.
 
-## TypeScript and data contracts
+## Architecture & code organization
 
-- **Strict typing:** no `any`; use `unknown` and narrow, or explicit DTO/types from your API layer.
-- **Model UI state honestly:** discriminated unions or explicit status fields for loading, empty, error, and success—not unknown shapes.
-- **Validate at the boundary** when runtime shape matters (Zod or generated types with runtime checks where the backend can drift).
+- **Feature-first when it grows:** colocate routes, components, and hooks that change together; extract shared UI only when reused.
+- **Thin presentation:** hooks/query layer vs markup.
+- **One clear responsibility** per module (component, hook, route file).
+- **Composition** over deep prop drilling; **feature-based** folders where the app has grown beyond flat pages.
 
-## React and UI behavior
+## TypeScript & data contracts
 
-- **Prefer declarative UI** and composition; avoid deep prop drilling—context or colocating state when appropriate.
-- **Derive state** from props, URL, and server data instead of duplicating it in `useState` unless it is truly local and ephemeral.
-- **Effects:** do not use effects to paper over data-fetching or event-handler concerns; sync with the stack rules (e.g. Query + Suspense).
-- **Lists and keys:** stable keys; avoid indexing keys for reorderable or mutable lists.
+- **Strict typing:** no `any`; use `unknown` and narrow, or DTO types from API/shared packages.
+- Prefer **`type`** unless declaration merging is required; use **`satisfies`** where it sharpens inference; discriminated unions for loading / success / error UI state.
+- **Path aliases:** `@/components`, `@/hooks`, `@/utils`, `@/lib`, `@/api`, `@/pages` (or `@/routes` if you migrate).
+- **Validate at the boundary** with Zod or similar when runtime shape matters.
+- **Env:** validate `VITE_*` at build or startup (e.g. Zod) where misconfiguration would silently break the app.
+- **Dates:** `date-fns` or `Intl.DateTimeFormat`; avoid moment.js.
 
-## Styling and UX
+## React v19+
 
-- **Consistent spacing, type scale, and components**—reuse design-system or shared primitives before inventing new patterns.
-- **Loading and errors:** intentional skeletons, empty states, and actionable error messages (retry, go back).
-- **Forms:** accessible labels, errors linked to fields, disabled submit while invalid or pending.
+- **Functional components only;** no classes in app code.
+- **No `useEffect` for routine data fetching** — use TanStack Query (`useQuery` / `useSuspenseQuery`) or route loaders. **Exception:** one-off wiring (e.g. registering a client) or rare `useLayoutEffect` for DOM sync — not as the primary server-state loader.
+- Prefer React **`use`** for reading promises/context where appropriate; **`useOptimistic`** for mutations when it helps UX.
+- **Lists:** stable keys; avoid index keys for reorderable lists.
+- **Error boundaries** for subtree failures; **Suspense** for lazy routes and async UI where you adopt it.
+- Prefer **React Compiler** guidance over heavy `useMemo` / `useCallback`; use them only when referential stability is measured as necessary.
+
+## Routing
+
+- **Current:** `react-router-dom` — `Link`, `useNavigate`, shared path constants for repeated paths.
+- **Optional:** TanStack Router (file routes, loaders, typed search params) only after migration.
+
+## TanStack Query & HTTP
+
+- **Single API surface:** `@/api/client.api.ts` — credentials, 401 refresh, retries; do not scatter ad-hoc `fetch` with different options.
+- **Query keys:** small factories or `as const` tuples (e.g. `['auth','session']`, `['endpoints','list']`).
+- **Invalidation** after mutations so UI matches server truth.
+- **Orval:** if OpenAPI codegen exists under `src/api/generated/`, prefer generated hooks; else manual `queryFn` calling the client module is fine.
+
+## Authentication (client)
+
+- **Current pattern:** short-lived **Bearer** access token + **`credentials: 'include'`** refresh cookie; refresh queue in the API module.
+- Treat tokens as sensitive; prefer **HttpOnly** cookies for refresh; never ship secrets in `VITE_*` or bundles.
+
+## Tailwind CSS v4+
+
+- Prefer **`@theme`** in CSS for tokens; **mobile-first** breakpoints (`md:`, `lg:`).
+- OKLCH-friendly palettes when defining colors; sort utilities in a consistent order.
+- Use **utilities in JSX**; avoid `@apply` unless there is a strong maintenance reason.
+- **Styling UX:** consistent spacing and type scale; skeletons, empty states, actionable errors (retry, back).
+
+## Forms & inputs
+
+- **Accessible labels**, errors linked to fields, disabled submit while invalid or pending.
+- **React Hook Form** when the app uses it for non-trivial forms; keep validation rules centralized.
+
+## UI components (shadcn / Radix)
+
+- Prefer **shadcn/ui**-style **copied** components (Radix primitives + Tailwind), customized in-repo — not assumed as a black-box package.
+- Compose primitives; preserve **keyboard and screen-reader** behavior from Radix.
+
+## State management
+
+- **Server state:** TanStack Query.
+- **Local UI state:** `useState` / `useReducer`.
+- **Global client state:** **Zustand** or **Context** — use whichever the feature already uses; avoid duplicate sources of truth.
+
+## Internationalization & theme (optional)
+
+- **i18next** + split JSON under `public/locales/...` if i18n is added; keys like `namespace.section.field`.
+- **Theme:** `ThemeContext`, Tailwind `dark:`, sync `color-scheme` on `<html>` when dark mode is implemented.
 
 ## Accessibility (a11y)
 
-- **Semantic HTML first** (`button` vs `div` with `onClick`, landmarks, headings in order).
-- **Keyboard:** focus order, focus traps only where appropriate (dialogs), visible focus styles.
-- **Screen readers:** meaningful names, live regions for async feedback when needed; do not rely on color alone.
+- **Semantic HTML** first (`button`, `main`, landmarks, logical **heading order** — one **`main`** per document; avoid nested `main`).
+- **Keyboard:** focus order, visible focus, traps only in dialogs.
+- **Assistive tech:** `aria-*` when native HTML is insufficient; **`role="alert"`** or live regions for async errors; don’t rely on color alone.
+- Target **WCAG 2.1 AA** where feasible; smoke-test with automated a11y tools on critical views.
 
 ## Performance
 
-- **Measure before micro-optimizing:** bundle size and slow interactions matter more than premature memoization.
-- **Split routes and heavy widgets** when they are not needed on first paint.
-- **Avoid unnecessary re-renders** from unstable inline objects/functions in hot paths; follow React Compiler guidance in stack rules.
+- **Measure** bundle and interactions before memoizing everything.
+- **Code-split** routes and heavy widgets with `React.lazy` + Suspense where it helps.
+- **Images:** lazy-load when appropriate; virtualize only for very large lists.
 
-## Security and privacy
+## Security & privacy
 
-- **Never embed secrets** in client bundles or `VITE_*` values that must stay private.
-- **Avoid `dangerouslySetInnerHTML`** unless content is sanitized and the need is documented.
-- **Treat tokens carefully:** prefer HttpOnly cookies when the architecture allows; if using storage, keep lifetimes short and mitigate XSS.
-- **Links and redirects:** validate open redirects; use safe navigation patterns for external URLs.
+- Never embed **secrets** in client code or public env vars.
+- Avoid **`dangerouslySetInnerHTML`** unless sanitized (e.g. DOMPurify) and justified.
+- **XSS:** trust React’s escaping; validate **redirects** and external links.
+- Run **`npm audit`** / workspace audit periodically; prefer maintained deps.
 
 ## Testing
 
-- **Unit** pure logic and hooks; **component tests** for behavior and a11y; **E2E** for critical flows (auth, checkout-style paths).
-- Prefer user-visible assertions (Testing Library) over implementation details.
+- **Unit:** Vitest for logic and hooks.
+- **Component:** React Testing Library — assert user-visible behavior and a11y.
+- **E2E:** Playwright (or Cypress) for critical flows (auth, core workflows).
+- **Critical paths** should have at least one automated check; jest-axe optional for regressions.
 
-## API consumption (high level)
+## API consumption (summary)
 
-- **Single HTTP client** with interceptors and consistent error handling; do not scatter raw `fetch` with one-off options.
-- **Respect caching and invalidation** policies so the UI reflects server truth after mutations.
+- One **HTTP client module** with consistent errors and auth refresh.
+- Types from **`@proxy-server/shared`** or handwritten DTOs aligned with the backend.
+
+## Day-to-day coding habits
+
+- **Early returns** to avoid deep nesting.
+- **Tailwind** for styling; avoid one-off global CSS unless the design system requires it.
+- **Event handlers:** `handle` prefix — `handleClick`, `handleSubmit`, `handleKeyDown`.
+- **Interactive non-button elements** need keyboard support and accessible names when you must use them (prefer native controls).
+- **Const arrow functions** for handlers and small utilities: `const load = () => { ... }`.
+- **Formatting:** follow **Biome** / project Prettier settings (**semicolons** as configured); stay consistent with existing files in this repo.
+
+## File & export conventions
+
+- **kebab-case** filenames: `user-profile.tsx` for components; `.ts` for non-component modules.
+- **PascalCase** component names; **camelCase** functions/variables; **UPPER_SNAKE_CASE** true constants.
+- Prefer **named exports** for components and hooks; **default export** only where the toolchain expects it (e.g. some lazy route modules).
+- **Import order:** React → third-party → `@/` aliases → relative.
+
+## Folder structure (adapt to this repo)
+
+Typical layout:
+
+```text
+src/
+├── api/              # client.api.ts; optional generated/ or model/ later
+├── components/       # ui/, layout/, features/ as they grow
+├── contexts/         # e.g. auth, theme
+├── hooks/
+├── lib/
+├── pages/            # react-router pages (or routes/ if you migrate)
+├── main.tsx
+└── ...
+```
+
+## AI assistance
+
+- Briefly justify non-obvious choices (e.g. query key design, why not `useEffect` for fetch).
+- Generate complete imports and **Tailwind v4**-friendly classNames.
+- Prefer **removing unnecessary `useEffect`**, **Query-first** data flow, and optional **Orval** only when codegen exists.
+- New packages: align with workspace tool (**`npm install`** in this repo unless the project standardizes on pnpm).
