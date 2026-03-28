@@ -4,7 +4,14 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 	label: string;
 };
 
-export function InputComponent({ label, id, className = "", ...rest }: Props) {
+export function InputComponent({
+	label,
+	id,
+	className = "",
+	"aria-describedby": ariaDescribedByProp,
+	"aria-invalid": ariaInvalidProp,
+	...rest
+}: Props) {
 	const inputId = id ?? rest.name ?? label.replace(/\s/g, "-").toLowerCase();
 	return (
 		<div>
@@ -12,9 +19,11 @@ export function InputComponent({ label, id, className = "", ...rest }: Props) {
 				{label}
 			</label>
 			<input
-				id={inputId}
-				className={`w-full border border-white/20 bg-black px-3 py-2 text-white focus:border-white focus:outline-none ${className}`}
 				{...rest}
+				id={inputId}
+				aria-describedby={ariaDescribedByProp}
+				aria-invalid={ariaInvalidProp}
+				className={`w-full border border-white/20 bg-black px-3 py-2 text-white focus:border-white focus:outline-none ${className}`}
 			/>
 		</div>
 	);

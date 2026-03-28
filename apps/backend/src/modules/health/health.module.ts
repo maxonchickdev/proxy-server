@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { PrismaModule } from "../../core/prisma/prisma.module";
 import { HealthController } from "./health.controller";
+import { HealthService } from "./health.service";
 
 /**
  * Kubernetes-style liveness/readiness probes.
@@ -8,5 +9,6 @@ import { HealthController } from "./health.controller";
 @Module({
 	imports: [PrismaModule],
 	controllers: [HealthController],
+	providers: [HealthService],
 })
 export class HealthModule {}

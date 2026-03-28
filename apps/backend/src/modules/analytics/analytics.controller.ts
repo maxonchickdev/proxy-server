@@ -6,13 +6,13 @@ import {
 	ApiOkResponse,
 	ApiOperation,
 	ApiParam,
-	ApiQuery,
 	ApiTags,
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AnalyticsService } from "./analytics.service";
+import { AnalyticsTimeseriesQueryDto } from "./dto/analytics-timeseries-query.dto";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 /**
@@ -57,6 +57,7 @@ export class AnalyticsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Returns rollup metrics for an owned endpoint. */
 	getSummary(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser("id") userId: string,
@@ -74,8 +75,6 @@ export class AnalyticsController {
 		description: "Endpoint UUID",
 		format: "uuid",
 	})
-	@ApiQuery({ name: "bucket", enum: ["hour", "day"], required: false })
-	@ApiQuery({ name: "limit", required: false, description: "Max data points" })
 	@ApiOkResponse({ description: "Timeseries data" })
 	@ApiTooManyRequestsResponse({
 		description: "Too Many Requests - Rate limit exceeded",
@@ -95,15 +94,15 @@ export class AnalyticsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Returns validated bucket/limit query parameters to the timeseries query. */
 	getTimeseries(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser("id") userId: string,
-		@Query("bucket") bucket?: "hour" | "day",
-		@Query("limit") limit?: string,
+		@Query() query: AnalyticsTimeseriesQueryDto,
 	): ReturnType<AnalyticsService["getTimeseries"]> {
 		return this.analyticsService.getTimeseries(endpointId, userId, {
-			bucket: bucket ?? "hour",
-			limit: limit ? parseInt(limit, 10) : undefined,
+			bucket: query.bucket ?? "hour",
+			limit: query.limit,
 		});
 	}
 
@@ -137,6 +136,7 @@ export class AnalyticsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Returns method/status histograms for chart breakdowns. */
 	getBreakdown(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser("id") userId: string,

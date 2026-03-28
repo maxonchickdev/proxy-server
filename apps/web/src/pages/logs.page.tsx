@@ -1,5 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import { RequestLogsTableComponent } from "@/components/request-logs-table.component";
+import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
 import { useEndpointsList } from "@/hooks/endpoints.hooks";
 import { useLogsByEndpoint } from "@/hooks/logs.hooks";
 
@@ -28,9 +29,7 @@ export const LogsPage = () => {
 							: "Failed to load endpoints"}
 					</p>
 				) : endpointsLoading ? (
-					<p className="text-white/60" aria-busy="true">
-						Loading endpoints...
-					</p>
+					<LoadingSkeletonComponent rows={6} className="max-w-md" />
 				) : (
 					<ul className="space-y-2">
 						{endpoints.map((ep) => (
@@ -56,9 +55,7 @@ export const LogsPage = () => {
 		return (
 			<div className="space-y-6">
 				<h1 className="text-2xl font-medium">Request logs</h1>
-				<p className="text-white/60" aria-busy="true">
-					Loading logs...
-				</p>
+				<LoadingSkeletonComponent rows={8} />
 			</div>
 		);
 	}

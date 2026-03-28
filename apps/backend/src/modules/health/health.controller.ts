@@ -1,15 +1,17 @@
 import { Controller, Get, Inject } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { SkipThrottle } from "@nestjs/throttler";
 import { Public } from "../../common/decorators/public.decorator";
-import { PrismaService } from "../../core/prisma/prisma.service";
+import { HealthService } from "./health.service";
 
 /**
  * Liveness and readiness endpoints for orchestrators and load balancers.
  */
+@SkipThrottle()
 @ApiTags("Health")
 @Controller("health")
 export class HealthController {
-	constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
+	constructor(@Inject(HealthService) private readonly health: HealthService) {}
 
 	/** Process is running. */
 	@Public()
@@ -24,7 +26,7 @@ export class HealthController {
 	@Get("ready")
 	@ApiOperation({ summary: "Readiness probe (database)" })
 	async readiness(): Promise<{ status: string }> {
-		await this.prisma.$queryRaw`SELECT 1`;
+		await this.health.assertDatabaseReady();
 		return { status: "ok" };
 	}
 }

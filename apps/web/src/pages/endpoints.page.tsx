@@ -3,6 +3,7 @@ import { EndpointsTableComponent } from "@/components/endpoints-table.component"
 import { ButtonComponent } from "@/components/ui/button.component";
 import { CardComponent } from "@/components/ui/card.component";
 import { InputComponent } from "@/components/ui/input.component";
+import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
 import { useCreateEndpoint, useEndpointsList } from "@/hooks/endpoints.hooks";
 
 export const EndpointsPage = () => {
@@ -17,6 +18,7 @@ export const EndpointsPage = () => {
 	} = useEndpointsList();
 	const endpoints = listData?.items ?? [];
 	const createMutation = useCreateEndpoint();
+	const createFormErrorId = "create-endpoint-form-error";
 
 	const handleNameChange = (value: string) => {
 		setName(value);
@@ -44,9 +46,10 @@ export const EndpointsPage = () => {
 
 			<CardComponent>
 				<h2 className="mb-4 text-lg font-medium">Create endpoint</h2>
-				<form onSubmit={handleSubmit} className="space-y-4">
+				<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 					{error ? (
 						<div
+							id={createFormErrorId}
 							className="border border-white/40 p-3 text-white/80"
 							role="alert"
 						>
@@ -61,6 +64,8 @@ export const EndpointsPage = () => {
 						onChange={(e) => handleNameChange(e.target.value)}
 						placeholder="e.g. Stripe Webhook"
 						required
+						aria-invalid={error ? true : undefined}
+						aria-describedby={error ? createFormErrorId : undefined}
 					/>
 					<InputComponent
 						label="Target URL"
@@ -70,6 +75,8 @@ export const EndpointsPage = () => {
 						onChange={(e) => handleTargetUrlChange(e.target.value)}
 						placeholder="https://api.example.com/webhook"
 						required
+						aria-invalid={error ? true : undefined}
+						aria-describedby={error ? createFormErrorId : undefined}
 					/>
 					<ButtonComponent type="submit" disabled={createMutation.isPending}>
 						{createMutation.isPending ? "Creating..." : "Create"}
@@ -88,9 +95,7 @@ export const EndpointsPage = () => {
 							: "Failed to load endpoints"}
 					</p>
 				) : isLoading ? (
-					<p className="text-white/60" aria-busy="true">
-						Loading...
-					</p>
+					<LoadingSkeletonComponent rows={5} className="max-w-3xl" />
 				) : endpoints.length === 0 ? (
 					<p className="text-white/60">No endpoints yet.</p>
 				) : (

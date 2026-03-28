@@ -29,15 +29,19 @@ export const ForgotPasswordPage = () => {
 		}
 	};
 
+	const formErrorId = "forgot-password-form-error";
+	const formStatusId = "forgot-password-form-status";
+
 	return (
 		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-2 text-2xl font-medium">Forgot password</h1>
 			<p className="mb-8 text-sm text-white/60">
 				We&apos;ll email a 6-digit reset code if an account exists.
 			</p>
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 				{error ? (
 					<div
+						id={formErrorId}
 						className="border border-white/40 p-3 text-white/80"
 						role="alert"
 					>
@@ -46,6 +50,7 @@ export const ForgotPasswordPage = () => {
 				) : null}
 				{message ? (
 					<div
+						id={formStatusId}
 						className="border border-white/20 p-3 text-sm text-white/70"
 						role="status"
 					>
@@ -59,6 +64,12 @@ export const ForgotPasswordPage = () => {
 					value={email}
 					onChange={(e) => handleEmailChange(e.target.value)}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={
+						[error ? formErrorId : "", message ? formStatusId : ""]
+							.filter(Boolean)
+							.join(" ") || undefined
+					}
 				/>
 				<ButtonComponent
 					type="submit"

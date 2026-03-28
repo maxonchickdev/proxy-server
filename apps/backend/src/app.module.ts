@@ -11,6 +11,7 @@ import { CoreModule } from "./core/core.module";
 import { PrismaModule } from "./core/prisma/prisma.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
+import { CorrelationIdMiddleware } from "./common/middleware/correlation-id.middleware";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 import { EndpointsModule } from "./modules/endpoints/endpoints.module";
 import { HealthModule } from "./modules/health/health.module";
@@ -43,12 +44,13 @@ import { ProxyModule } from "./proxy/proxy.module";
 		ProxyModule,
 	],
 	providers: [
+		CorrelationIdMiddleware,
 		{ provide: APP_GUARD, useClass: ThrottlerGuard },
 		{ provide: APP_GUARD, useClass: JwtAuthGuard },
 	],
 })
 export class AppModule implements NestModule {
 	configure(consumer: MiddlewareConsumer) {
-		consumer.apply(ProxyMiddleware).forRoutes("*");
+		consumer.apply(CorrelationIdMiddleware, ProxyMiddleware).forRoutes("*");
 	}
 }

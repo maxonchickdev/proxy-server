@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
-import { PrismaService } from "../../core/prisma/prisma.service";
 import { HealthController } from "./health.controller";
+import { HealthService } from "./health.service";
 
 describe("HealthController", () => {
 	it("liveness returns ok without hitting the database", async () => {
@@ -8,8 +8,10 @@ describe("HealthController", () => {
 			controllers: [HealthController],
 			providers: [
 				{
-					provide: PrismaService,
-					useValue: { $queryRaw: jest.fn() },
+					provide: HealthService,
+					useValue: {
+						assertDatabaseReady: jest.fn(),
+					},
 				},
 			],
 		}).compile();

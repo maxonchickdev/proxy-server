@@ -64,6 +64,7 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Persists a new proxy endpoint with a generated slug. */
 	create(
 		@CurrentUser("id") userId: string,
 		@Body() createEndpointDto: CreateEndpointDto,
@@ -89,6 +90,7 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Returns a paginated list of the caller's endpoints. */
 	findAll(
 		@CurrentUser("id") userId: string,
 		@Query() query: ListEndpointsQueryDto,
@@ -127,6 +129,7 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Returns one endpoint when the user owns it. */
 	findOne(
 		@Param("id") id: string,
 		@CurrentUser() user: CurrentUserPayload,
@@ -166,6 +169,7 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Partially updates fields on an owned endpoint. */
 	update(
 		@Param("id") id: string,
 		@CurrentUser() user: CurrentUserPayload,
@@ -205,6 +209,7 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Deletes an owned endpoint and related rows. */
 	remove(
 		@Param("id") id: string,
 		@CurrentUser() user: CurrentUserPayload,

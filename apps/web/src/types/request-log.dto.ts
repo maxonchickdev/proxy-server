@@ -1,4 +1,4 @@
-/** Shape returned by logs API for a single request log row */
+/** Shape returned by logs API for a single request log row. */
 export type RequestLogDto = {
 	id: string;
 	createdAt: string;

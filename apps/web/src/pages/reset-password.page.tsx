@@ -40,12 +40,15 @@ export const ResetPasswordPage = () => {
 		}
 	};
 
+	const formErrorId = "reset-password-form-error";
+
 	return (
 		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-8 text-2xl font-medium">Reset password</h1>
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 				{error ? (
 					<div
+						id={formErrorId}
 						className="border border-white/40 p-3 text-white/80"
 						role="alert"
 					>
@@ -59,6 +62,8 @@ export const ResetPasswordPage = () => {
 					value={email}
 					onChange={(e) => handleEmailChange(e.target.value)}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={error ? formErrorId : undefined}
 				/>
 				<InputComponent
 					label="Code from email"
@@ -69,6 +74,8 @@ export const ResetPasswordPage = () => {
 					value={code}
 					onChange={(e) => handleCodeChange(e.target.value)}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={error ? formErrorId : undefined}
 				/>
 				<InputComponent
 					label="New password"
@@ -78,6 +85,8 @@ export const ResetPasswordPage = () => {
 					onChange={(e) => handleNewPasswordChange(e.target.value)}
 					minLength={8}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={error ? formErrorId : undefined}
 				/>
 				<ButtonComponent
 					type="submit"

@@ -9,10 +9,11 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost } from "@nestjs/core";
+import type { Request } from "express";
 import type { Prisma } from "@prisma/generated/client.js";
+import type { ErrorResponseBody } from "@proxy-server/shared";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
-import type { ErrorResponseBody } from "../types/error-response-body.type.js";
 import type { HttpExceptionResponse } from "../types/http-exception-response.type.js";
 
 const PRISMA_ERROR_MAP: Record<string, HttpStatus> = {
@@ -37,28 +38,33 @@ export class CatchEverythingFilter implements ExceptionFilter {
 		@Inject(ConfigService) private readonly configService: ConfigService,
 	) {}
 
+	/** Normalizes any thrown value to the public `ErrorResponseBody` contract. */
 	catch(exception: unknown, host: ArgumentsHost): void {
 		const { httpAdapter } = this.httpAdapterHost;
 		const ctx = host.switchToHttp();
-		const request = ctx.getRequest();
-
+		const request = ctx.getRequest<Request>();
 		const { statusCode, error, message } = this.normalizeException(exception);
-
+		const path = httpAdapter.getRequestUrl(request);
 		const responseBody: ErrorResponseBody = {
 			error,
 			message,
-			path: httpAdapter.getRequestUrl(request),
+			path,
 			statusCode,
 			timestamp: new Date().toISOString(),
 		};
-
 		if (statusCode >= 500) {
+			const logCtx = {
+				msg: "unhandled_server_error",
+				statusCode,
+				path,
+				correlationId: request.correlationId ?? null,
+				errorSummary: String(exception),
+			};
 			this.logger.error(
-				`Unhandled ${statusCode} error: ${String(exception)}`,
+				JSON.stringify(logCtx),
 				exception instanceof Error ? exception.stack : undefined,
 			);
 		}
-
 		httpAdapter.reply(ctx.getResponse(), responseBody, statusCode);
 	}
 
@@ -70,15 +76,12 @@ export class CatchEverythingFilter implements ExceptionFilter {
 		if (exception instanceof HttpException) {
 			return this.normalizeHttpException(exception);
 		}
-
 		if (this.isPrismaKnownRequestError(exception)) {
 			return this.normalizePrismaKnownRequestError(exception);
 		}
-
 		if (this.isPrismaValidationError(exception)) {
 			return this.normalizePrismaValidationError(exception);
 		}
-
 		return this.normalizeUnknownError(exception);
 	}
 
@@ -89,7 +92,6 @@ export class CatchEverythingFilter implements ExceptionFilter {
 	} {
 		const statusCode = exception.getStatus();
 		const response = exception.getResponse() as HttpExceptionResponse;
-
 		if (typeof response === "string") {
 			return {
 				error: exception.name,
@@ -97,10 +99,8 @@ export class CatchEverythingFilter implements ExceptionFilter {
 				statusCode,
 			};
 		}
-
 		const message = response?.message ?? exception.message;
 		const error = response?.error ?? exception.name;
-
 		return {
 			error: typeof error === "string" ? error : "Error",
 			message: Array.isArray(message)
@@ -120,7 +120,6 @@ export class CatchEverythingFilter implements ExceptionFilter {
 		const statusCode =
 			PRISMA_ERROR_MAP[error.code] ?? HttpStatus.INTERNAL_SERVER_ERROR;
 		const message = this.getPrismaErrorMessage(error);
-
 		return {
 			error: "PrismaClientKnownRequestError",
 			message,
@@ -137,7 +136,6 @@ export class CatchEverythingFilter implements ExceptionFilter {
 	} {
 		const isProduction = this.isProduction();
 		const message = isProduction ? "Validation failed" : error.message;
-
 		return {
 			error: "PrismaClientValidationError",
 			message,
@@ -151,7 +149,6 @@ export class CatchEverythingFilter implements ExceptionFilter {
 		message: string | string[];
 	} {
 		const isProduction = this.isProduction();
-
 		return {
 			error: INTERNAL_ERROR_TYPE,
 			message: isProduction

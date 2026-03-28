@@ -26,8 +26,8 @@ import {
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
 import { AlertRulesService } from "./alert-rules.service";
-import type { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
-import type { CreateChannelDto } from "./dto/create-channel.dto";
+import { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
+import { CreateChannelDto } from "./dto/create-channel.dto";
 import { NotificationChannelsService } from "./notification-channels.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
@@ -63,6 +63,7 @@ export class NotificationsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Validates the body and creates a Slack or Telegram channel. */
 	createChannel(
 		@CurrentUser("id") userId: string,
 		@Body() dto: CreateChannelDto,
@@ -154,6 +155,7 @@ export class NotificationsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Validates the body and links an endpoint to a notification channel for alerts. */
 	createAlertRule(
 		@CurrentUser("id") userId: string,
 		@Body() dto: CreateAlertRuleDto,

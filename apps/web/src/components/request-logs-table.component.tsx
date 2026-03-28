@@ -1,4 +1,4 @@
-import type { RequestLogDto } from "@proxy-server/shared";
+import type { RequestLogDto } from "@/types/request-log.dto";
 
 export function RequestLogsTableComponent({ logs }: { logs: RequestLogDto[] }) {
 	if (logs.length === 0) {

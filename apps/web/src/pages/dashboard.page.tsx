@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { EndpointsTableComponent } from "@/components/endpoints-table.component";
+import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
 import { useEndpointsList } from "@/hooks/endpoints.hooks";
 
 export const DashboardPage = () => {
@@ -31,9 +32,7 @@ export const DashboardPage = () => {
 							: "Failed to load endpoints"}
 					</p>
 				) : isLoading ? (
-					<p className="text-white/60" aria-busy="true">
-						Loading...
-					</p>
+					<LoadingSkeletonComponent rows={4} className="max-w-2xl" />
 				) : endpoints.length === 0 ? (
 					<div className="border border-dashed border-white/20 p-12 text-center">
 						<p className="text-white/60">No endpoints yet</p>

@@ -6,12 +6,17 @@ import {
 } from "@nestjs/common";
 import type { Endpoint } from "@prisma/generated/client";
 import { customAlphabet } from "nanoid";
+import type {
+	EndpointDto,
+	EndpointListResponseDto,
+} from "@proxy-server/shared";
+import { paginationConstants } from "../../common/constants/pagination.constants";
 import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import { paginationConstants } from "../../common/constants/pagination.constants";
 import type { CreateEndpointDto } from "./dto/create-endpoint.dto";
 import type { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
 import type { UpdateEndpointDto } from "./dto/update-endpoint.dto";
+import { mapEndpointToDto } from "./endpoint.mapper";
 
 const slugAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789";
 const SLUG_LENGTH = 10;
@@ -23,7 +28,8 @@ const generateSlug = customAlphabet(slugAlphabet, SLUG_LENGTH);
 export class EndpointsService {
 	constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-	async create(userId: string, dto: CreateEndpointDto): Promise<Endpoint> {
+	/** Creates an endpoint row with a unique slug. */
+	async create(userId: string, dto: CreateEndpointDto): Promise<EndpointDto> {
 		let slug = generateSlug();
 		let attempts = 0;
 		while (attempts < SLUG_MAX_ATTEMPTS) {
@@ -34,8 +40,7 @@ export class EndpointsService {
 			slug = generateSlug();
 			attempts++;
 		}
-
-		return this.prisma.endpoint.create({
+		const created = await this.prisma.endpoint.create({
 			data: {
 				userId,
 				name: dto.name,
@@ -44,17 +49,14 @@ export class EndpointsService {
 				isActive: dto.isActive ?? true,
 			},
 		});
+		return mapEndpointToDto(created);
 	}
 
+	/** Paginates endpoints for a user ID. */
 	async findAll(
 		userId: string,
 		query: ListEndpointsQueryDto,
-	): Promise<{
-		items: Endpoint[];
-		total: number;
-		limit: number;
-		offset: number;
-	}> {
+	): Promise<EndpointListResponseDto> {
 		const offset = query.offset ?? paginationConstants.DEFAULT_OFFSET;
 		const limit = Math.min(
 			query.limit ?? paginationConstants.DEFAULT_LIST_LIMIT,
@@ -70,10 +72,18 @@ export class EndpointsService {
 			}),
 			this.prisma.endpoint.count({ where }),
 		]);
-		return { items, total, limit, offset };
+		return {
+			items: items.map(mapEndpointToDto),
+			total,
+			limit,
+			offset,
+		};
 	}
 
-	async findOne(id: string, user: CurrentUserPayload): Promise<Endpoint> {
+	private async getOwnedEndpointOrThrow(
+		id: string,
+		user: CurrentUserPayload,
+	): Promise<Endpoint> {
 		const endpoint = await this.prisma.endpoint.findUnique({
 			where: { id },
 		});
@@ -86,19 +96,27 @@ export class EndpointsService {
 		return endpoint;
 	}
 
+	/** Returns a single public endpoint DTO for an owned record. */
+	async findOne(id: string, user: CurrentUserPayload): Promise<EndpointDto> {
+		const endpoint = await this.getOwnedEndpointOrThrow(id, user);
+		return mapEndpointToDto(endpoint);
+	}
+
+	/** Resolves an active endpoint by public slug (proxy routing). */
 	async findBySlug(slug: string): Promise<Endpoint | null> {
 		return this.prisma.endpoint.findUnique({
 			where: { slug, isActive: true },
 		});
 	}
 
+	/** Updates mutable fields after an ownership check. */
 	async update(
 		id: string,
 		user: CurrentUserPayload,
 		dto: UpdateEndpointDto,
-	): Promise<Endpoint> {
-		await this.findOne(id, user);
-		return this.prisma.endpoint.update({
+	): Promise<EndpointDto> {
+		await this.getOwnedEndpointOrThrow(id, user);
+		const updated = await this.prisma.endpoint.update({
 			where: { id },
 			data: {
 				...(dto.name !== undefined && { name: dto.name }),
@@ -106,13 +124,15 @@ export class EndpointsService {
 				...(dto.isActive !== undefined && { isActive: dto.isActive }),
 			},
 		});
+		return mapEndpointToDto(updated);
 	}
 
+	/** Deletes an endpoint after an ownership check. */
 	async remove(
 		id: string,
 		user: CurrentUserPayload,
 	): Promise<{ success: boolean }> {
-		await this.findOne(id, user);
+		await this.getOwnedEndpointOrThrow(id, user);
 		await this.prisma.endpoint.delete({
 			where: { id },
 		});

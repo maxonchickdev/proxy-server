@@ -48,12 +48,15 @@ export const RegisterPage = () => {
 		}
 	};
 
+	const formErrorId = "register-form-error";
+
 	return (
 		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-8 text-2xl font-medium">Create account</h1>
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 				{error ? (
 					<div
+						id={formErrorId}
 						className="border border-white/40 p-3 text-white/80"
 						role="alert"
 					>
@@ -67,6 +70,8 @@ export const RegisterPage = () => {
 					value={email}
 					onChange={(e) => handleEmailChange(e.target.value)}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={error ? formErrorId : undefined}
 				/>
 				<InputComponent
 					label="Name (optional)"
@@ -74,6 +79,8 @@ export const RegisterPage = () => {
 					name="name"
 					value={name}
 					onChange={(e) => handleNameChange(e.target.value)}
+					aria-invalid={error ? true : undefined}
+					aria-describedby={error ? formErrorId : undefined}
 				/>
 				<InputComponent
 					label="Password"
@@ -83,6 +90,8 @@ export const RegisterPage = () => {
 					onChange={(e) => handlePasswordChange(e.target.value)}
 					minLength={8}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={error ? formErrorId : undefined}
 				/>
 				<ButtonComponent
 					type="submit"

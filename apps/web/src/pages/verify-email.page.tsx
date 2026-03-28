@@ -50,15 +50,19 @@ export const VerifyEmailPage = () => {
 		setCode(raw.replace(/\D/g, "").slice(0, 6));
 	};
 
+	const formErrorId = "verify-email-form-error";
+	const resendStatusId = "verify-email-resend-status";
+
 	return (
 		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-2 text-2xl font-medium">Verify your email</h1>
 			<p className="mb-8 text-sm text-white/60">
 				Enter the 6-digit code we sent to your inbox.
 			</p>
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 				{error ? (
 					<div
+						id={formErrorId}
 						className="border border-white/40 p-3 text-white/80"
 						role="alert"
 					>
@@ -67,6 +71,7 @@ export const VerifyEmailPage = () => {
 				) : null}
 				{resendMsg ? (
 					<div
+						id={resendStatusId}
 						className="border border-white/20 p-3 text-sm text-white/70"
 						role="status"
 					>
@@ -80,6 +85,12 @@ export const VerifyEmailPage = () => {
 					value={email}
 					onChange={(e) => handleEmailChange(e.target.value)}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={
+						[error ? formErrorId : "", resendMsg ? resendStatusId : ""]
+							.filter(Boolean)
+							.join(" ") || undefined
+					}
 				/>
 				<InputComponent
 					label="Code"
@@ -91,6 +102,12 @@ export const VerifyEmailPage = () => {
 					value={code}
 					onChange={(e) => handleCodeChange(e.target.value)}
 					required
+					aria-invalid={error ? true : undefined}
+					aria-describedby={
+						[error ? formErrorId : "", resendMsg ? resendStatusId : ""]
+							.filter(Boolean)
+							.join(" ") || undefined
+					}
 				/>
 				<ButtonComponent
 					type="submit"

@@ -33,4 +33,4 @@ You are doing a **monorepo code review**. Be explicit about severity (blocker vs
 ## When to load other rules
 
 - Detailed conventions: `front-end-best-practices.mdc` for `apps/web` (stack + workflow in one file).
-- Detailed conventions: `back-end.mdc` for `apps/backend`.
+- Detailed conventions: `back-end-best-practices.mdc` for `apps/backend`.

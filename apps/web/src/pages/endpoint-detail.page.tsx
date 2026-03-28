@@ -18,6 +18,7 @@ import {
 } from "@/hooks/analytics.hooks";
 import { useEndpointDetail, useUpdateEndpoint } from "@/hooks/endpoints.hooks";
 import { useLogsByEndpoint } from "@/hooks/logs.hooks";
+import { getWebEnv } from "@/env";
 
 export const EndpointDetailPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -49,9 +50,7 @@ export const EndpointDetailPage = () => {
 	} = useLogsByEndpoint(id, { limit: 20 });
 	const updateMutation = useUpdateEndpoint();
 
-	const apiBase =
-		import.meta.env.VITE_API_URL ??
-		`${window.location.origin.replace(/:\d+$/, "")}:3000`;
+	const apiBase = getWebEnv().publicApiOrigin;
 	const proxyUrl = endpoint ? `${apiBase}/r/${endpoint.slug}` : "";
 
 	const handleCopyProxyUrl = () => {

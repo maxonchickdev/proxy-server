@@ -1,4 +1,9 @@
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
+import type {
+	AnalyticsBreakdownDto,
+	AnalyticsSummaryDto,
+	AnalyticsTimeseriesPointDto,
+} from "@proxy-server/shared";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { analyticsConstants } from "./analytics.constants";
 
@@ -22,16 +27,11 @@ export class AnalyticsService {
 		return endpoint;
 	}
 
+	/** Aggregates totals, latency, uptime and error rate for dashboards. */
 	async getSummary(
 		endpointId: string,
 		userId: string,
-	): Promise<{
-		totalRequests: number;
-		requestsLast24h: number;
-		avgLatencyMs: number;
-		uptimePercent: number;
-		errorRate: number;
-	}> {
+	): Promise<AnalyticsSummaryDto> {
 		await this.ensureEndpointAccess(endpointId, userId);
 		const now = new Date();
 		const last24h = new Date(now.getTime() - analyticsConstants.LAST_24H_MS);
@@ -80,11 +80,12 @@ export class AnalyticsService {
 		};
 	}
 
+	/** Returns time-bucketed request volume and latency for charts. */
 	async getTimeseries(
 		endpointId: string,
 		userId: string,
 		options: { bucket: "hour" | "day"; limit?: number },
-	): Promise<{ bucket: string; requests: number; avgLatencyMs: number }[]> {
+	): Promise<AnalyticsTimeseriesPointDto[]> {
 		await this.ensureEndpointAccess(endpointId, userId);
 		const limit = Math.min(
 			options.limit ?? analyticsConstants.DEFAULT_TIMESERIES_LIMIT,
@@ -123,13 +124,11 @@ export class AnalyticsService {
 		}));
 	}
 
+	/** Groups request counts by HTTP method and response status. */
 	async getBreakdown(
 		endpointId: string,
 		userId: string,
-	): Promise<{
-		byMethod: { method: string; count: number }[];
-		byStatus: { status: number; count: number }[];
-	}> {
+	): Promise<AnalyticsBreakdownDto> {
 		await this.ensureEndpointAccess(endpointId, userId);
 		const [byMethod, byStatus] = await Promise.all([
 			this.prisma.requestLog.groupBy({

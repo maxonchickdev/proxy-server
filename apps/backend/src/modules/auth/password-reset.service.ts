@@ -8,6 +8,7 @@ import * as bcrypt from "bcrypt";
 import { randomInt } from "node:crypto";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
+import { authVerificationConstants } from "./auth-verification.constants";
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const SALT_ROUNDS = 10;
@@ -25,9 +26,15 @@ export class PasswordResetService {
 	) {}
 
 	private generateSixDigitCode(): string {
-		return String(randomInt(100_000, 1_000_000));
+		return String(
+			randomInt(
+				authVerificationConstants.SIX_DIGIT_CODE_MIN_INCLUSIVE,
+				authVerificationConstants.SIX_DIGIT_CODE_MAX_EXCLUSIVE,
+			),
+		);
 	}
 
+	/** Emails a reset code when the user exists (generic message otherwise). */
 	async forgotPassword(email: string): Promise<{ message: string }> {
 		const emailLower = email.toLowerCase();
 		const user = await this.prisma.user.findUnique({
@@ -51,6 +58,7 @@ export class PasswordResetService {
 		return { message: "If an account exists, a reset code was sent." };
 	}
 
+	/** Replaces the password when the emailed code matches and is not expired. */
 	async resetPassword(
 		email: string,
 		code: string,

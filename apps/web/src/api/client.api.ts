@@ -1,4 +1,13 @@
-import type { RequestLogDto, UserDto } from "@proxy-server/shared";
+import type {
+	AnalyticsBreakdownDto,
+	AnalyticsSummaryDto,
+	AnalyticsTimeseriesPointDto,
+	EndpointDto,
+	EndpointListResponseDto,
+	ErrorResponseBody,
+	UserDto,
+} from "@proxy-server/shared";
+import type { RequestLogDto } from "@/types/request-log.dto";
 
 const API_BASE = "";
 
@@ -30,6 +39,22 @@ function assertConfig(): ApiClientConfig {
 	return clientConfig;
 }
 
+function normalizeErrorMessage(message: unknown): string {
+	if (Array.isArray(message)) {
+		return message.map((m) => String(m)).join(". ");
+	}
+	if (typeof message === "string" && message.length > 0) return message;
+	return "Request failed";
+}
+
+function errorMessageFromParsedBody(body: unknown): string | null {
+	if (!body || typeof body !== "object") return null;
+	const r = body as Partial<ErrorResponseBody>;
+	if (r.message != null) return normalizeErrorMessage(r.message);
+	if (typeof r.error === "string" && r.error.length > 0) return r.error;
+	return null;
+}
+
 async function parseResponse<T>(res: Response): Promise<T> {
 	const text = await res.text();
 	if (!text) {
@@ -37,15 +62,12 @@ async function parseResponse<T>(res: Response): Promise<T> {
 		return {} as T;
 	}
 	try {
-		const data = JSON.parse(text) as T & { message?: string; error?: string };
+		const data = JSON.parse(text) as T;
 		if (!res.ok) {
-			throw new Error(
-				(data as { message?: string })?.message ??
-					(data as { error?: string })?.error ??
-					text,
-			);
+			const fromBody = errorMessageFromParsedBody(data);
+			throw new Error(fromBody ?? (text || res.statusText || "Request failed"));
 		}
-		return data as T;
+		return data;
 	} catch (e) {
 		if (e instanceof SyntaxError) throw new Error(text || res.statusText);
 		throw e;
@@ -78,13 +100,11 @@ async function api<T>(
 	if (token) {
 		headers.Authorization = `Bearer ${token}`;
 	}
-
 	const res = await fetch(`${API_BASE}${path}`, {
 		...options,
 		headers,
 		credentials: "include",
 	});
-
 	if (res.status === 401 && !retried && !AUTH_401_NO_REFRESH.has(path)) {
 		const refreshed = await refreshAccessToken();
 		if (refreshed) {
@@ -94,7 +114,6 @@ async function api<T>(
 		cfg.onSessionExpired();
 		throw new Error("Unauthorized");
 	}
-
 	return parseResponse<T>(res);
 }
 
@@ -143,21 +162,7 @@ export const authApi = {
 	},
 };
 
-type EndpointListItem = {
-	id: string;
-	name: string;
-	slug: string;
-	targetUrl: string;
-	isActive: boolean;
-	createdAt: string;
-};
-
-export type EndpointListResponse = {
-	items: EndpointListItem[];
-	total: number;
-	limit: number;
-	offset: number;
-};
+export type EndpointListResponse = EndpointListResponseDto;
 
 export const endpointsApi = {
 	list: (params?: { limit?: number; offset?: number }) => {
@@ -165,35 +170,22 @@ export const endpointsApi = {
 		if (params?.limit != null) search.set("limit", String(params.limit));
 		if (params?.offset != null) search.set("offset", String(params.offset));
 		const qs = search.toString();
-		return api<EndpointListResponse>(`/endpoints${qs ? `?${qs}` : ""}`);
+		return api<EndpointListResponseDto>(`/endpoints${qs ? `?${qs}` : ""}`);
 	},
 	create: (data: { name: string; targetUrl: string; isActive?: boolean }) =>
-		api<{
-			id: string;
-			name: string;
-			slug: string;
-			targetUrl: string;
-			isActive: boolean;
-		}>("/endpoints", { method: "POST", body: JSON.stringify(data) }),
-	get: (id: string) =>
-		api<{
-			id: string;
-			name: string;
-			slug: string;
-			targetUrl: string;
-			isActive: boolean;
-		}>(`/endpoints/${id}`),
+		api<EndpointDto>("/endpoints", {
+			method: "POST",
+			body: JSON.stringify(data),
+		}),
+	get: (id: string) => api<EndpointDto>(`/endpoints/${id}`),
 	update: (
 		id: string,
 		data: { name?: string; targetUrl?: string; isActive?: boolean },
 	) =>
-		api<{
-			id: string;
-			name: string;
-			slug: string;
-			targetUrl: string;
-			isActive: boolean;
-		}>(`/endpoints/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+		api<EndpointDto>(`/endpoints/${id}`, {
+			method: "PATCH",
+			body: JSON.stringify(data),
+		}),
 	delete: (id: string) =>
 		api<{ success: boolean }>(`/endpoints/${id}`, { method: "DELETE" }),
 };
@@ -223,13 +215,7 @@ export const logsApi = {
 
 export const analyticsApi = {
 	summary: (endpointId: string) =>
-		api<{
-			totalRequests: number;
-			requestsLast24h: number;
-			avgLatencyMs: number;
-			uptimePercent: number;
-			errorRate: number;
-		}>(`/analytics/${endpointId}/summary`),
+		api<AnalyticsSummaryDto>(`/analytics/${endpointId}/summary`),
 	timeseries: (
 		endpointId: string,
 		params?: { bucket?: "hour" | "day"; limit?: number },
@@ -238,13 +224,10 @@ export const analyticsApi = {
 		if (params?.bucket) search.set("bucket", params.bucket);
 		if (params?.limit) search.set("limit", String(params.limit));
 		const q = search.toString();
-		return api<
-			Array<{ bucket: string; requests: number; avgLatencyMs: number }>
-		>(`/analytics/${endpointId}/timeseries${q ? `?${q}` : ""}`);
+		return api<AnalyticsTimeseriesPointDto[]>(
+			`/analytics/${endpointId}/timeseries${q ? `?${q}` : ""}`,
+		);
 	},
 	breakdown: (endpointId: string) =>
-		api<{
-			byMethod: Array<{ method: string; count: number }>;
-			byStatus: Array<{ status: number; count: number }>;
-		}>(`/analytics/${endpointId}/breakdown`),
+		api<AnalyticsBreakdownDto>(`/analytics/${endpointId}/breakdown`),
 };

@@ -8,4 +8,6 @@ export const proxyRequestConstants = {
 	HTTP_NOT_FOUND: 404,
 	HTTP_PAYLOAD_TOO_LARGE: 413,
 	HTTP_BAD_GATEWAY: 502,
+	/** Subdomains on the proxy base domain that never resolve to user slugs. */
+	RESERVED_PROXY_SUBDOMAIN_SLUGS: ["www", "api", "app", "dashboard"] as const,
 } as const;

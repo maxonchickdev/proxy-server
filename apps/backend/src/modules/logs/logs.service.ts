@@ -7,6 +7,7 @@ import {
 import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import type { Endpoint, RequestLog } from "@prisma/generated/client";
+import type { LogsListQueryDto } from "./dto/logs-list-query.dto";
 
 /**
  * Read access to persisted proxy request logs.
@@ -15,15 +16,11 @@ import type { Endpoint, RequestLog } from "@prisma/generated/client";
 export class LogsService {
 	constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
+	/** Lists logs for an endpoint the user owns with optional filters. */
 	async findByEndpoint(
 		endpointId: string,
 		userId: string,
-		options: {
-			limit: number;
-			offset: number;
-			method?: string;
-			status?: number;
-		},
+		query: LogsListQueryDto,
 	): Promise<{ logs: RequestLog[]; total: number }> {
 		const endpoint = await this.prisma.endpoint.findFirst({
 			where: { id: endpointId, userId },
@@ -31,24 +28,29 @@ export class LogsService {
 		if (!endpoint) {
 			throw new ForbiddenException("Access denied");
 		}
-
+		const limit =
+			query.limit ??
+			Math.min(
+				paginationConstants.DEFAULT_LIST_LIMIT,
+				paginationConstants.MAX_LIST_LIMIT,
+			);
+		const offset = query.offset ?? paginationConstants.DEFAULT_OFFSET;
 		const where: Record<string, unknown> = { endpointId };
-		if (options.method) where.method = options.method;
-		if (options.status != null) where.responseStatus = options.status;
-
+		if (query.method) where.method = query.method;
+		if (query.status != null) where.responseStatus = query.status;
 		const [logs, total] = await Promise.all([
 			this.prisma.requestLog.findMany({
 				where,
 				orderBy: { createdAt: "desc" },
-				take: Math.min(options.limit, paginationConstants.MAX_LIST_LIMIT),
-				skip: options.offset,
+				take: Math.min(limit, paginationConstants.MAX_LIST_LIMIT),
+				skip: offset,
 			}),
 			this.prisma.requestLog.count({ where }),
 		]);
-
 		return { logs, total };
 	}
 
+	/** Loads one log row with endpoint context when the user owns the endpoint. */
 	async findOne(
 		logId: string,
 		userId: string,

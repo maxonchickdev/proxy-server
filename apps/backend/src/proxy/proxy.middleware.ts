@@ -5,13 +5,29 @@ import {
 	type NestMiddleware,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { NextFunction, Request, Response } from "express";
+import type {
+	NextFunction,
+	Request,
+	Response as ExpressResponse,
+} from "express";
 import { ConfigKeyEnum } from "../common/enums/config.enum";
+import type { Endpoint } from "@prisma/generated/client";
 import { proxyRequestConstants } from "./proxy-request.constants";
 import { ProxyService } from "./proxy.service";
-import type { Endpoint } from "@prisma/generated/client";
 
 type HeadersRecord = Record<string, string | string[] | undefined>;
+
+type ForwardContext = {
+	req: Request;
+	res: ExpressResponse;
+	endpoint: Endpoint;
+	path: string;
+	queryString: string;
+	requestBody: Buffer | null;
+	headers: HeadersRecord;
+	targetUrl: string;
+	startTime: number;
+};
 
 /**
  * Intercepts `/r/:slug` (and subdomain) traffic and forwards to configured targets.
@@ -25,7 +41,11 @@ export class ProxyMiddleware implements NestMiddleware {
 		@Inject(ConfigService) private readonly config: ConfigService,
 	) {}
 
-	async use(req: Request, res: Response, next: NextFunction): Promise<void> {
+	async use(
+		req: Request,
+		res: ExpressResponse,
+		next: NextFunction,
+	): Promise<void> {
 		const { slug, path, isProxy } = this.extractSlugAndPath(req);
 		if (!isProxy || !slug) {
 			next();
@@ -76,7 +96,7 @@ export class ProxyMiddleware implements NestMiddleware {
 		});
 	}
 
-	private writeJson(res: Response, status: number, body: object): void {
+	private writeJson(res: ExpressResponse, status: number, body: object): void {
 		res.status(status).json(body);
 	}
 
@@ -85,109 +105,132 @@ export class ProxyMiddleware implements NestMiddleware {
 		return q >= 0 ? rawUrl.slice(q + 1) : "";
 	}
 
-	private async forwardToUpstreamAndLog(ctx: {
-		req: Request;
-		res: Response;
-		endpoint: Endpoint;
-		path: string;
-		queryString: string;
-		requestBody: Buffer | null;
-		headers: HeadersRecord;
-		targetUrl: string;
-		startTime: number;
-	}): Promise<void> {
-		const {
-			req,
-			res,
-			endpoint,
-			path,
-			queryString,
-			requestBody,
-			headers,
-			targetUrl,
-			startTime,
-		} = ctx;
-		const method = req.method ?? "GET";
+	private buildUpstreamBody(
+		method: string,
+		requestBody: Buffer | null,
+	): BodyInit | undefined {
 		const bodyAllowed = !["GET", "HEAD"].includes(method.toUpperCase());
-		const upstreamBody: BodyInit | undefined =
-			bodyAllowed && requestBody?.length
-				? Uint8Array.from(requestBody)
-				: undefined;
+		if (!bodyAllowed || !requestBody?.length) return undefined;
+		return Uint8Array.from(requestBody);
+	}
+
+	private applyUpstreamHeadersToResponse(
+		upstreamRes: globalThis.Response,
+		expressRes: ExpressResponse,
+	): Record<string, string> {
+		const hopByHop = new Set([
+			"transfer-encoding",
+			"content-encoding",
+			"connection",
+		]);
+		upstreamRes.headers.forEach((value, key) => {
+			if (hopByHop.has(key.toLowerCase())) return;
+			expressRes.setHeader(key, value);
+		});
+		const responseHeadersObj: Record<string, string> = {};
+		upstreamRes.headers.forEach((value, key) => {
+			responseHeadersObj[key] = value;
+		});
+		return responseHeadersObj;
+	}
+
+	private logSuccessfulProxyRequest(
+		ctx: ForwardContext,
+		upstream: globalThis.Response,
+		responseBuffer: Buffer,
+		responseHeadersObj: Record<string, string>,
+		durationMs: number,
+	): void {
+		this.proxyService.logRequest({
+			endpointId: ctx.endpoint.id,
+			method: ctx.req.method,
+			path: ctx.path,
+			queryParams: ctx.queryString || null,
+			requestHeaders: this.proxyService.maskSensitiveHeaders(
+				ctx.headers as Record<string, string>,
+			),
+			requestBody: this.proxyService.truncateForLog(
+				ctx.requestBody,
+				proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
+			),
+			responseStatus: upstream.status,
+			responseHeaders:
+				this.proxyService.maskSensitiveHeaders(responseHeadersObj),
+			responseBody: this.proxyService.truncateForLog(
+				responseBuffer,
+				proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
+			),
+			durationMs,
+			clientIp: this.proxyService.getClientIp(ctx.req.headers as HeadersRecord),
+		});
+	}
+
+	private logFailedProxyRequest(
+		ctx: ForwardContext,
+		responseStatus: number,
+		durationMs: number,
+	): void {
+		this.proxyService.logRequest({
+			endpointId: ctx.endpoint.id,
+			method: ctx.req.method,
+			path: ctx.path,
+			queryParams: ctx.queryString || null,
+			requestHeaders: this.proxyService.maskSensitiveHeaders(
+				ctx.headers as Record<string, string>,
+			),
+			requestBody: this.proxyService.truncateForLog(
+				ctx.requestBody,
+				proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
+			),
+			responseStatus,
+			responseHeaders: null,
+			responseBody: null,
+			durationMs,
+			clientIp: this.proxyService.getClientIp(ctx.req.headers as HeadersRecord),
+		});
+	}
+
+	private async forwardToUpstreamAndLog(ctx: ForwardContext): Promise<void> {
+		const method = ctx.req.method ?? "GET";
+		const upstreamBody = this.buildUpstreamBody(method, ctx.requestBody);
 		try {
-			const upstream = await fetch(targetUrl, {
+			const upstreamRes = await fetch(ctx.targetUrl, {
 				method,
-				headers: headers as HeadersInit,
+				headers: ctx.headers as HeadersInit,
 				body: upstreamBody,
 				signal: AbortSignal.timeout(proxyRequestConstants.UPSTREAM_TIMEOUT_MS),
 			});
-			const durationMs = Date.now() - startTime;
-			const responseBuffer = Buffer.from(await upstream.arrayBuffer());
-			res.status(upstream.status);
-			const hopByHop = new Set([
-				"transfer-encoding",
-				"content-encoding",
-				"connection",
-			]);
-			upstream.headers.forEach((value, key) => {
-				if (hopByHop.has(key.toLowerCase())) return;
-				res.setHeader(key, value);
-			});
-			res.send(responseBuffer);
-			const responseHeadersObj: Record<string, string> = {};
-			upstream.headers.forEach((value, key) => {
-				responseHeadersObj[key] = value;
-			});
-			this.proxyService.logRequest({
-				endpointId: endpoint.id,
-				method: req.method,
-				path,
-				queryParams: queryString || null,
-				requestHeaders: this.proxyService.maskSensitiveHeaders(
-					headers as Record<string, string>,
-				),
-				requestBody: this.proxyService.truncateForLog(
-					requestBody,
-					proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
-				),
-				responseStatus: upstream.status,
-				responseHeaders:
-					this.proxyService.maskSensitiveHeaders(responseHeadersObj),
-				responseBody: this.proxyService.truncateForLog(
-					responseBuffer,
-					proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
-				),
+			const durationMs = Date.now() - ctx.startTime;
+			const responseBuffer = Buffer.from(await upstreamRes.arrayBuffer());
+			ctx.res.status(upstreamRes.status);
+			const responseHeadersObj = this.applyUpstreamHeadersToResponse(
+				upstreamRes,
+				ctx.res,
+			);
+			ctx.res.send(responseBuffer);
+			this.logSuccessfulProxyRequest(
+				ctx,
+				upstreamRes,
+				responseBuffer,
+				responseHeadersObj,
 				durationMs,
-				clientIp: this.proxyService.getClientIp(req.headers as HeadersRecord),
-			});
+			);
 		} catch (err: unknown) {
-			const durationMs = Date.now() - startTime;
+			const durationMs = Date.now() - ctx.startTime;
 			const status = proxyRequestConstants.HTTP_BAD_GATEWAY;
 			this.logger.error(
-				`Upstream fetch failed: ${err instanceof Error ? err.message : err}`,
+				JSON.stringify({
+					msg: "upstream_fetch_failed",
+					targetUrl: ctx.targetUrl,
+					error: err instanceof Error ? err.message : String(err),
+				}),
 				err instanceof Error ? err.stack : undefined,
 			);
-			res.status(status).json({
+			ctx.res.status(status).json({
 				error: "Bad Gateway",
 				message: "Could not reach target",
 			});
-			this.proxyService.logRequest({
-				endpointId: endpoint.id,
-				method: req.method,
-				path,
-				queryParams: queryString || null,
-				requestHeaders: this.proxyService.maskSensitiveHeaders(
-					headers as Record<string, string>,
-				),
-				requestBody: this.proxyService.truncateForLog(
-					requestBody,
-					proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
-				),
-				responseStatus: status,
-				responseHeaders: null,
-				responseBody: null,
-				durationMs,
-				clientIp: this.proxyService.getClientIp(req.headers as HeadersRecord),
-			});
+			this.logFailedProxyRequest(ctx, status, durationMs);
 		}
 	}
 
@@ -213,8 +256,10 @@ export class ProxyMiddleware implements NestMiddleware {
 			const subdomain = parts[0];
 			const rest = parts.slice(1).join(".");
 			if (rest === baseDomain || rest.endsWith(`.${baseDomain}`)) {
-				const skip = ["www", "api", "app", "dashboard"];
-				if (!skip.includes(subdomain.toLowerCase())) {
+				const reserved =
+					proxyRequestConstants.RESERVED_PROXY_SUBDOMAIN_SLUGS as readonly string[];
+				const skip = new Set(reserved.map((s) => s.toLowerCase()));
+				if (!skip.has(subdomain.toLowerCase())) {
 					return {
 						slug: subdomain,
 						path: path || "/",

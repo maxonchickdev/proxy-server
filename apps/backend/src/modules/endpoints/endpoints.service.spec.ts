@@ -4,6 +4,7 @@ import { EndpointsService } from "./endpoints.service";
 
 describe("EndpointsService", () => {
 	it("findAll returns items, total, limit, offset", async () => {
+		const createdAt = new Date("2024-01-15T12:00:00.000Z");
 		const items = [
 			{
 				id: "e1",
@@ -12,7 +13,17 @@ describe("EndpointsService", () => {
 				slug: "abc",
 				targetUrl: "https://x.com",
 				isActive: true,
-				createdAt: new Date(),
+				createdAt,
+			},
+		];
+		const expectedDtos = [
+			{
+				id: "e1",
+				name: "A",
+				slug: "abc",
+				targetUrl: "https://x.com",
+				isActive: true,
+				createdAt: createdAt.toISOString(),
 			},
 		];
 		const mockPrisma = {
@@ -29,7 +40,7 @@ describe("EndpointsService", () => {
 		}).compile();
 		const service = moduleRef.get(EndpointsService);
 		const result = await service.findAll("u1", { limit: 50, offset: 10 });
-		expect(result.items).toEqual(items);
+		expect(result.items).toEqual(expectedDtos);
 		expect(result.total).toBe(3);
 		expect(result.limit).toBe(50);
 		expect(result.offset).toBe(10);

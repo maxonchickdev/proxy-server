@@ -12,9 +12,9 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
-import { paginationConstants } from "../../common/constants/pagination.constants";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import { LogsListQueryDto } from "./dto/logs-list-query.dto";
 import { LogsService } from "./logs.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
@@ -77,24 +77,13 @@ export class LogsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Lists logs using validated pagination and filter query parameters. */
 	async findByEndpoint(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser() user: CurrentUserPayload,
-		@Query("limit") limit?: string,
-		@Query("offset") offset?: string,
-		@Query("method") method?: string,
-		@Query("status") status?: string,
+		@Query() query: LogsListQueryDto,
 	): ReturnType<LogsService["findByEndpoint"]> {
-		return this.logsService.findByEndpoint(endpointId, user.id, {
-			limit: limit
-				? parseInt(limit, 10)
-				: paginationConstants.DEFAULT_LIST_LIMIT,
-			offset: offset
-				? parseInt(offset, 10)
-				: paginationConstants.DEFAULT_OFFSET,
-			method: method || undefined,
-			status: status ? parseInt(status, 10) : undefined,
-		});
+		return this.logsService.findByEndpoint(endpointId, user.id, query);
 	}
 
 	@Get(":id")
@@ -128,6 +117,7 @@ export class LogsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
+	/** Fetches a single log with its parent endpoint when authorized. */
 	async findOne(
 		@Param("id") id: string,
 		@CurrentUser() user: CurrentUserPayload,
