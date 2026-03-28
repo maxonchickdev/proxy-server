@@ -1,17 +1,17 @@
-**/node_modules/**
+**/node_modules
 
 **/.env*
 !.env.example
 
-**/dist/**
+**/dist
 **/tsconfig.tsbuildinfo
 
-apps/backend/prisma/generated/
+**/generated
 
 **/npm-debug.log*
 
 **/.DS_Store
 
-apps/backend/documentation
+**/documentation
 
 .cursor
