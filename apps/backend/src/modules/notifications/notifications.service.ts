@@ -10,6 +10,9 @@ import { AlertThrottleService } from "./alert-throttle.service";
 import { SlackService } from "./slack.service";
 import { TelegramService } from "./telegram.service";
 
+/**
+ * Evaluates alert rules after proxied requests and dispatches notifications.
+ */
 @Injectable()
 export class NotificationsService {
 	private readonly logger = new Logger(NotificationsService.name);
@@ -25,12 +28,11 @@ export class NotificationsService {
 	async evaluateAndNotify(
 		endpointId: string,
 		log: Pick<RequestLog, "responseStatus" | "durationMs" | "method" | "path">,
-	) {
+	): Promise<void> {
 		const rules = await this.prisma.alertRule.findMany({
 			where: { endpointId, isActive: true },
 			include: { channel: true },
 		});
-
 		for (const rule of rules) {
 			if (!rule.channel.isActive) continue;
 			if (await this.throttle.isThrottled(endpointId, rule.channelId)) continue;

@@ -6,13 +6,11 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import { AuthService } from "../auth.service";
-import type { RefreshRequestAuth } from "../types/refresh-request.type";
+import type { RequestWithRefreshAuth } from "../types/request-with-refresh-auth.type";
 
-export type RequestWithRefreshAuth = {
-	cookies?: Record<string, string>;
-	refreshAuth?: RefreshRequestAuth;
-};
-
+/**
+ * Ensures a valid refresh cookie is present and attaches parsed session to the request.
+ */
 @Injectable()
 export class RefreshAuthGuard implements CanActivate {
 	constructor(@Inject(AuthService) private readonly authService: AuthService) {}

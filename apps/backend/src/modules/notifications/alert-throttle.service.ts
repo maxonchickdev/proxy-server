@@ -1,10 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
+import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
+import { alertThrottleConstants } from "./alert-throttle.constants";
 
-const THROTTLE_MS = 5 * 60 * 1000;
-
+/**
+ * Redis-backed (or in-memory fallback) cooldown for alert spam prevention.
+ */
 @Injectable()
 export class AlertThrottleService {
 	private readonly logger = new Logger(AlertThrottleService.name);
@@ -49,14 +51,14 @@ export class AlertThrottleService {
 		}
 		const last = this.memory.get(k);
 		if (!last) return false;
-		return Date.now() - last < THROTTLE_MS;
+		return Date.now() - last < alertThrottleConstants.COOLDOWN_MS;
 	}
 
 	async markSent(endpointId: string, channelId: string): Promise<void> {
 		const k = this.key(endpointId, channelId);
 		if (this.redis && !this.useMemoryOnly) {
 			try {
-				await this.redis.set(k, "1", "PX", THROTTLE_MS);
+				await this.redis.set(k, "1", "PX", alertThrottleConstants.COOLDOWN_MS);
 				return;
 			} catch {
 				this.useMemoryOnly = true;

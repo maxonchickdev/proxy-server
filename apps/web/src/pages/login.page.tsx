@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { authApi } from "../api/client.api";
-import { ButtonComponent } from "../components/ui/button.component";
-import { InputComponent } from "../components/ui/input.component";
-import { useAuth } from "../contexts/auth.context";
+import { type FormEvent, useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { authApi } from "@/api/client.api";
+import { ButtonComponent } from "@/components/ui/button.component";
+import { InputComponent } from "@/components/ui/input.component";
+import { useAuth } from "@/contexts/auth.context";
 
 export const LoginPage = () => {
 	const [email, setEmail] = useState("");
@@ -13,11 +13,19 @@ export const LoginPage = () => {
 	const { setSession, user, isReady } = useAuth();
 	const navigate = useNavigate();
 
-	useEffect(() => {
-		if (isReady && user) navigate("/", { replace: true });
-	}, [isReady, user, navigate]);
+	if (isReady && user) {
+		return <Navigate to="/" replace />;
+	}
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleEmailChange = (value: string) => {
+		setEmail(value);
+	};
+
+	const handlePasswordChange = (value: string) => {
+		setPassword(value);
+	};
+
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setError("");
 		setLoading(true);
@@ -33,20 +41,23 @@ export const LoginPage = () => {
 	};
 
 	return (
-		<div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-8 text-2xl font-medium">Sign in</h1>
 			<form onSubmit={handleSubmit} className="space-y-4">
-				{error && (
-					<div className="border border-white/40 p-3 text-white/80">
+				{error ? (
+					<div
+						className="border border-white/40 p-3 text-white/80"
+						role="alert"
+					>
 						{error}
 					</div>
-				)}
+				) : null}
 				<InputComponent
 					label="Email"
 					type="email"
 					name="email"
 					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					onChange={(e) => handleEmailChange(e.target.value)}
 					required
 				/>
 				<InputComponent
@@ -54,7 +65,7 @@ export const LoginPage = () => {
 					type="password"
 					name="password"
 					value={password}
-					onChange={(e) => setPassword(e.target.value)}
+					onChange={(e) => handlePasswordChange(e.target.value)}
 					required
 				/>
 				<ButtonComponent
@@ -76,6 +87,6 @@ export const LoginPage = () => {
 					Register
 				</Link>
 			</p>
-		</div>
+		</main>
 	);
 };

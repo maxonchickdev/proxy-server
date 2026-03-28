@@ -1,12 +1,11 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	createContext,
 	useCallback,
 	useContext,
-	useEffect,
+	useLayoutEffect,
 	useMemo,
 	useRef,
-	useState,
 	type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
@@ -14,8 +13,12 @@ import {
 	authApi,
 	configureApiClient,
 	refreshAccessToken,
-} from "../api/client.api";
-import type { UserDto } from "../types/user.type";
+} from "@/api/client.api";
+import type { UserDto } from "@proxy-server/shared";
+
+const AUTH_SESSION_QUERY_KEY = ["auth", "session"] as const;
+
+type AuthSession = { accessToken: string; user: UserDto } | null;
 
 interface AuthContextValue {
 	user: UserDto | null;
@@ -32,80 +35,64 @@ const ACCESS_REFRESH_MS = 14 * 60 * 1000;
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
-	const [user, setUser] = useState<UserDto | null>(null);
-	const [accessToken, setAccessTokenState] = useState<string | null>(null);
-	const [isReady, setIsReady] = useState(false);
 	const accessTokenRef = useRef<string | null>(null);
-	accessTokenRef.current = accessToken;
-
-	const setSession = useCallback((token: string, u: UserDto) => {
-		accessTokenRef.current = token;
-		setAccessTokenState(token);
-		setUser(u);
-	}, []);
-
+	const sessionQuery = useQuery({
+		queryKey: AUTH_SESSION_QUERY_KEY,
+		queryFn: async (): Promise<AuthSession> => refreshAccessToken(),
+		refetchInterval: (query) => {
+			const data = query.state.data;
+			if (data?.accessToken) return ACCESS_REFRESH_MS;
+			return false;
+		},
+		staleTime: 0,
+	});
+	const session = sessionQuery.data;
+	const user = session?.user ?? null;
+	const accessToken = session?.accessToken ?? null;
+	const isReady = !sessionQuery.isPending;
+	useLayoutEffect(() => {
+		if (sessionQuery.data === undefined) return;
+		accessTokenRef.current = sessionQuery.data?.accessToken ?? null;
+	}, [sessionQuery.data]);
+	const setSession = useCallback(
+		(token: string, u: UserDto) => {
+			accessTokenRef.current = token;
+			queryClient.setQueryData<AuthSession>(AUTH_SESSION_QUERY_KEY, {
+				accessToken: token,
+				user: u,
+			});
+		},
+		[queryClient],
+	);
 	const clearSession = useCallback(() => {
 		accessTokenRef.current = null;
-		setAccessTokenState(null);
-		setUser(null);
-	}, []);
-
+		queryClient.setQueryData<AuthSession>(AUTH_SESSION_QUERY_KEY, null);
+	}, [queryClient]);
 	const onSessionExpired = useCallback(() => {
 		clearSession();
 		void navigate("/login", { replace: true });
 	}, [clearSession, navigate]);
-
-	useEffect(() => {
+	useLayoutEffect(() => {
 		configureApiClient({
 			getAccessToken: () => accessTokenRef.current,
 			setSession: (token, u) => {
 				if (token && u) {
 					accessTokenRef.current = token;
-					setAccessTokenState(token);
-					setUser(u);
+					queryClient.setQueryData<AuthSession>(AUTH_SESSION_QUERY_KEY, {
+						accessToken: token,
+						user: u,
+					});
 				} else {
 					clearSession();
 				}
 			},
 			onSessionExpired,
 		});
-	}, [clearSession, onSessionExpired]);
-
-	useEffect(() => {
-		let cancelled = false;
-		(async () => {
-			const data = await refreshAccessToken();
-			if (cancelled) return;
-			if (data) {
-				accessTokenRef.current = data.accessToken;
-				setAccessTokenState(data.accessToken);
-				setUser(data.user);
-			}
-			setIsReady(true);
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useEffect(() => {
-		if (!accessToken) return;
-		const id = window.setInterval(() => {
-			void refreshAccessToken().then((data) => {
-				if (data) {
-					accessTokenRef.current = data.accessToken;
-					setAccessTokenState(data.accessToken);
-					setUser(data.user);
-				}
-			});
-		}, ACCESS_REFRESH_MS);
-		return () => window.clearInterval(id);
-	}, [accessToken]);
-
+	}, [clearSession, onSessionExpired, queryClient]);
 	const logout = useCallback(async () => {
-		const t = accessTokenRef.current;
+		const token = accessTokenRef.current;
 		try {
-			await authApi.logout(t);
+			await authApi.logout(token);
 		} catch {
 			/* ignore */
 		}
@@ -113,7 +100,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		queryClient.clear();
 		void navigate("/login", { replace: true });
 	}, [clearSession, navigate, queryClient]);
-
 	const value = useMemo(
 		() => ({
 			user,
@@ -124,7 +110,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		}),
 		[user, accessToken, isReady, setSession, logout],
 	);
-
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

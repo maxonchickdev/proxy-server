@@ -12,11 +12,15 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
-import type { CurrentUserPayload } from "../../common/decorators/current-user.decorator";
+import { paginationConstants } from "../../common/constants/pagination.constants";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import { LogsService } from "./logs.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
+/**
+ * HTTP API for request log inspection.
+ */
 @ApiTags("Logs")
 @ApiBearerAuth("Bearer")
 @Controller("logs")
@@ -80,10 +84,14 @@ export class LogsController {
 		@Query("offset") offset?: string,
 		@Query("method") method?: string,
 		@Query("status") status?: string,
-	) {
+	): ReturnType<LogsService["findByEndpoint"]> {
 		return this.logsService.findByEndpoint(endpointId, user.id, {
-			limit: limit ? parseInt(limit, 10) : 50,
-			offset: offset ? parseInt(offset, 10) : 0,
+			limit: limit
+				? parseInt(limit, 10)
+				: paginationConstants.DEFAULT_LIST_LIMIT,
+			offset: offset
+				? parseInt(offset, 10)
+				: paginationConstants.DEFAULT_OFFSET,
 			method: method || undefined,
 			status: status ? parseInt(status, 10) : undefined,
 		});
@@ -123,7 +131,7 @@ export class LogsController {
 	async findOne(
 		@Param("id") id: string,
 		@CurrentUser() user: CurrentUserPayload,
-	) {
+	): ReturnType<LogsService["findOne"]> {
 		return this.logsService.findOne(id, user.id);
 	}
 }

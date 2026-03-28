@@ -27,9 +27,11 @@
 		"lint:check": "biome lint",
 		"lint:fix": "biome lint --write",
 		"lint:format:check": "biome format",
-		"lint:format:fix": "biome format --write"
+		"lint:format:fix": "biome format --write",
+		"test": "jest"
 	},
 	"dependencies": {
+		"@proxy-server/shared": "*",
 		"@nestjs/cli": "^11.0.16",
 		"@nestjs/common": "^11.1.17",
 		"@nestjs/config": "^4.0.3",
@@ -60,11 +62,15 @@
 		"source-map-support": "^0.5.21"
 	},
 	"devDependencies": {
+		"@nestjs/testing": "^11.1.17",
 		"@types/bcrypt": "^6.0.0",
+		"@types/jest": "^29.5.14",
 		"@types/cookie-parser": "^1.4.10",
 		"@types/node": "^25.5.0",
 		"@types/nodemailer": "^7.0.11",
 		"@types/passport-jwt": "^4.0.1",
+		"jest": "^29.7.0",
+		"ts-jest": "^29.3.4",
 		"tsconfig-paths": "^4.2.0"
 	}
 }

@@ -12,10 +12,8 @@ import { EnvironmentsEnum } from "./common/enums/environments.enum";
 import { CatchEverythingFilter } from "./common/filters/catch-everything.filter";
 import { LoggingInterceptor } from "./common/interceptors/logger.interceptor";
 import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor";
-import {
-	AuthResponseSchema,
-	AuthUserSchema,
-} from "./common/swagger/schemas/auth-response.schema";
+import { AuthResponseSchema } from "./common/swagger/schemas/auth-response.schema";
+import { AuthUserSchema } from "./common/swagger/schemas/auth-user.schema";
 import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.schema";
 
 const logger: Logger = new Logger("Bootstrap");
@@ -80,6 +78,7 @@ const logger: Logger = new Logger("Bootstrap");
 			)
 			.addSecurityRequirements("Bearer")
 			.addTag("Auth", "Authentication endpoints (no Bearer token required)")
+			.addTag("Health", "Liveness and readiness probes")
 			.addTag("Endpoints", "Proxy endpoint management")
 			.addTag("Analytics", "Request analytics and metrics")
 			.addTag("Logs", "Request log access")

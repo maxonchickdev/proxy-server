@@ -1,10 +1,5 @@
 import { createParamDecorator, type ExecutionContext } from "@nestjs/common";
-
-export interface CurrentUserPayload {
-	id: string;
-	email: string;
-	name: string | null;
-}
+import type { CurrentUserPayload } from "../types/current-user-payload.type";
 
 export const CurrentUser = createParamDecorator(
 	(data: keyof CurrentUserPayload | undefined, ctx: ExecutionContext) => {

@@ -1,5 +1,4 @@
-import type { UserDto } from "../types/user.type";
-import type { RequestLogDto } from "../types/request-log.type";
+import type { RequestLogDto, UserDto } from "@proxy-server/shared";
 
 const API_BASE = "";
 
@@ -144,18 +143,30 @@ export const authApi = {
 	},
 };
 
+type EndpointListItem = {
+	id: string;
+	name: string;
+	slug: string;
+	targetUrl: string;
+	isActive: boolean;
+	createdAt: string;
+};
+
+export type EndpointListResponse = {
+	items: EndpointListItem[];
+	total: number;
+	limit: number;
+	offset: number;
+};
+
 export const endpointsApi = {
-	list: () =>
-		api<
-			Array<{
-				id: string;
-				name: string;
-				slug: string;
-				targetUrl: string;
-				isActive: boolean;
-				createdAt: string;
-			}>
-		>("/endpoints"),
+	list: (params?: { limit?: number; offset?: number }) => {
+		const search = new URLSearchParams();
+		if (params?.limit != null) search.set("limit", String(params.limit));
+		if (params?.offset != null) search.set("offset", String(params.offset));
+		const qs = search.toString();
+		return api<EndpointListResponse>(`/endpoints${qs ? `?${qs}` : ""}`);
+	},
 	create: (data: { name: string; targetUrl: string; isActive?: boolean }) =>
 		api<{
 			id: string;

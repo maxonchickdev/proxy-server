@@ -3,10 +3,13 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpCode,
+	HttpStatus,
 	Inject,
 	Param,
 	Patch,
 	Post,
+	Query,
 } from "@nestjs/common";
 import {
 	ApiBearerAuth,
@@ -21,13 +24,17 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
-import type { CurrentUserPayload } from "../../common/decorators/current-user.decorator";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import type { CreateEndpointDto } from "./dto/create-endpoint.dto";
-import type { UpdateEndpointDto } from "./dto/update-endpoint.dto";
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import { CreateEndpointDto } from "./dto/create-endpoint.dto";
+import { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
+import { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import { EndpointsService } from "./endpoints.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
+/**
+ * HTTP API for creating and managing user-owned proxy endpoints.
+ */
 @ApiTags("Endpoints")
 @ApiBearerAuth("Bearer")
 @Controller("endpoints")
@@ -38,6 +45,7 @@ export class EndpointsController {
 	) {}
 
 	@Post()
+	@HttpCode(HttpStatus.CREATED)
 	@ApiOperation({
 		summary: "Create endpoint",
 		description:
@@ -59,7 +67,7 @@ export class EndpointsController {
 	create(
 		@CurrentUser("id") userId: string,
 		@Body() createEndpointDto: CreateEndpointDto,
-	) {
+	): ReturnType<EndpointsService["create"]> {
 		return this.endpointsService.create(userId, createEndpointDto);
 	}
 
@@ -81,8 +89,11 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
-	findAll(@CurrentUser("id") userId: string) {
-		return this.endpointsService.findAll(userId);
+	findAll(
+		@CurrentUser("id") userId: string,
+		@Query() query: ListEndpointsQueryDto,
+	): ReturnType<EndpointsService["findAll"]> {
+		return this.endpointsService.findAll(userId, query);
 	}
 
 	@Get(":id")
@@ -116,7 +127,10 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
-	findOne(@Param("id") id: string, @CurrentUser() user: CurrentUserPayload) {
+	findOne(
+		@Param("id") id: string,
+		@CurrentUser() user: CurrentUserPayload,
+	): ReturnType<EndpointsService["findOne"]> {
 		return this.endpointsService.findOne(id, user);
 	}
 
@@ -156,7 +170,7 @@ export class EndpointsController {
 		@Param("id") id: string,
 		@CurrentUser() user: CurrentUserPayload,
 		@Body() updateEndpointDto: UpdateEndpointDto,
-	) {
+	): ReturnType<EndpointsService["update"]> {
 		return this.endpointsService.update(id, user, updateEndpointDto);
 	}
 
@@ -191,7 +205,10 @@ export class EndpointsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
-	remove(@Param("id") id: string, @CurrentUser() user: CurrentUserPayload) {
+	remove(
+		@Param("id") id: string,
+		@CurrentUser() user: CurrentUserPayload,
+	): ReturnType<EndpointsService["remove"]> {
 		return this.endpointsService.remove(id, user);
 	}
 }

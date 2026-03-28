@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApi } from "../api/client.api";
+import { analyticsApi } from "@/api/client.api";
 
 export function useAnalyticsSummary(endpointId: string | undefined) {
 	return useQuery({

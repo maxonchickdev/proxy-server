@@ -1,11 +1,18 @@
 import { ForbiddenException, Inject, Injectable } from "@nestjs/common";
 import { PrismaService } from "../../core/prisma/prisma.service";
+import { analyticsConstants } from "./analytics.constants";
 
+/**
+ * Aggregates request log metrics per endpoint for dashboards.
+ */
 @Injectable()
 export class AnalyticsService {
 	constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-	async ensureEndpointAccess(endpointId: string, userId: string) {
+	async ensureEndpointAccess(
+		endpointId: string,
+		userId: string,
+	): Promise<{ id: string }> {
 		const endpoint = await this.prisma.endpoint.findFirst({
 			where: { id: endpointId, userId },
 		});
@@ -15,12 +22,19 @@ export class AnalyticsService {
 		return endpoint;
 	}
 
-	async getSummary(endpointId: string, userId: string) {
+	async getSummary(
+		endpointId: string,
+		userId: string,
+	): Promise<{
+		totalRequests: number;
+		requestsLast24h: number;
+		avgLatencyMs: number;
+		uptimePercent: number;
+		errorRate: number;
+	}> {
 		await this.ensureEndpointAccess(endpointId, userId);
-
 		const now = new Date();
-		const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
+		const last24h = new Date(now.getTime() - analyticsConstants.LAST_24H_MS);
 		const [total, last24hCount, avgLatency, errorCount, successCount] =
 			await Promise.all([
 				this.prisma.requestLog.count({ where: { endpointId } }),
@@ -34,21 +48,29 @@ export class AnalyticsService {
 				this.prisma.requestLog.count({
 					where: {
 						endpointId,
-						OR: [{ responseStatus: { gte: 500 } }, { responseStatus: null }],
+						OR: [
+							{
+								responseStatus: {
+									gte: analyticsConstants.HTTP_STATUS_SERVER_ERROR_THRESHOLD,
+								},
+							},
+							{ responseStatus: null },
+						],
 					},
 				}),
 				this.prisma.requestLog.count({
 					where: {
 						endpointId,
-						responseStatus: { gte: 200, lt: 300 },
+						responseStatus: {
+							gte: analyticsConstants.HTTP_STATUS_SUCCESS_MIN,
+							lt: analyticsConstants.HTTP_STATUS_SUCCESS_MAX,
+						},
 					},
 				}),
 			]);
-
-		const totalForUptime = total || 1;
+		const totalForUptime = total || analyticsConstants.UPTIME_DIVISOR_FALLBACK;
 		const uptimePercent = ((successCount / totalForUptime) * 100).toFixed(2);
 		const errorRate = ((errorCount / totalForUptime) * 100).toFixed(2);
-
 		return {
 			totalRequests: total,
 			requestsLast24h: last24hCount,
@@ -62,19 +84,19 @@ export class AnalyticsService {
 		endpointId: string,
 		userId: string,
 		options: { bucket: "hour" | "day"; limit?: number },
-	) {
+	): Promise<{ bucket: string; requests: number; avgLatencyMs: number }[]> {
 		await this.ensureEndpointAccess(endpointId, userId);
-
-		const limit = Math.min(options.limit ?? 24, 168);
+		const limit = Math.min(
+			options.limit ?? analyticsConstants.DEFAULT_TIMESERIES_LIMIT,
+			analyticsConstants.MAX_TIMESERIES_LIMIT,
+		);
 		const bucket = options.bucket ?? "hour";
 		const truncUnit = bucket === "hour" ? "hour" : "day";
-
 		type Row = {
 			bucket: Date;
 			requests: bigint;
 			avgLatencyMs: bigint | null;
 		};
-
 		const rows = await this.prisma.$queryRawUnsafe<Row[]>(
 			`SELECT * FROM (
 				SELECT date_trunc($1::text, "created_at") AS bucket,
@@ -90,20 +112,25 @@ export class AnalyticsService {
 			endpointId,
 			limit,
 		);
-
+		const prefixLen =
+			bucket === "hour"
+				? analyticsConstants.ISO_HOUR_BUCKET_PREFIX_LENGTH
+				: analyticsConstants.ISO_DAY_BUCKET_PREFIX_LENGTH;
 		return rows.map((r) => ({
-			bucket:
-				bucket === "hour"
-					? r.bucket.toISOString().slice(0, 13)
-					: r.bucket.toISOString().slice(0, 10),
+			bucket: r.bucket.toISOString().slice(0, prefixLen),
 			requests: Number(r.requests),
 			avgLatencyMs: Number(r.avgLatencyMs ?? 0),
 		}));
 	}
 
-	async getBreakdown(endpointId: string, userId: string) {
+	async getBreakdown(
+		endpointId: string,
+		userId: string,
+	): Promise<{
+		byMethod: { method: string; count: number }[];
+		byStatus: { status: number; count: number }[];
+	}> {
 		await this.ensureEndpointAccess(endpointId, userId);
-
 		const [byMethod, byStatus] = await Promise.all([
 			this.prisma.requestLog.groupBy({
 				by: ["method"],
@@ -116,7 +143,6 @@ export class AnalyticsService {
 				_count: { id: true },
 			}),
 		]);
-
 		return {
 			byMethod: byMethod.map((m) => ({
 				method: m.method,

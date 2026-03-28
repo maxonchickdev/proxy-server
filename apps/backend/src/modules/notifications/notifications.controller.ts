@@ -3,9 +3,12 @@ import {
 	Controller,
 	Delete,
 	Get,
+	HttpCode,
+	HttpStatus,
 	Inject,
 	Param,
 	Post,
+	Query,
 } from "@nestjs/common";
 import {
 	ApiBearerAuth,
@@ -21,12 +24,16 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
 import { AlertRulesService } from "./alert-rules.service";
 import type { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
 import type { CreateChannelDto } from "./dto/create-channel.dto";
 import { NotificationChannelsService } from "./notification-channels.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
+/**
+ * HTTP API for notification channels and endpoint alert rules.
+ */
 @ApiTags("Notifications")
 @ApiBearerAuth("Bearer")
 @Controller("notifications")
@@ -38,6 +45,7 @@ export class NotificationsController {
 	) {}
 
 	@Post("channels")
+	@HttpCode(HttpStatus.CREATED)
 	@ApiOperation({
 		summary: "Create notification channel",
 		description: "Creates a Telegram or Slack notification channel.",
@@ -58,7 +66,7 @@ export class NotificationsController {
 	createChannel(
 		@CurrentUser("id") userId: string,
 		@Body() dto: CreateChannelDto,
-	) {
+	): ReturnType<NotificationChannelsService["create"]> {
 		return this.channels.create(userId, dto);
 	}
 
@@ -80,8 +88,11 @@ export class NotificationsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
-	listChannels(@CurrentUser("id") userId: string) {
-		return this.channels.findAll(userId);
+	listChannels(
+		@CurrentUser("id") userId: string,
+		@Query() query: PaginationQueryDto,
+	): ReturnType<NotificationChannelsService["findAll"]> {
+		return this.channels.findAll(userId, query);
 	}
 
 	@Delete("channels/:id")
@@ -110,11 +121,15 @@ export class NotificationsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
-	deleteChannel(@Param("id") id: string, @CurrentUser("id") userId: string) {
+	deleteChannel(
+		@Param("id") id: string,
+		@CurrentUser("id") userId: string,
+	): ReturnType<NotificationChannelsService["remove"]> {
 		return this.channels.remove(id, userId);
 	}
 
 	@Post("alert-rules")
+	@HttpCode(HttpStatus.CREATED)
 	@ApiOperation({
 		summary: "Create alert rule",
 		description:
@@ -142,7 +157,7 @@ export class NotificationsController {
 	createAlertRule(
 		@CurrentUser("id") userId: string,
 		@Body() dto: CreateAlertRuleDto,
-	) {
+	): ReturnType<AlertRulesService["create"]> {
 		return this.alertRules.create(userId, dto);
 	}
 
@@ -178,8 +193,9 @@ export class NotificationsController {
 	getAlertRules(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser("id") userId: string,
-	) {
-		return this.alertRules.findByEndpoint(endpointId, userId);
+		@Query() query: PaginationQueryDto,
+	): ReturnType<AlertRulesService["findByEndpoint"]> {
+		return this.alertRules.findByEndpoint(endpointId, userId, query);
 	}
 
 	@Delete("alert-rules/:id")
@@ -207,7 +223,10 @@ export class NotificationsController {
 			$ref: getSchemaPath(ErrorResponseSchema),
 		},
 	})
-	deleteAlertRule(@Param("id") id: string, @CurrentUser("id") userId: string) {
+	deleteAlertRule(
+		@Param("id") id: string,
+		@CurrentUser("id") userId: string,
+	): ReturnType<AlertRulesService["remove"]> {
 		return this.alertRules.remove(id, userId);
 	}
 }

@@ -8,8 +8,13 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { RefreshAuthGuard } from "./guards/refresh-auth.guard";
+import { PasswordResetService } from "./password-reset.service";
 import { JwtStrategy } from "./strategies/jwt.strategy";
+import { TokenService } from "./token.service";
 
+/**
+ * Authentication, JWT, and refresh session feature module.
+ */
 @Module({
 	imports: [
 		EmailModule,
@@ -34,7 +39,14 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 		}),
 	],
 	controllers: [AuthController],
-	providers: [AuthService, JwtStrategy, JwtAuthGuard, RefreshAuthGuard],
+	providers: [
+		TokenService,
+		PasswordResetService,
+		AuthService,
+		JwtStrategy,
+		JwtAuthGuard,
+		RefreshAuthGuard,
+	],
 	exports: [AuthService, JwtAuthGuard, RefreshAuthGuard],
 })
 export class AuthModule {}

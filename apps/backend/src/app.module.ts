@@ -13,11 +13,13 @@ import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 import { EndpointsModule } from "./modules/endpoints/endpoints.module";
+import { HealthModule } from "./modules/health/health.module";
 import { LogsModule } from "./modules/logs/logs.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { ProxyMiddleware } from "./proxy/proxy.middleware";
 import { ProxyModule } from "./proxy/proxy.module";
 
+/** Root Nest module: configuration, guards, and feature area imports. */
 @Module({
 	imports: [
 		CoreModule,
@@ -33,6 +35,7 @@ import { ProxyModule } from "./proxy/proxy.module";
 		}),
 		PrismaModule,
 		AuthModule,
+		HealthModule,
 		EndpointsModule,
 		LogsModule,
 		AnalyticsModule,

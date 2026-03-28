@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, Length, Matches, MinLength } from "class-validator";
 
+/** Completes password reset with email, code, and new password. */
 export class ResetPasswordDto {
 	@ApiProperty({ example: "user@example.com" })
 	@IsEmail()

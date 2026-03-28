@@ -4,8 +4,13 @@ import {
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
+import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
+import type { Endpoint, RequestLog } from "@prisma/generated/client";
 
+/**
+ * Read access to persisted proxy request logs.
+ */
 @Injectable()
 export class LogsService {
 	constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
@@ -19,7 +24,7 @@ export class LogsService {
 			method?: string;
 			status?: number;
 		},
-	) {
+	): Promise<{ logs: RequestLog[]; total: number }> {
 		const endpoint = await this.prisma.endpoint.findFirst({
 			where: { id: endpointId, userId },
 		});
@@ -35,7 +40,7 @@ export class LogsService {
 			this.prisma.requestLog.findMany({
 				where,
 				orderBy: { createdAt: "desc" },
-				take: Math.min(options.limit, 100),
+				take: Math.min(options.limit, paginationConstants.MAX_LIST_LIMIT),
 				skip: options.offset,
 			}),
 			this.prisma.requestLog.count({ where }),
@@ -44,7 +49,14 @@ export class LogsService {
 		return { logs, total };
 	}
 
-	async findOne(logId: string, userId: string) {
+	async findOne(
+		logId: string,
+		userId: string,
+	): Promise<
+		RequestLog & {
+			endpoint: Endpoint;
+		}
+	> {
 		const log = await this.prisma.requestLog.findUnique({
 			where: { id: logId },
 			include: { endpoint: true },

@@ -6,6 +6,9 @@ import { ConfigKeyEnum } from "../../../common/enums/config.enum";
 import { AuthService } from "../auth.service";
 import type { JwtPayloadType } from "../types/jwt-payload.type";
 
+/**
+ * Validates JWT access tokens and loads the current user for requests.
+ */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
 	constructor(
@@ -22,7 +25,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
 		});
 	}
 
-	async validate(payload: JwtPayloadType) {
+	async validate(payload: JwtPayloadType): Promise<{
+		id: string;
+		email: string;
+		name: string | null;
+	}> {
 		const user = await this.authService.validateUserById(payload.sub);
 		if (!user) {
 			throw new UnauthorizedException();

@@ -1,4 +1,4 @@
-import type { CurrentUserPayload } from "../../../common/decorators/current-user.decorator";
+import type { CurrentUserPayload } from "../../../common/types/current-user-payload.type";
 
 export type RefreshRequestAuth = {
 	rawRefreshToken: string;

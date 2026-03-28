@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { logsApi } from "../api/client.api";
+import { logsApi } from "@/api/client.api";
 
 export function useLogsByEndpoint(
 	endpointId: string | undefined,

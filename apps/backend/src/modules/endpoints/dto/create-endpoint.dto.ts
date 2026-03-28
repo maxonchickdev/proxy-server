@@ -7,6 +7,7 @@ import {
 	MinLength,
 } from "class-validator";
 
+/** HTTP body for creating a proxy endpoint. */
 export class CreateEndpointDto {
 	@ApiProperty({
 		description: "Display name for the proxy endpoint",

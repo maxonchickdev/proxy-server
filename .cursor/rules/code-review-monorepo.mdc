@@ -1,0 +1,36 @@
+---
+description: Checklist for reviewing the full proxy-server monorepo (web, backend, shared). Attach when doing PR or architecture review.
+alwaysApply: true
+---
+
+You are doing a **monorepo code review**. Be explicit about severity (blocker vs nit). Prefer concrete file references and small, ordered suggestions.
+
+## Scope and boundaries
+
+- **`apps/web`**: UI, hooks, client API usage, a11y, bundle and security (tokens, env).
+- **`apps/backend`**: HTTP contracts, validation, authz, errors, persistence, observability.
+- **`libs/shared`**: Only truly cross-cutting types/utilities; no app-specific imports into the library.
+
+## Cross-cutting
+
+- **Duplication:** same DTO or constant in web and backend → belong in `libs/shared` or generated client.
+- **Secrets:** no keys in client bundles; backend reads from env/config only.
+- **Error shape:** predictable API errors; frontend handles auth and validation consistently.
+- **Dependencies:** workspace packages used via `package.json` names; avoid deep relative hops across `apps/*`.
+
+## Backend quick pass
+
+- Controllers thin; DTOs validated; services hold domain logic.
+- Guards and global filters align with public vs protected routes.
+- Migrations and schema changes paired with safe rollout story if needed.
+
+## Frontend quick pass
+
+- Loading, empty, and error states for data views.
+- Semantic HTML and keyboard access for interactive UI.
+- API calls centralized (e.g. shared client), not scattered one-off `fetch`.
+
+## When to load other rules
+
+- Detailed conventions: `front-end-best-practices.mdc` + `react-typescript-cursor-rules.mdc` for `apps/web`.
+- Detailed conventions: `back-end-best-practices.mdc` + `nestjs-typescript-cursor-rules.mdc` for `apps/backend`.

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { authApi } from "../api/client.api";
-import { ButtonComponent } from "../components/ui/button.component";
-import { InputComponent } from "../components/ui/input.component";
-import { useAuth } from "../contexts/auth.context";
+import { authApi } from "@/api/client.api";
+import { ButtonComponent } from "@/components/ui/button.component";
+import { InputComponent } from "@/components/ui/input.component";
+import { useAuth } from "@/contexts/auth.context";
 
 export const VerifyEmailPage = () => {
 	const [searchParams] = useSearchParams();
@@ -16,7 +16,7 @@ export const VerifyEmailPage = () => {
 	const { setSession } = useAuth();
 	const navigate = useNavigate();
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setError("");
 		setLoading(true);
@@ -31,7 +31,7 @@ export const VerifyEmailPage = () => {
 		}
 	};
 
-	const handleResend = async () => {
+	const handleResendClick = async () => {
 		setResendMsg("");
 		setError("");
 		try {
@@ -42,29 +42,43 @@ export const VerifyEmailPage = () => {
 		}
 	};
 
+	const handleEmailChange = (value: string) => {
+		setEmail(value);
+	};
+
+	const handleCodeChange = (raw: string) => {
+		setCode(raw.replace(/\D/g, "").slice(0, 6));
+	};
+
 	return (
-		<div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-2 text-2xl font-medium">Verify your email</h1>
 			<p className="mb-8 text-sm text-white/60">
 				Enter the 6-digit code we sent to your inbox.
 			</p>
 			<form onSubmit={handleSubmit} className="space-y-4">
-				{error && (
-					<div className="border border-white/40 p-3 text-white/80">
+				{error ? (
+					<div
+						className="border border-white/40 p-3 text-white/80"
+						role="alert"
+					>
 						{error}
 					</div>
-				)}
-				{resendMsg && (
-					<div className="border border-white/20 p-3 text-sm text-white/70">
+				) : null}
+				{resendMsg ? (
+					<div
+						className="border border-white/20 p-3 text-sm text-white/70"
+						role="status"
+					>
 						{resendMsg}
 					</div>
-				)}
+				) : null}
 				<InputComponent
 					label="Email"
 					type="email"
 					name="email"
 					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					onChange={(e) => handleEmailChange(e.target.value)}
 					required
 				/>
 				<InputComponent
@@ -75,9 +89,7 @@ export const VerifyEmailPage = () => {
 					pattern="\d{6}"
 					maxLength={6}
 					value={code}
-					onChange={(e) =>
-						setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-					}
+					onChange={(e) => handleCodeChange(e.target.value)}
 					required
 				/>
 				<ButtonComponent
@@ -90,7 +102,7 @@ export const VerifyEmailPage = () => {
 			</form>
 			<button
 				type="button"
-				onClick={() => void handleResend()}
+				onClick={() => void handleResendClick()}
 				className="mt-4 w-full text-center text-sm text-white/60 underline hover:text-white"
 			>
 				Resend code
@@ -100,6 +112,6 @@ export const VerifyEmailPage = () => {
 					Back to sign in
 				</Link>
 			</p>
-		</div>
+		</main>
 	);
 };

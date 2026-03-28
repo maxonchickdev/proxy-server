@@ -1,13 +1,11 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/auth.context";
+import { Link, Outlet } from "react-router-dom";
+import { useAuth } from "@/contexts/auth.context";
 
 export const LayoutComponent = () => {
 	const { user, logout } = useAuth();
-	const navigate = useNavigate();
 
 	const handleLogout = () => {
-		logout();
-		navigate("/login");
+		void logout();
 	};
 
 	return (
@@ -34,6 +32,7 @@ export const LayoutComponent = () => {
 					<div className="flex items-center gap-4">
 						<span className="text-sm text-white/60">{user?.email}</span>
 						<button
+							type="button"
 							onClick={handleLogout}
 							className="border border-white/40 px-3 py-1.5 text-sm hover:bg-white hover:text-black"
 						>

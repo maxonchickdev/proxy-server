@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, MinLength } from "class-validator";
 
+/** Validates POST `/auth/sign-in` credentials. */
 export class SignInDto {
 	@ApiProperty({
 		description: "User email address",

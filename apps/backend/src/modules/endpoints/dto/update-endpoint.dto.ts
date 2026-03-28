@@ -7,6 +7,7 @@ import {
 	MinLength,
 } from "class-validator";
 
+/** Partial update payload for an existing proxy endpoint. */
 export class UpdateEndpointDto {
 	@ApiProperty({
 		description: "Updated display name for the proxy endpoint",

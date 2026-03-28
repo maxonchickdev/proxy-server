@@ -1,18 +1,32 @@
-import { useState } from "react";
-import { EndpointsTableComponent } from "../components/endpoints-table.component";
-import { ButtonComponent } from "../components/ui/button.component";
-import { CardComponent } from "../components/ui/card.component";
-import { InputComponent } from "../components/ui/input.component";
-import { useCreateEndpoint, useEndpointsList } from "../hooks/endpoints.hooks";
+import { type FormEvent, useState } from "react";
+import { EndpointsTableComponent } from "@/components/endpoints-table.component";
+import { ButtonComponent } from "@/components/ui/button.component";
+import { CardComponent } from "@/components/ui/card.component";
+import { InputComponent } from "@/components/ui/input.component";
+import { useCreateEndpoint, useEndpointsList } from "@/hooks/endpoints.hooks";
 
 export const EndpointsPage = () => {
 	const [name, setName] = useState("");
 	const [targetUrl, setTargetUrl] = useState("");
 	const [error, setError] = useState("");
-	const { data: endpoints = [], isLoading } = useEndpointsList();
+	const {
+		data: listData,
+		isLoading,
+		isError,
+		error: listError,
+	} = useEndpointsList();
+	const endpoints = listData?.items ?? [];
 	const createMutation = useCreateEndpoint();
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleNameChange = (value: string) => {
+		setName(value);
+	};
+
+	const handleTargetUrlChange = (value: string) => {
+		setTargetUrl(value);
+	};
+
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setError("");
 		try {
@@ -31,17 +45,20 @@ export const EndpointsPage = () => {
 			<CardComponent>
 				<h2 className="mb-4 text-lg font-medium">Create endpoint</h2>
 				<form onSubmit={handleSubmit} className="space-y-4">
-					{error && (
-						<div className="border border-white/40 p-3 text-white/80">
+					{error ? (
+						<div
+							className="border border-white/40 p-3 text-white/80"
+							role="alert"
+						>
 							{error}
 						</div>
-					)}
+					) : null}
 					<InputComponent
 						label="Name"
 						type="text"
 						name="name"
 						value={name}
-						onChange={(e) => setName(e.target.value)}
+						onChange={(e) => handleNameChange(e.target.value)}
 						placeholder="e.g. Stripe Webhook"
 						required
 					/>
@@ -50,7 +67,7 @@ export const EndpointsPage = () => {
 						type="url"
 						name="targetUrl"
 						value={targetUrl}
-						onChange={(e) => setTargetUrl(e.target.value)}
+						onChange={(e) => handleTargetUrlChange(e.target.value)}
 						placeholder="https://api.example.com/webhook"
 						required
 					/>
@@ -60,12 +77,20 @@ export const EndpointsPage = () => {
 				</form>
 			</CardComponent>
 
-			<div>
-				<h2 className="mb-4 text-lg font-medium">
-					Your endpoints ({endpoints.length})
+			<section aria-labelledby="ep-list-heading">
+				<h2 id="ep-list-heading" className="mb-4 text-lg font-medium">
+					Your endpoints ({listData?.total ?? endpoints.length})
 				</h2>
-				{isLoading ? (
-					<p className="text-white/60">Loading...</p>
+				{isError ? (
+					<p className="text-red-400/90" role="alert">
+						{listError instanceof Error
+							? listError.message
+							: "Failed to load endpoints"}
+					</p>
+				) : isLoading ? (
+					<p className="text-white/60" aria-busy="true">
+						Loading...
+					</p>
 				) : endpoints.length === 0 ? (
 					<p className="text-white/60">No endpoints yet.</p>
 				) : (
@@ -74,7 +99,7 @@ export const EndpointsPage = () => {
 						proxyUrlColumn="slug-only"
 					/>
 				)}
-			</div>
+			</section>
 		</div>
 	);
 };

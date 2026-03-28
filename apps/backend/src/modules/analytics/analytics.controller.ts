@@ -15,6 +15,9 @@ import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AnalyticsService } from "./analytics.service";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
+/**
+ * Read-only analytics routes for per-endpoint dashboards.
+ */
 @ApiTags("Analytics")
 @ApiBearerAuth("Bearer")
 @Controller("analytics")
@@ -57,7 +60,7 @@ export class AnalyticsController {
 	getSummary(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser("id") userId: string,
-	) {
+	): ReturnType<AnalyticsService["getSummary"]> {
 		return this.analyticsService.getSummary(endpointId, userId);
 	}
 
@@ -97,7 +100,7 @@ export class AnalyticsController {
 		@CurrentUser("id") userId: string,
 		@Query("bucket") bucket?: "hour" | "day",
 		@Query("limit") limit?: string,
-	) {
+	): ReturnType<AnalyticsService["getTimeseries"]> {
 		return this.analyticsService.getTimeseries(endpointId, userId, {
 			bucket: bucket ?? "hour",
 			limit: limit ? parseInt(limit, 10) : undefined,
@@ -137,7 +140,7 @@ export class AnalyticsController {
 	getBreakdown(
 		@Param("endpointId") endpointId: string,
 		@CurrentUser("id") userId: string,
-	) {
+	): ReturnType<AnalyticsService["getBreakdown"]> {
 		return this.analyticsService.getBreakdown(endpointId, userId);
 	}
 }

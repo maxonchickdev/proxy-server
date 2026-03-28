@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { authApi } from "../api/client.api";
-import { ButtonComponent } from "../components/ui/button.component";
-import { InputComponent } from "../components/ui/input.component";
+import { authApi } from "@/api/client.api";
+import { ButtonComponent } from "@/components/ui/button.component";
+import { InputComponent } from "@/components/ui/input.component";
 
 export const ForgotPasswordPage = () => {
 	const [email, setEmail] = useState("");
@@ -10,7 +10,11 @@ export const ForgotPasswordPage = () => {
 	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 
-	const handleSubmit = async (e: React.FormEvent) => {
+	const handleEmailChange = (value: string) => {
+		setEmail(value);
+	};
+
+	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 		setError("");
 		setMessage("");
@@ -26,28 +30,34 @@ export const ForgotPasswordPage = () => {
 	};
 
 	return (
-		<div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
+		<main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-4">
 			<h1 className="mb-2 text-2xl font-medium">Forgot password</h1>
 			<p className="mb-8 text-sm text-white/60">
 				We&apos;ll email a 6-digit reset code if an account exists.
 			</p>
 			<form onSubmit={handleSubmit} className="space-y-4">
-				{error && (
-					<div className="border border-white/40 p-3 text-white/80">
+				{error ? (
+					<div
+						className="border border-white/40 p-3 text-white/80"
+						role="alert"
+					>
 						{error}
 					</div>
-				)}
-				{message && (
-					<div className="border border-white/20 p-3 text-sm text-white/70">
+				) : null}
+				{message ? (
+					<div
+						className="border border-white/20 p-3 text-sm text-white/70"
+						role="status"
+					>
 						{message}
 					</div>
-				)}
+				) : null}
 				<InputComponent
 					label="Email"
 					type="email"
 					name="email"
 					value={email}
-					onChange={(e) => setEmail(e.target.value)}
+					onChange={(e) => handleEmailChange(e.target.value)}
 					required
 				/>
 				<ButtonComponent
@@ -63,7 +73,7 @@ export const ForgotPasswordPage = () => {
 					Back to sign in
 				</Link>
 			</p>
-			{message && (
+			{message ? (
 				<p className="mt-4 text-center">
 					<Link
 						to={`/reset-password?${new URLSearchParams({ email }).toString()}`}
@@ -72,7 +82,7 @@ export const ForgotPasswordPage = () => {
 						Enter reset code
 					</Link>
 				</p>
-			)}
-		</div>
+			) : null}
+		</main>
 	);
 };

@@ -4,6 +4,9 @@ import { NotificationsModule } from "../modules/notifications/notifications.modu
 import { ProxyMiddleware } from "./proxy.middleware";
 import { ProxyService } from "./proxy.service";
 
+/**
+ * Reverse proxy wiring (service invoked by global middleware).
+ */
 @Module({
 	imports: [EndpointsModule, NotificationsModule],
 	providers: [ProxyService, ProxyMiddleware],

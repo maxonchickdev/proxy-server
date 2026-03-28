@@ -16,6 +16,9 @@ import {
 } from "rxjs";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 
+/**
+ * Fails long-running request handlers with HTTP 504 based on app configuration.
+ */
 @Injectable()
 export class TimeoutInterceptor implements NestInterceptor {
 	private readonly appRequestTimeout: number;

@@ -12,10 +12,8 @@ import { HttpAdapterHost } from "@nestjs/core";
 import type { Prisma } from "@prisma/generated/client.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
-import type {
-	ErrorResponseBody,
-	HttpExceptionResponse,
-} from "../types/error-response.type.js";
+import type { ErrorResponseBody } from "../types/error-response-body.type.js";
+import type { HttpExceptionResponse } from "../types/http-exception-response.type.js";
 
 const PRISMA_ERROR_MAP: Record<string, HttpStatus> = {
 	P2000: HttpStatus.BAD_REQUEST,
@@ -29,6 +27,7 @@ const PRISMA_ERROR_MAP: Record<string, HttpStatus> = {
 const INTERNAL_ERROR_MESSAGE = "Internal server error";
 const INTERNAL_ERROR_TYPE = "InternalServerErrorException";
 
+/** Maps exceptions to a stable JSON error body and logs server errors. */
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
 	private readonly logger = new Logger(CatchEverythingFilter.name);

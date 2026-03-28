@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, Length, Matches } from "class-validator";
 
+/** Validates email verification with a one-time code. */
 export class VerifyEmailDto {
 	@ApiProperty({ example: "user@example.com" })
 	@IsEmail()

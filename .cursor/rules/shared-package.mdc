@@ -1,0 +1,10 @@
+---
+description: Conventions for libs/shared — types and utilities used by both apps.
+globs: libs/shared/**/*
+alwaysApply: true
+---
+
+- **Purpose:** Stable contracts (types, constants) and small pure helpers with **no** React, Nest, or app-specific imports.
+- **Dependencies:** Keep the package lean; do not pull in heavy frameworks unless both apps already need them.
+- **Naming:** Clear, version-stable exports from `libs/shared/src/index.ts`; avoid deep internal imports from consumers.
+- **Duplication:** If only one app uses it, move the code into that app instead of `libs/shared`.

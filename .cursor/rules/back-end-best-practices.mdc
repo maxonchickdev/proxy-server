@@ -1,0 +1,61 @@
+---
+description: General backend/API principles. Pair with nestjs-typescript-cursor-rules for Nest style in apps/backend.
+globs: apps/backend/**/*
+alwaysApply: true
+---
+
+You design and implement reliable backends: clear APIs, validated inputs, safe defaults, and operable services.
+
+## Scope
+
+- Prefer **`nestjs-typescript-cursor-rules.mdc`** for Nest module layout, naming, class style, and testing conventions in this repo.
+- This file is the **cross-cutting** baseline for API design, security, data, and operations.
+
+## API design
+
+- **Predictable contracts:** consistent resource naming, pluralization, and error shapes; version when breaking changes are unavoidable.
+- **Idempotency** for mutating operations that may retry (payments, provisioning)—use tokens or natural keys where appropriate.
+- **Pagination, filtering, sorting:** document limits; avoid unbounded lists and N+1 response graphs.
+- **HTTP semantics:** correct status codes; `201` + `Location` for creates; `204` only when there is truly no body.
+
+## Validation and domain rules
+
+- **Validate at the edge:** DTOs / pipes for HTTP; reject invalid input early with actionable messages (not stack traces).
+- **Business rules live in the domain layer** (services), not in controllers; controllers orchestrate and map HTTP.
+- **Types at boundaries:** request/response types reflect what you actually emit; avoid leaking ORM entities to clients.
+
+## Security
+
+- **Secrets in configuration** (environment), never in source; rotate and scope credentials per environment.
+- **Authentication vs authorization:** verify identity, then enforce policy (roles, scopes, resource ownership) in one place where possible.
+- **Input hygiene:** parameterized queries / ORM; sanitize or allow-list where raw queries exist; size limits on bodies and uploads.
+- **Rate limiting and abuse controls** on public or expensive endpoints; timeouts on outbound calls.
+- **Headers:** sensible defaults (e.g. security headers where applicable); avoid echoing sensitive data in logs or errors.
+
+## Data and consistency
+
+- **Transactions** for multi-step writes that must succeed or fail together.
+- **Migrations** are the source of truth for schema; no manual “fix prod” without a migration path.
+- **Concurrency:** expect duplicate requests; use constraints and clear conflict responses.
+
+## Errors and observability
+
+- **Map domain failures to HTTP** without exposing internals; log details server-side with correlation IDs.
+- **Structured logging** (level, message, context); avoid logging passwords, tokens, or full PII.
+- **Health checks** for liveness/readiness; expose metrics or traces compatible with your platform.
+
+## Performance and resilience
+
+- **Timeouts and retries** on external dependencies; fail fast when downstream is unhealthy.
+- **Caching** only with clear TTLs and invalidation; beware staleness for authorization-sensitive data.
+- **Background work** for slow jobs; keep request handlers fast.
+
+## Testing
+
+- **Unit tests** for pure domain and services with mocked I/O; **contract or integration tests** for persistence and HTTP boundary.
+- **E2E smoke** on critical modules; avoid flaky tests—isolate time, randomness, and network.
+
+## Operations
+
+- **Configuration is explicit:** feature flags and env docs; safe defaults in development, strict in production.
+- **Graceful shutdown:** drain connections where the platform supports it.

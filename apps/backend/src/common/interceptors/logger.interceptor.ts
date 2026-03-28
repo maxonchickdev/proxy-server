@@ -12,9 +12,13 @@ import type { Request, Response } from "express";
 import { type Observable, tap } from "rxjs";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
+import { httpConstants } from "../constants/http.constants.js";
 
 type LoggerExpressionType = "incoming" | "error" | "success";
 
+/**
+ * Development-only structured request/response logging.
+ */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
 	private readonly logger = new Logger(LoggingInterceptor.name);
@@ -51,7 +55,7 @@ export class LoggingInterceptor implements NestInterceptor {
 					const statusCode =
 						e instanceof HttpException
 							? e.getStatus()
-							: response.statusCode || 500;
+							: response.statusCode || httpConstants.INTERNAL_SERVER_ERROR;
 					this.logResponse(
 						"error",
 						method,
@@ -89,13 +93,11 @@ export class LoggingInterceptor implements NestInterceptor {
 			case "incoming":
 				this.logger.debug(`[Incoming] - [Method: ${method}] - [Url: ${url}]`);
 				break;
-
 			case "success":
 				this.logger.debug(
 					`[Completed] - [Method: ${method}] - [Url: ${url}] - [Status: ${statusCode}] - [Duration: ${duration}ms]`,
 				);
 				break;
-
 			case "error":
 				this.logger.error(
 					`[Failed] - [Method: ${method}] - [Url: ${url}] - [Status: ${statusCode}] - [Duration: ${duration}ms] - [Error: ${error}]`,

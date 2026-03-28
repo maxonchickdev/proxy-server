@@ -2,6 +2,8 @@ import {
 	Body,
 	Controller,
 	Get,
+	HttpCode,
+	HttpStatus,
 	Inject,
 	Post,
 	Req,
@@ -30,25 +32,27 @@ import { Public } from "../../common/decorators/public.decorator";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { EnvironmentsEnum } from "../../common/enums/environments.enum";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import type { CurrentUserPayload } from "../../common/decorators/current-user.decorator";
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import { AuthResponseSchema } from "src/common/swagger/schemas/auth-response.schema";
 import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 import { AuthService } from "./auth.service";
+import { authThrottle } from "./auth-throttle.constants";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResendVerificationDto } from "./dto/resend-verification.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
 import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
-import {
-	RefreshAuthGuard,
-	type RequestWithRefreshAuth,
-} from "./guards/refresh-auth.guard";
+import { RefreshAuthGuard } from "./guards/refresh-auth.guard";
+import type { RequestWithRefreshAuth } from "./types/request-with-refresh-auth.type";
 import type { AuthResponseType } from "./types/auth-response.type";
 import { parseDurationToMs } from "./utils/duration.util";
 
 const REFRESH_COOKIE_NAME = "refresh_token";
 
+/**
+ * Registration, session, and password recovery HTTP handlers.
+ */
 @ApiTags("Auth")
 @ApiExtraModels(AuthResponseSchema)
 @Controller("auth")
@@ -102,7 +106,13 @@ export class AuthController {
 	}
 
 	@Public()
-	@Throttle({ default: { limit: 5, ttl: 60_000 } })
+	@Throttle({
+		default: {
+			limit: authThrottle.SIGN_UP.limit,
+			ttl: authThrottle.SIGN_UP.ttlMs,
+		},
+	})
+	@HttpCode(HttpStatus.CREATED)
 	@Post("sign-up")
 	@ApiBody({ type: SignUpDto })
 	@ApiOperation({
@@ -129,7 +139,13 @@ export class AuthController {
 	}
 
 	@Public()
-	@Throttle({ default: { limit: 20, ttl: 60_000 } })
+	@Throttle({
+		default: {
+			limit: authThrottle.VERIFY_EMAIL.limit,
+			ttl: authThrottle.VERIFY_EMAIL.ttlMs,
+		},
+	})
+	@HttpCode(HttpStatus.OK)
 	@Post("verify-email")
 	@ApiBody({ type: VerifyEmailDto })
 	@ApiOperation({ summary: "Verify email with 6-digit code", security: [] })
@@ -150,7 +166,13 @@ export class AuthController {
 	}
 
 	@Public()
-	@Throttle({ default: { limit: 3, ttl: 60_000 } })
+	@Throttle({
+		default: {
+			limit: authThrottle.RESEND_VERIFICATION.limit,
+			ttl: authThrottle.RESEND_VERIFICATION.ttlMs,
+		},
+	})
+	@HttpCode(HttpStatus.OK)
 	@Post("resend-verification")
 	@ApiBody({ type: ResendVerificationDto })
 	@ApiOperation({ summary: "Resend verification code", security: [] })
@@ -162,6 +184,7 @@ export class AuthController {
 	}
 
 	@Public()
+	@HttpCode(HttpStatus.OK)
 	@Post("sign-in")
 	@ApiBody({ type: SignInDto })
 	@ApiOperation({
@@ -199,7 +222,13 @@ export class AuthController {
 	}
 
 	@Public()
-	@Throttle({ default: { limit: 3, ttl: 60_000 } })
+	@Throttle({
+		default: {
+			limit: authThrottle.FORGOT_PASSWORD.limit,
+			ttl: authThrottle.FORGOT_PASSWORD.ttlMs,
+		},
+	})
+	@HttpCode(HttpStatus.OK)
 	@Post("forgot-password")
 	@ApiBody({ type: ForgotPasswordDto })
 	@ApiOperation({ summary: "Request password reset code", security: [] })
@@ -211,7 +240,13 @@ export class AuthController {
 	}
 
 	@Public()
-	@Throttle({ default: { limit: 10, ttl: 60_000 } })
+	@Throttle({
+		default: {
+			limit: authThrottle.RESET_PASSWORD.limit,
+			ttl: authThrottle.RESET_PASSWORD.ttlMs,
+		},
+	})
+	@HttpCode(HttpStatus.OK)
 	@Post("reset-password")
 	@ApiBody({ type: ResetPasswordDto })
 	@ApiOperation({ summary: "Reset password with code", security: [] })
@@ -228,6 +263,7 @@ export class AuthController {
 
 	@Public()
 	@UseGuards(RefreshAuthGuard)
+	@HttpCode(HttpStatus.OK)
 	@Post("refresh")
 	@ApiOperation({
 		summary: "Refresh access token",
@@ -254,6 +290,7 @@ export class AuthController {
 		return this.bodyAuth(res, result);
 	}
 
+	@HttpCode(HttpStatus.OK)
 	@Post("logout")
 	@ApiOperation({ summary: "Revoke refresh session", security: [] })
 	@ApiOkResponse({ description: "Logged out" })

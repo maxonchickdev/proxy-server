@@ -1,12 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { endpointsApi } from "../api/client.api";
+import { endpointsApi, type EndpointListResponse } from "@/api/client.api";
 
 const endpointsQueryKey = ["endpoints"] as const;
 
-export function useEndpointsList() {
+export function useEndpointsList(params?: { limit?: number; offset?: number }) {
 	return useQuery({
-		queryKey: endpointsQueryKey,
-		queryFn: () => endpointsApi.list(),
+		queryKey: [...endpointsQueryKey, params] as const,
+		queryFn: (): Promise<EndpointListResponse> => endpointsApi.list(params),
 	});
 }
 

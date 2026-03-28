@@ -1,9 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common";
-import type { ConfigService } from "@nestjs/config";
-import * as nodemailer from "nodemailer";
+import { ConfigService } from "@nestjs/config";
 import type { Transporter } from "nodemailer";
+import * as nodemailer from "nodemailer";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
+import { emailConstants } from "./email.constants";
 
+/**
+ * Sends transactional email via SMTP when configured; logs codes in dev otherwise.
+ */
 @Injectable()
 export class EmailService {
 	private readonly logger = new Logger(EmailService.name);
@@ -12,7 +16,9 @@ export class EmailService {
 
 	constructor(private readonly config: ConfigService) {
 		const host = this.config.get<string>(`${ConfigKeyEnum.EMAIL}.host`) ?? "";
-		const port = this.config.get<number>(`${ConfigKeyEnum.EMAIL}.port`) ?? 587;
+		const port =
+			this.config.get<number>(`${ConfigKeyEnum.EMAIL}.port`) ??
+			emailConstants.DEFAULT_SMTP_PORT;
 		const user = this.config.get<string>(`${ConfigKeyEnum.EMAIL}.user`) ?? "";
 		const pass = this.config.get<string>(`${ConfigKeyEnum.EMAIL}.pass`) ?? "";
 		this.logOtpOnSmtpFailure =
@@ -20,7 +26,6 @@ export class EmailService {
 			false;
 
 		if (host) {
-			// 465 = implicit TLS; 587 = STARTTLS (secure: false + upgrade)
 			const secure = port === 465;
 			this.transporter = nodemailer.createTransport({
 				host,
@@ -41,7 +46,7 @@ export class EmailService {
 	private get from(): string {
 		return (
 			this.config.get<string>(`${ConfigKeyEnum.EMAIL}.from`) ??
-			"Proxy Server <noreply@localhost>"
+			emailConstants.DEFAULT_FROM_ADDRESS
 		);
 	}
 

@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
-import { EndpointsTableComponent } from "../components/endpoints-table.component";
-import { useEndpointsList } from "../hooks/endpoints.hooks";
+import { EndpointsTableComponent } from "@/components/endpoints-table.component";
+import { useEndpointsList } from "@/hooks/endpoints.hooks";
 
 export const DashboardPage = () => {
-	const { data: endpoints = [], isLoading } = useEndpointsList();
+	const { data, isLoading, isError, error } = useEndpointsList();
+	const endpoints = data?.items ?? [];
+	const totalEndpoints = data?.total ?? endpoints.length;
 
 	return (
 		<div className="space-y-8">
@@ -13,15 +15,25 @@ export const DashboardPage = () => {
 				<div className="border border-white/20 p-6">
 					<p className="text-sm text-white/60">Total Endpoints</p>
 					<p className="mt-1 text-2xl font-medium">
-						{isLoading ? "..." : endpoints.length}
+						{isLoading ? "..." : totalEndpoints}
 					</p>
 				</div>
 			</div>
 
-			<div>
-				<h2 className="mb-4 text-lg font-medium">Your Endpoints</h2>
-				{isLoading ? (
-					<p className="text-white/60">Loading...</p>
+			<section aria-labelledby="dash-endpoints-heading">
+				<h2 id="dash-endpoints-heading" className="mb-4 text-lg font-medium">
+					Your Endpoints
+				</h2>
+				{isError ? (
+					<p className="text-red-400/90" role="alert">
+						{error instanceof Error
+							? error.message
+							: "Failed to load endpoints"}
+					</p>
+				) : isLoading ? (
+					<p className="text-white/60" aria-busy="true">
+						Loading...
+					</p>
 				) : endpoints.length === 0 ? (
 					<div className="border border-dashed border-white/20 p-12 text-center">
 						<p className="text-white/60">No endpoints yet</p>
@@ -38,7 +50,7 @@ export const DashboardPage = () => {
 						proxyUrlColumn="path"
 					/>
 				)}
-			</div>
+			</section>
 		</div>
 	);
 };

@@ -55,6 +55,7 @@ function IsChannelConfig(validationOptions?: ValidationOptions) {
 	};
 }
 
+/** Creates a Telegram or Slack notification channel with typed config. */
 export class CreateChannelDto {
 	@ApiProperty({
 		description: "Notification channel type",

@@ -11,6 +11,9 @@ import { proxyRegister } from "src/common/registers/proxy.register";
 import { rateLimitRegister } from "src/common/registers/rate-limit.register";
 import { swaggerRegister } from "src/common/registers/swagger.register";
 
+/**
+ * Environment loading, validation, and typed configuration registers.
+ */
 @Module({
 	imports: [
 		CoreConfigModule.forRoot({

@@ -32,6 +32,12 @@ cd proxy-server
 npm install
 ```
 
+Generate the Prisma client (required after install; output is gitignored under `apps/backend/prisma/generated/`):
+
+```bash
+npm run db:generate -w @proxy-server/backend
+```
+
 ### 2. Environment
 
 Copy `.env.example` to `.env` and set:
@@ -85,17 +91,17 @@ npm run dev -w apps/web
 
 Base path: `/api/v1/auth`. Public routes use `@Public()`; other API routes require `Authorization: Bearer <accessToken>`. Refresh token is an **httpOnly** cookie (`refresh_token`, path `/`).
 
-| Method | Path                       | Description |
-| ------ | -------------------------- | ----------- |
-| POST   | `/auth/sign-up`            | Register; sends verification email (or logs code) |
-| POST   | `/auth/verify-email`       | Body: `email`, `code` — returns access token + sets refresh cookie |
-| POST   | `/auth/resend-verification`| Body: `email` |
-| POST   | `/auth/sign-in`            | Login (verified email only); sets refresh cookie |
-| POST   | `/auth/refresh`            | Rotate refresh cookie; new access token in body |
-| POST   | `/auth/logout`             | Revoke refresh session (Bearer + cookie) |
-| GET    | `/auth/me`                 | Current user |
-| POST   | `/auth/forgot-password`    | Body: `email` |
-| POST   | `/auth/reset-password`     | Body: `email`, `code`, `newPassword` |
+| Method | Path                        | Description                                                        |
+| ------ | --------------------------- | ------------------------------------------------------------------ |
+| POST   | `/auth/sign-up`             | Register; sends verification email (or logs code)                  |
+| POST   | `/auth/verify-email`        | Body: `email`, `code` — returns access token + sets refresh cookie |
+| POST   | `/auth/resend-verification` | Body: `email`                                                      |
+| POST   | `/auth/sign-in`             | Login (verified email only); sets refresh cookie                   |
+| POST   | `/auth/refresh`             | Rotate refresh cookie; new access token in body                    |
+| POST   | `/auth/logout`              | Revoke refresh session (Bearer + cookie)                           |
+| GET    | `/auth/me`                  | Current user                                                       |
+| POST   | `/auth/forgot-password`     | Body: `email`                                                      |
+| POST   | `/auth/reset-password`      | Body: `email`, `code`, `newPassword`                               |
 
 ### Endpoints
 

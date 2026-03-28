@@ -1,0 +1,66 @@
+---
+description: General frontend principles for this monorepo. Pair with react-typescript-cursor-rules for stack detail.
+globs: apps/web/**/*
+alwaysApply: true
+---
+
+You apply solid frontend engineering: correct, maintainable UI that is accessible, type-safe, and safe by default.
+
+## Scope
+
+- Prefer **`react-typescript-cursor-rules.mdc`** where it matches this repo; **`apps/web`** uses **React 19**, **Vite**, **React Router**, fetch/TanStack Query-style hooks, and **Tailwind v4** (not necessarily Orval/TanStack Router—follow the web app’s actual imports).
+- This file is the **cross-cutting** baseline when those details do not apply or you need a short checklist.
+
+## Architecture and code organization
+
+- **Feature-first when it grows:** colocate routes, components, and hooks that change together; extract shared UI and utilities only when reused.
+- **Thin presentation:** keep view logic separate from data orchestration (hooks/query layer vs markup).
+- **One clear responsibility per module** (component, hook, or route file).
+
+## TypeScript and data contracts
+
+- **Strict typing:** no `any`; use `unknown` and narrow, or explicit DTO/types from your API layer.
+- **Model UI state honestly:** discriminated unions or explicit status fields for loading, empty, error, and success—not unknown shapes.
+- **Validate at the boundary** when runtime shape matters (Zod or generated types with runtime checks where the backend can drift).
+
+## React and UI behavior
+
+- **Prefer declarative UI** and composition; avoid deep prop drilling—context or colocating state when appropriate.
+- **Derive state** from props, URL, and server data instead of duplicating it in `useState` unless it is truly local and ephemeral.
+- **Effects:** do not use effects to paper over data-fetching or event-handler concerns; sync with the stack rules (e.g. Query + Suspense).
+- **Lists and keys:** stable keys; avoid indexing keys for reorderable or mutable lists.
+
+## Styling and UX
+
+- **Consistent spacing, type scale, and components**—reuse design-system or shared primitives before inventing new patterns.
+- **Loading and errors:** intentional skeletons, empty states, and actionable error messages (retry, go back).
+- **Forms:** accessible labels, errors linked to fields, disabled submit while invalid or pending.
+
+## Accessibility (a11y)
+
+- **Semantic HTML first** (`button` vs `div` with `onClick`, landmarks, headings in order).
+- **Keyboard:** focus order, focus traps only where appropriate (dialogs), visible focus styles.
+- **Screen readers:** meaningful names, live regions for async feedback when needed; do not rely on color alone.
+
+## Performance
+
+- **Measure before micro-optimizing:** bundle size and slow interactions matter more than premature memoization.
+- **Split routes and heavy widgets** when they are not needed on first paint.
+- **Avoid unnecessary re-renders** from unstable inline objects/functions in hot paths; follow React Compiler guidance in stack rules.
+
+## Security and privacy
+
+- **Never embed secrets** in client bundles or `VITE_*` values that must stay private.
+- **Avoid `dangerouslySetInnerHTML`** unless content is sanitized and the need is documented.
+- **Treat tokens carefully:** prefer HttpOnly cookies when the architecture allows; if using storage, keep lifetimes short and mitigate XSS.
+- **Links and redirects:** validate open redirects; use safe navigation patterns for external URLs.
+
+## Testing
+
+- **Unit** pure logic and hooks; **component tests** for behavior and a11y; **E2E** for critical flows (auth, checkout-style paths).
+- Prefer user-visible assertions (Testing Library) over implementation details.
+
+## API consumption (high level)
+
+- **Single HTTP client** with interceptors and consistent error handling; do not scatter raw `fetch` with one-off options.
+- **Respect caching and invalidation** policies so the UI reflects server truth after mutations.
