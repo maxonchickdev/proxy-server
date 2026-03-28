@@ -6,7 +6,6 @@
 **/dist/**
 **/tsconfig.tsbuildinfo
 
-# Prisma client: run `npm run db:generate -w @proxy-server/backend` after install
 apps/backend/prisma/generated/
 
 **/npm-debug.log*
@@ -14,3 +13,5 @@ apps/backend/prisma/generated/
 **/.DS_Store
 
 apps/backend/documentation
+
+.cursor
