@@ -1,7 +1,7 @@
 {
 	"root": false,
 	"extends": "//",
-	"files": { "includes": ["**", "!dist"] },
+	"files": { "includes": ["**", "!dist", "!node_modules", "!public"] },
 	"css": {
 		"parser": {
 			"tailwindDirectives": true
