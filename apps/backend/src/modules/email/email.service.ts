@@ -1,6 +1,6 @@
+import type { Transporter } from "nodemailer";
 import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { Transporter } from "nodemailer";
 import * as nodemailer from "nodemailer";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { emailConstants } from "./email.constants";

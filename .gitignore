@@ -5,6 +5,8 @@
 
 **/dist
 **/tsconfig.tsbuildinfo
+**/.tsbuildinfo.typecheck
+**/.tsbuildinfo.build
 
 apps/backend/prisma/generated
 apps/backend/compodoc

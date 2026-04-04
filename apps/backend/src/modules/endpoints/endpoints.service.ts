@@ -1,3 +1,11 @@
+import type {
+	EndpointDto,
+	EndpointListResponseDto,
+} from "@proxy-server/shared";
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import type { CreateEndpointDto } from "./dto/create-endpoint.dto";
+import type { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
+import type { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import {
 	ForbiddenException,
 	Inject,
@@ -5,21 +13,13 @@ import {
 	NotFoundException,
 } from "@nestjs/common";
 import {
-	EndpointProtocol,
 	type Endpoint,
+	EndpointProtocol,
 	Prisma,
 } from "@prisma/generated/client";
 import { customAlphabet } from "nanoid";
-import type {
-	EndpointDto,
-	EndpointListResponseDto,
-} from "@proxy-server/shared";
 import { paginationConstants } from "../../common/constants/pagination.constants";
-import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import type { CreateEndpointDto } from "./dto/create-endpoint.dto";
-import type { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
-import type { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import { mapEndpointToDto } from "./endpoint.mapper";
 
 const slugAlphabet = "abcdefghijklmnopqrstuvwxyz0123456789";

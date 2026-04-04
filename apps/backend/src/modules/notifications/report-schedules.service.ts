@@ -1,3 +1,4 @@
+import type { CreateReportScheduleDto } from "./dto/create-report-schedule.dto";
 import {
 	ForbiddenException,
 	Inject,
@@ -5,7 +6,6 @@ import {
 	NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import type { CreateReportScheduleDto } from "./dto/create-report-schedule.dto";
 
 @Injectable()
 export class ReportSchedulesService {

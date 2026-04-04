@@ -1,16 +1,16 @@
+import type { NextFunction, Request, Response } from "express";
+import type { ProtocolHandler } from "./handlers/protocol-handler.interface.js";
 import { Inject, Injectable, type NestMiddleware } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { EndpointProtocol } from "@prisma/generated/client";
-import type { NextFunction, Request, Response } from "express";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
 import { GraphqlProxyHandler } from "./handlers/graphql-proxy.handler.js";
 import { HttpProxyHandler } from "./handlers/http-proxy.handler.js";
-import type { ProtocolHandler } from "./handlers/protocol-handler.interface.js";
 import { SseProxyHandler } from "./handlers/sse-proxy.handler.js";
+import { ProxyService } from "./proxy.service.js";
+import { ProxyRateLimitService } from "./proxy-rate-limit.service.js";
 import { proxyRequestConstants } from "./proxy-request.constants.js";
 import { extractSlugAndPathFromProxyRequest } from "./proxy-routing.util.js";
-import { ProxyRateLimitService } from "./proxy-rate-limit.service.js";
-import { ProxyService } from "./proxy.service.js";
 
 type HeadersRecord = Record<string, string | string[] | undefined>;
 

@@ -1,3 +1,5 @@
+import type { Endpoint, RequestLog } from "@prisma/generated/client";
+import type { LogsListQueryDto } from "./dto/logs-list-query.dto";
 import {
 	BadRequestException,
 	ForbiddenException,
@@ -8,10 +10,8 @@ import {
 import { EndpointProtocol, Prisma } from "@prisma/generated/client";
 import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import type { Endpoint, RequestLog } from "@prisma/generated/client";
-import { proxyRequestConstants } from "../../proxy/proxy-request.constants";
 import { type ProxyLogPayload, ProxyService } from "../../proxy/proxy.service";
-import type { LogsListQueryDto } from "./dto/logs-list-query.dto";
+import { proxyRequestConstants } from "../../proxy/proxy-request.constants";
 
 @Injectable()
 export class LogsService {

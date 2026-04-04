@@ -1,3 +1,4 @@
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import {
 	Body,
 	Controller,
@@ -24,13 +25,12 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
+import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import { CreateEndpointDto } from "./dto/create-endpoint.dto";
 import { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
 import { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import { EndpointsService } from "./endpoints.service";
-import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 @ApiTags("Endpoints")
 @ApiBearerAuth("Bearer")

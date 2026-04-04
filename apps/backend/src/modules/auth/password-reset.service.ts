@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto";
 import {
 	Inject,
 	Injectable,
@@ -5,7 +6,6 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { randomInt } from "node:crypto";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
 import { authVerificationConstants } from "./auth-verification.constants";

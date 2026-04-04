@@ -23,6 +23,7 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
+import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
 import { AlertRulesService } from "./alert-rules.service";
@@ -31,7 +32,6 @@ import { CreateChannelDto } from "./dto/create-channel.dto";
 import { CreateReportScheduleDto } from "./dto/create-report-schedule.dto";
 import { NotificationChannelsService } from "./notification-channels.service";
 import { ReportSchedulesService } from "./report-schedules.service";
-import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 @ApiTags("Notifications")
 @ApiBearerAuth("Bearer")

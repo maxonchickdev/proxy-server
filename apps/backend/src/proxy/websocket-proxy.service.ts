@@ -1,12 +1,12 @@
-import { Inject, Injectable, Logger } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { EndpointProtocol, type Endpoint } from "@prisma/generated/client";
 import type { IncomingMessage } from "node:http";
 import type { Duplex } from "node:stream";
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { type Endpoint, EndpointProtocol } from "@prisma/generated/client";
 import WebSocket, { WebSocketServer } from "ws";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
-import { extractSlugAndPathFromProxyRequest } from "./proxy-routing.util.js";
 import { ProxyService } from "./proxy.service.js";
+import { extractSlugAndPathFromProxyRequest } from "./proxy-routing.util.js";
 
 @Injectable()
 export class WebSocketProxyService {

@@ -1,3 +1,7 @@
+import type { Prisma } from "@prisma/generated/client.js";
+import type { ErrorResponseBody } from "@proxy-server/shared";
+import type { Request } from "express";
+import type { HttpExceptionResponse } from "../types/http-exception-response.type.js";
 import {
 	type ArgumentsHost,
 	Catch,
@@ -9,12 +13,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost } from "@nestjs/core";
-import type { Request } from "express";
-import type { Prisma } from "@prisma/generated/client.js";
-import type { ErrorResponseBody } from "@proxy-server/shared";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
-import type { HttpExceptionResponse } from "../types/http-exception-response.type.js";
 
 const PRISMA_ERROR_MAP: Record<string, HttpStatus> = {
 	P2000: HttpStatus.BAD_REQUEST,

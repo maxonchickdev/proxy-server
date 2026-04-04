@@ -1,16 +1,16 @@
 import {
+	createConnection,
+	createServer,
+	type Server,
+	type Socket,
+} from "node:net";
+import {
 	Injectable,
 	Logger,
 	type OnModuleDestroy,
 	type OnModuleInit,
 } from "@nestjs/common";
 import { EndpointProtocol } from "@prisma/generated/client";
-import {
-	createConnection,
-	createServer,
-	type Server,
-	type Socket,
-} from "node:net";
 import { PrismaService } from "../core/prisma/prisma.service.js";
 import { ProxyService } from "./proxy.service.js";
 

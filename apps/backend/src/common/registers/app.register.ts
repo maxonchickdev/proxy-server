@@ -1,6 +1,6 @@
+import type { AppType } from "../types/app.type.js";
 import { registerAs } from "@nestjs/config";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
-import type { AppType } from "../types/app.type.js";
 
 export const appRegister = registerAs(ConfigKeyEnum.APP, (): AppType => {
 	const raw = process.env.CORS_ORIGIN ?? "http://localhost:5173";

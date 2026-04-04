@@ -1,3 +1,4 @@
+import type { RequestWithRefreshAuth } from "../types/request-with-refresh-auth.type";
 import {
 	type CanActivate,
 	type ExecutionContext,
@@ -6,7 +7,6 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import { AuthService } from "../auth.service";
-import type { RequestWithRefreshAuth } from "../types/request-with-refresh-auth.type";
 
 @Injectable()
 export class RefreshAuthGuard implements CanActivate {

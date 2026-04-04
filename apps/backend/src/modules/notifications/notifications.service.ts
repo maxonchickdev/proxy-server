@@ -1,3 +1,4 @@
+import type { NotificationChannel, RequestLog } from "@prisma/generated/client";
 import {
 	BadRequestException,
 	Inject,
@@ -5,7 +6,6 @@ import {
 	Logger,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { NotificationChannel, RequestLog } from "@prisma/generated/client";
 import { ConfigKeyEnum } from "../../common/enums/config.enum.js";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";

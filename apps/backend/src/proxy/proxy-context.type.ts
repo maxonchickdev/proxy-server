@@ -1,5 +1,4 @@
-import type { Endpoint } from "@prisma/generated/client";
-import type { Prisma } from "@prisma/generated/client";
+import type { Endpoint, Prisma } from "@prisma/generated/client";
 import type { NextFunction, Request, Response } from "express";
 
 export type HeadersRecord = Record<string, string | string[] | undefined>;

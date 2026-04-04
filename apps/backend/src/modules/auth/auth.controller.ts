@@ -1,3 +1,7 @@
+import type { Request, Response } from "express";
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import type { AuthResponseType } from "./types/auth-response.type";
+import type { RequestWithRefreshAuth } from "./types/request-with-refresh-auth.type";
 import {
 	Body,
 	Controller,
@@ -12,7 +16,6 @@ import {
 	UseGuards,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import type { Request, Response } from "express";
 import {
 	ApiBody,
 	ApiConflictResponse,
@@ -28,13 +31,12 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
+import { AuthResponseSchema } from "src/common/swagger/schemas/auth-response.schema";
+import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Public } from "../../common/decorators/public.decorator";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { EnvironmentsEnum } from "../../common/enums/environments.enum";
-import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
-import { AuthResponseSchema } from "src/common/swagger/schemas/auth-response.schema";
-import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 import { AuthService } from "./auth.service";
 import { authThrottle } from "./auth-throttle.constants";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
@@ -44,8 +46,6 @@ import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { RefreshAuthGuard } from "./guards/refresh-auth.guard";
-import type { RequestWithRefreshAuth } from "./types/request-with-refresh-auth.type";
-import type { AuthResponseType } from "./types/auth-response.type";
 import { parseDurationToMs } from "./utils/duration.util";
 
 const REFRESH_COOKIE_NAME = "refresh_token";

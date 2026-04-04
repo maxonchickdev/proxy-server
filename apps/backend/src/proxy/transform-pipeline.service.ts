@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import type { TransformRule } from "@proxy-server/shared";
 import type { Endpoint } from "@prisma/generated/client";
+import type { TransformRule } from "@proxy-server/shared";
 import type { HeadersRecord } from "./proxy-context.type.js";
+import { Injectable } from "@nestjs/common";
 
 type RequestPhaseResult = {
 	path: string;

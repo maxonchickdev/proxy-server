@@ -1,6 +1,6 @@
+import type { EmailType } from "../types/email.type.js";
 import { registerAs } from "@nestjs/config";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
-import type { EmailType } from "../types/email.type.js";
 
 export const emailRegister = registerAs(
 	ConfigKeyEnum.EMAIL,

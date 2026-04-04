@@ -1,12 +1,12 @@
-import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { nanoid } from "nanoid";
-import { ConfigService } from "@nestjs/config";
-import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
-import { PrismaService } from "../../core/prisma/prisma.service";
 import type { AuthResponseType } from "./types/auth-response.type";
 import type { JwtPayloadType } from "./types/jwt-payload.type";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
+import { nanoid } from "nanoid";
+import { ConfigKeyEnum } from "../../common/enums/config.enum";
+import { PrismaService } from "../../core/prisma/prisma.service";
 import { parseDurationToMs } from "./utils/duration.util";
 import { hashOpaqueToken } from "./utils/token-hash.util";
 

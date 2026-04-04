@@ -1,6 +1,6 @@
+import type { JwtType } from "../types/jwt.type.js";
 import { registerAs } from "@nestjs/config";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
-import type { JwtType } from "../types/jwt.type.js";
 
 export const jwtRegister = registerAs(ConfigKeyEnum.JWT, (): JwtType => {
 	return {

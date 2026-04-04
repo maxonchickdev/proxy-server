@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { ENDPOINT_PROTOCOLS } from "@proxy-server/shared";
 import { Type } from "class-transformer";
 import {
 	ArrayMaxSize,
@@ -15,7 +16,6 @@ import {
 } from "class-validator";
 import { RateLimitConfigDto } from "./rate-limit-config.dto";
 import { TransformRuleDto } from "./transform-rule.dto";
-import { ENDPOINT_PROTOCOLS } from "@proxy-server/shared";
 
 export class UpdateEndpointDto {
 	@ApiProperty({

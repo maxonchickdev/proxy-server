@@ -1,3 +1,8 @@
+import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import type { SignInDto } from "./dto/sign-in.dto";
+import type { SignUpDto } from "./dto/sign-up.dto";
+import type { AuthResponseType } from "./types/auth-response.type";
+import { randomInt } from "node:crypto";
 import {
 	BadRequestException,
 	ConflictException,
@@ -8,16 +13,11 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import * as bcrypt from "bcrypt";
-import { randomInt } from "node:crypto";
-import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
-import type { SignInDto } from "./dto/sign-in.dto";
-import type { SignUpDto } from "./dto/sign-up.dto";
-import { PasswordResetService } from "./password-reset.service";
-import type { AuthResponseType } from "./types/auth-response.type";
-import { TokenService } from "./token.service";
 import { authVerificationConstants } from "./auth-verification.constants";
+import { PasswordResetService } from "./password-reset.service";
+import { TokenService } from "./token.service";
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const SALT_ROUNDS = 10;

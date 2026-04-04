@@ -10,10 +10,10 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
+import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { AnalyticsService } from "./analytics.service";
 import { AnalyticsTimeseriesQueryDto } from "./dto/analytics-timeseries-query.dto";
-import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
 
 @ApiTags("Analytics")
 @ApiBearerAuth("Bearer")

@@ -1,10 +1,10 @@
+import type { Request } from "express";
+import type { ProxyContext } from "../proxy-context.type.js";
+import type { ProtocolHandler } from "./protocol-handler.interface.js";
 import { Inject, Injectable } from "@nestjs/common";
 import { type Endpoint, EndpointProtocol } from "@prisma/generated/client";
-import type { Request } from "express";
 import { extractGraphqlRequestMetadata } from "../graphql-metadata.util.js";
-import type { ProxyContext } from "../proxy-context.type.js";
 import { HttpProxyHandler } from "./http-proxy.handler.js";
-import type { ProtocolHandler } from "./protocol-handler.interface.js";
 
 @Injectable()
 export class GraphqlProxyHandler implements ProtocolHandler {

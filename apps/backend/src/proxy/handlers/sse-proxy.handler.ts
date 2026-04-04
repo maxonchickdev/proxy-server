@@ -1,11 +1,11 @@
+import type { Request } from "express";
+import type { ProxyContext } from "../proxy-context.type.js";
+import type { ProtocolHandler } from "./protocol-handler.interface.js";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { type Endpoint, EndpointProtocol } from "@prisma/generated/client";
-import type { Request } from "express";
-import { proxyRequestConstants } from "../proxy-request.constants.js";
-import type { ProxyContext } from "../proxy-context.type.js";
 import { ProxyService } from "../proxy.service.js";
+import { proxyRequestConstants } from "../proxy-request.constants.js";
 import { TransformPipelineService } from "../transform-pipeline.service.js";
-import type { ProtocolHandler } from "./protocol-handler.interface.js";
 
 @Injectable()
 export class SseProxyHandler implements ProtocolHandler {

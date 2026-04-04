@@ -1,3 +1,6 @@
+import { join } from "node:path";
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
 import {
 	Injectable,
 	Logger,
@@ -5,10 +8,7 @@ import {
 	type OnModuleInit,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import * as grpc from "@grpc/grpc-js";
-import * as protoLoader from "@grpc/proto-loader";
 import { EndpointProtocol } from "@prisma/generated/client";
-import { join } from "node:path";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
 import { PrismaService } from "../core/prisma/prisma.service.js";
 import { ProxyService } from "./proxy.service.js";

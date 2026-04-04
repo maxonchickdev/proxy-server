@@ -1,9 +1,9 @@
-import { Inject, Injectable, NotFoundException } from "@nestjs/common";
 import type { NotificationChannel } from "@prisma/generated/client";
-import { paginationConstants } from "../../common/constants/pagination.constants";
 import type { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
-import { PrismaService } from "../../core/prisma/prisma.service";
 import type { CreateChannelDto } from "./dto/create-channel.dto";
+import { Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { paginationConstants } from "../../common/constants/pagination.constants";
+import { PrismaService } from "../../core/prisma/prisma.service";
 
 @Injectable()
 export class NotificationChannelsService {

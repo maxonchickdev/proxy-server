@@ -1,5 +1,5 @@
-import { ConfigService } from "@nestjs/config";
 import type { NestExpressApplication } from "@nestjs/platform-express";
+import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { ConfigKeyEnum } from "../common/enums/config.enum";
 import { EnvironmentsEnum } from "../common/enums/environments.enum";
