@@ -7,7 +7,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/generated/client";
-import { ConfigKeyEnum } from "src/common/enums/config.enum";
+import { ConfigKeyEnum } from "../../common/enums/config.enum";
 
 @Injectable()
 export class PrismaService

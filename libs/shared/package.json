@@ -9,7 +9,7 @@
 	"scripts": {
 		"prepare": "npm run build",
 		"build": "tsc -p tsconfig.build.json",
-		"lint:types:check": "tsc --noEmit --pretty --diagnostics",
+		"lint:types:check": "tsc -p tsconfig.json",
 		"lint:check": "biome lint",
 		"lint:fix": "biome lint --write",
 		"lint:format:check": "biome format",

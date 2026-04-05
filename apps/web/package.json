@@ -12,7 +12,7 @@
 		"dev": "vite",
 		"build": "vite build",
 		"preview": "vite preview",
-		"lint:types:check": "tsc --noEmit --pretty --diagnostics",
+		"lint:types:check": "tsc -p tsconfig.json",
 		"lint:check": "biome lint",
 		"lint:fix": "biome lint --write",
 		"lint:format:check": "biome format",

@@ -31,8 +31,8 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import { AuthResponseSchema } from "src/common/swagger/schemas/auth-response.schema";
-import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
+import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
+import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Public } from "../../common/decorators/public.decorator";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";

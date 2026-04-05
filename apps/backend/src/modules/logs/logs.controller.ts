@@ -22,7 +22,7 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
-import { ErrorResponseSchema } from "src/common/swagger/schemas/error-response.schema";
+import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { LogsListQueryDto } from "./dto/logs-list-query.dto";
 import { LogsService } from "./logs.service";

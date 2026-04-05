@@ -1,15 +1,15 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule as CoreConfigModule } from "@nestjs/config";
 import Joi from "joi";
-import { appRegister } from "src/common/registers/app.register";
-import { cacheRegister } from "src/common/registers/cache.register";
-import { dbRegister } from "src/common/registers/db.register";
-import { emailRegister } from "src/common/registers/email.register";
-import { environmentRegister } from "src/common/registers/environment.register";
-import { jwtRegister } from "src/common/registers/jwt.register";
-import { proxyRegister } from "src/common/registers/proxy.register";
-import { rateLimitRegister } from "src/common/registers/rate-limit.register";
-import { swaggerRegister } from "src/common/registers/swagger.register";
+import { appRegister } from "../../common/registers/app.register";
+import { cacheRegister } from "../../common/registers/cache.register";
+import { dbRegister } from "../../common/registers/db.register";
+import { emailRegister } from "../../common/registers/email.register";
+import { environmentRegister } from "../../common/registers/environment.register";
+import { jwtRegister } from "../../common/registers/jwt.register";
+import { proxyRegister } from "../../common/registers/proxy.register";
+import { rateLimitRegister } from "../../common/registers/rate-limit.register";
+import { swaggerRegister } from "../../common/registers/swagger.register";
 
 @Module({
 	imports: [

@@ -1,16 +1,13 @@
 {
+	"extends": "./tsconfig.json",
 	"compilerOptions": {
-		"ignoreDeprecations": "6.0",
-		"target": "ES2022",
-		"module": "CommonJS",
-		"moduleResolution": "node10",
+		"module": "commonjs",
+		"moduleResolution": "bundler",
+		"noEmit": false,
 		"outDir": "dist",
 		"rootDir": "src",
-		"strict": true,
-		"skipLibCheck": true,
 		"declaration": true,
 		"declarationMap": true,
-		"sourceMap": true,
 		"esModuleInterop": true
 	},
 	"include": ["src/**/*.ts"]
