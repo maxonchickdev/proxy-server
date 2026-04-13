@@ -1,4 +1,3 @@
-import { ENDPOINT_PROTOCOLS } from "@proxy-server/shared";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
@@ -26,8 +25,6 @@ export const EndpointDetailPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const [copied, setCopied] = useState(false);
 	const [toggleError, setToggleError] = useState<string | null>(null);
-	const [advProtocol, setAdvProtocol] =
-		useState<(typeof ENDPOINT_PROTOCOLS)[number]>("HTTP");
 	const [rateMax, setRateMax] = useState("");
 	const [rateWindowSec, setRateWindowSec] = useState("");
 	const [transformJson, setTransformJson] = useState("");
@@ -71,7 +68,6 @@ export const EndpointDetailPage = () => {
 
 	useEffect(() => {
 		if (!endpoint) return;
-		setAdvProtocol(endpoint.protocol);
 		setTransformJson(
 			endpoint.transformRules
 				? JSON.stringify(endpoint.transformRules, null, 2)
@@ -121,7 +117,6 @@ export const EndpointDetailPage = () => {
 			await updateMutation.mutateAsync({
 				id,
 				data: {
-					protocol: advProtocol,
 					...(rateLimitConfig
 						? { rateLimitConfig }
 						: { rateLimitConfig: null }),
@@ -240,10 +235,8 @@ export const EndpointDetailPage = () => {
 					Target: {endpoint.targetUrl}
 				</p>
 				<p className="mt-1 text-sm text-white/60">
-					Protocol: <span className="text-white">{endpoint.protocol}</span>
-					{endpoint.tcpProxyPort != null ? (
-						<span className="ml-2">TCP port: {endpoint.tcpProxyPort}</span>
-					) : null}
+					HTTP reverse proxy to{" "}
+					<span className="text-white">http:// or https://</span> upstream
 				</p>
 			</CardComponent>
 
@@ -255,27 +248,6 @@ export const EndpointDetailPage = () => {
 					</p>
 				) : null}
 				<div className="space-y-4">
-					<div className="space-y-2">
-						<label htmlFor="adv-protocol" className="text-sm text-white/80">
-							Protocol
-						</label>
-						<select
-							id="adv-protocol"
-							value={advProtocol}
-							onChange={(e) =>
-								setAdvProtocol(
-									e.target.value as (typeof ENDPOINT_PROTOCOLS)[number],
-								)
-							}
-							className="w-full border border-white/30 bg-black px-3 py-2 text-white"
-						>
-							{ENDPOINT_PROTOCOLS.map((p) => (
-								<option key={p} value={p}>
-									{p}
-								</option>
-							))}
-						</select>
-					</div>
 					<div className="grid gap-4 md:grid-cols-2">
 						<InputComponent
 							label="Rate limit max requests"

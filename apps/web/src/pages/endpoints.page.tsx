@@ -1,4 +1,3 @@
-import { ENDPOINT_PROTOCOLS } from "@proxy-server/shared";
 import { type FormEvent, useState } from "react";
 import { EndpointsTableComponent } from "@/components/endpoints-table.component";
 import { ButtonComponent } from "@/components/ui/button.component";
@@ -10,12 +9,9 @@ import { useCreateEndpoint, useEndpointsList } from "@/hooks/endpoints.hooks";
 export const EndpointsPage = () => {
 	const [name, setName] = useState("");
 	const [targetUrl, setTargetUrl] = useState("");
-	const [protocol, setProtocol] =
-		useState<(typeof ENDPOINT_PROTOCOLS)[number]>("HTTP");
 	const [rateMax, setRateMax] = useState("");
 	const [rateWindowSec, setRateWindowSec] = useState("");
 	const [transformJson, setTransformJson] = useState("");
-	const [tcpPort, setTcpPort] = useState("");
 	const [error, setError] = useState("");
 	const {
 		data: listData,
@@ -68,34 +64,18 @@ export const EndpointsPage = () => {
 			setError("Invalid rate limit numbers");
 			return;
 		}
-		const tcpProxyPortParsed = tcpPort.trim()
-			? Number.parseInt(tcpPort, 10)
-			: undefined;
-		if (
-			tcpProxyPortParsed !== undefined &&
-			!Number.isFinite(tcpProxyPortParsed)
-		) {
-			setError("Invalid TCP port");
-			return;
-		}
 		try {
 			await createMutation.mutateAsync({
 				name,
 				targetUrl,
-				protocol,
 				...(rateLimitConfig ? { rateLimitConfig } : {}),
 				...(transformRules ? { transformRules: transformRules as never } : {}),
-				...(protocol === "TCP" && tcpProxyPortParsed
-					? { tcpProxyPort: tcpProxyPortParsed }
-					: {}),
 			});
 			setName("");
 			setTargetUrl("");
-			setProtocol("HTTP");
 			setRateMax("");
 			setRateWindowSec("");
 			setTransformJson("");
-			setTcpPort("");
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to create");
 		}
@@ -107,6 +87,11 @@ export const EndpointsPage = () => {
 
 			<CardComponent>
 				<h2 className="mb-4 text-lg font-medium">Create endpoint</h2>
+				<p className="mb-4 text-sm text-white/60">
+					Each endpoint forwards HTTP requests to an upstream URL that must use{" "}
+					<code className="text-white/80">http://</code> or{" "}
+					<code className="text-white/80">https://</code>.
+				</p>
 				<form onSubmit={handleSubmit} className="space-y-4" noValidate>
 					{error ? (
 						<div
@@ -139,38 +124,6 @@ export const EndpointsPage = () => {
 						aria-invalid={error ? true : undefined}
 						aria-describedby={error ? createFormErrorId : undefined}
 					/>
-					<div className="space-y-2">
-						<label htmlFor="protocol" className="block text-sm text-white/80">
-							Protocol
-						</label>
-						<select
-							id="protocol"
-							name="protocol"
-							value={protocol}
-							onChange={(e) =>
-								setProtocol(
-									e.target.value as (typeof ENDPOINT_PROTOCOLS)[number],
-								)
-							}
-							className="w-full border border-white/30 bg-black px-3 py-2 text-white"
-						>
-							{ENDPOINT_PROTOCOLS.map((p) => (
-								<option key={p} value={p}>
-									{p}
-								</option>
-							))}
-						</select>
-					</div>
-					{protocol === "TCP" ? (
-						<InputComponent
-							label="TCP listen port"
-							type="number"
-							name="tcpPort"
-							value={tcpPort}
-							onChange={(e) => setTcpPort(e.target.value)}
-							placeholder="19000"
-						/>
-					) : null}
 					<div className="grid gap-4 md:grid-cols-2">
 						<InputComponent
 							label="Rate limit max requests (optional)"

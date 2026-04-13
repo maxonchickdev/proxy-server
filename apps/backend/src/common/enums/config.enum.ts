@@ -1,8 +1,8 @@
 export enum ConfigKeyEnum {
-	CACHE = "cache",
+	REDIS = "redis",
 	APP = "app",
 	ENVIRONMENT = "environment",
-	DB = "db",
+	PRISMA = "prisma",
 	JWT = "jwt",
 	PROXY = "proxy",
 	RATE_LIMIT = "rate-limit",

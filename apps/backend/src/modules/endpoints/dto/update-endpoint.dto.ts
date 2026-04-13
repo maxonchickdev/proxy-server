@@ -1,16 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ENDPOINT_PROTOCOLS } from "@proxy-server/shared";
 import { Type } from "class-transformer";
 import {
 	ArrayMaxSize,
 	IsBoolean,
-	IsIn,
-	IsInt,
 	IsOptional,
 	IsString,
 	IsUrl,
-	Max,
-	Min,
 	MinLength,
 	ValidateNested,
 } from "class-validator";
@@ -36,17 +31,11 @@ export class UpdateEndpointDto {
 		required: false,
 	})
 	@IsOptional()
-	@IsUrl({}, { message: "Target URL must be a valid URL" })
+	@IsUrl(
+		{ protocols: ["http", "https"], require_protocol: true },
+		{ message: "Target URL must be a valid http or https URL" },
+	)
 	targetUrl?: string;
-
-	@ApiProperty({
-		description: "Proxy protocol for this endpoint",
-		enum: ENDPOINT_PROTOCOLS,
-		required: false,
-	})
-	@IsOptional()
-	@IsIn([...ENDPOINT_PROTOCOLS])
-	protocol?: (typeof ENDPOINT_PROTOCOLS)[number];
 
 	@ApiProperty({
 		description: "Optional per-endpoint rate limit",
@@ -68,17 +57,6 @@ export class UpdateEndpointDto {
 	@Type(() => TransformRuleDto)
 	@ArrayMaxSize(100)
 	transformRules?: TransformRuleDto[] | null;
-
-	@ApiProperty({
-		description: "Dedicated TCP listen port when protocol is TCP",
-		required: false,
-	})
-	@IsOptional()
-	@Type(() => Number)
-	@IsInt()
-	@Min(1024)
-	@Max(65_535)
-	tcpProxyPort?: number | null;
 
 	@ApiProperty({
 		description: "Whether the endpoint is active",

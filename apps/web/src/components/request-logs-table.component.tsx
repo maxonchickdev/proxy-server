@@ -52,11 +52,6 @@ export function RequestLogsTableComponent({
 							</td>
 							<td className="px-4 py-2 font-mono text-sm text-white/80">
 								{log.method}
-								{log.protocol && log.protocol !== "HTTP" ? (
-									<span className="ml-1 text-xs text-white/40">
-										({log.protocol})
-									</span>
-								) : null}
 							</td>
 							<td className="px-4 py-2 font-mono text-sm text-white/60 truncate max-w-[200px]">
 								{log.path}
@@ -72,12 +67,7 @@ export function RequestLogsTableComponent({
 									<button
 										type="button"
 										onClick={() => onReplay(log.id)}
-										disabled={
-											log.method.startsWith("WEBSOCKET") ||
-											log.method === "TCP" ||
-											log.method === "GRPC" ||
-											log.method.includes("replay")
-										}
+										disabled={log.method.includes("replay")}
 										className="border border-white/30 px-2 py-1 text-xs hover:bg-white hover:text-black disabled:opacity-40"
 									>
 										Replay

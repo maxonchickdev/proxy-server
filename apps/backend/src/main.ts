@@ -15,7 +15,6 @@ import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor";
 import { AuthResponseSchema } from "./common/swagger/schemas/auth-response.schema";
 import { AuthUserSchema } from "./common/swagger/schemas/auth-user.schema";
 import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.schema";
-import { WebSocketProxyService } from "./proxy/websocket-proxy.service";
 
 const logger = new Logger("Bootstrap");
 
@@ -25,16 +24,16 @@ export const setupSwagger = (
 	appPort: number,
 ): string => {
 	const swaggerPath = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.swaggerPath`,
+		`${ConfigKeyEnum.SWAGGER}.path`,
 	);
 	const appName = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.swaggerName`,
+		`${ConfigKeyEnum.SWAGGER}.name`,
 	);
 	const appDescription = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.swaggerDescr`,
+		`${ConfigKeyEnum.SWAGGER}.descr`,
 	);
 	const siteTitle = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.swaggerSiteTitle`,
+		`${ConfigKeyEnum.SWAGGER}.siteTitle`,
 	);
 
 	const swaggerConfig = new DocumentBuilder()
@@ -94,14 +93,12 @@ export const setupSwagger = (
 
 	const configService = app.get(ConfigService);
 	const corsOrigins = configService.getOrThrow<string[]>(
-		`${ConfigKeyEnum.APP}.corsOrigins`,
+		`${ConfigKeyEnum.APP}.corsOrigin`,
 	);
 	const isProduction =
 		configService.getOrThrow<string>(`${ConfigKeyEnum.ENVIRONMENT}.nodeEnv`) ===
 		EnvironmentsEnum.PRODUCTION;
-	const appPort = configService.getOrThrow<number>(
-		`${ConfigKeyEnum.APP}.appPort`,
-	);
+	const appPort = configService.getOrThrow<number>(`${ConfigKeyEnum.APP}.port`);
 
 	app.enableVersioning({
 		defaultVersion: "1",
@@ -146,9 +143,6 @@ export const setupSwagger = (
 	);
 
 	await app.listen(appPort);
-
-	const webSocketProxy = app.get(WebSocketProxyService);
-	webSocketProxy.attach(app.getHttpServer());
 
 	const baseUrl = await app.getUrl();
 	logger.log(`Application listening at ${baseUrl}`);

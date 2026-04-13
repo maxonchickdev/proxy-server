@@ -8,7 +8,6 @@ import type {
 	RateLimitConfig,
 	TransformRule,
 	UserDto,
-	EndpointProtocol,
 } from "@proxy-server/shared";
 import type { RequestLogDto } from "@/types/request-log.dto";
 
@@ -193,10 +192,8 @@ export const endpointsApi = {
 	create: (data: {
 		name: string;
 		targetUrl: string;
-		protocol?: EndpointProtocol;
 		rateLimitConfig?: RateLimitConfig;
 		transformRules?: TransformRule[];
-		tcpProxyPort?: number;
 		isActive?: boolean;
 	}) =>
 		api<EndpointDto>("/endpoints", {
@@ -209,10 +206,8 @@ export const endpointsApi = {
 		data: {
 			name?: string;
 			targetUrl?: string;
-			protocol?: EndpointProtocol;
 			rateLimitConfig?: RateLimitConfig | null;
 			transformRules?: TransformRule[] | null;
-			tcpProxyPort?: number | null;
 			isActive?: boolean;
 		},
 	) =>

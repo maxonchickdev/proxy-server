@@ -12,11 +12,6 @@ datasource db {
 
 enum EndpointProtocol {
   HTTP
-  WEBSOCKET
-  GRAPHQL
-  GRPC
-  SSE
-  TCP
 }
 
 model User {
@@ -65,7 +60,6 @@ model Endpoint {
   protocol        EndpointProtocol  @default(HTTP)
   rateLimitConfig Json?             @map("rate_limit_config")
   transformRules  Json?             @map("transform_rules")
-  tcpProxyPort    Int?              @map("tcp_proxy_port")
   isActive        Boolean           @default(true) @map("is_active")
   createdAt       DateTime          @default(now()) @map("created_at")
 

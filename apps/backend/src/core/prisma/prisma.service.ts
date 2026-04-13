@@ -17,7 +17,7 @@ export class PrismaService
 	constructor(@Inject(ConfigService) readonly configService: ConfigService) {
 		const adapter: PrismaPg = new PrismaPg({
 			connectionString: configService.getOrThrow<string>(
-				`${ConfigKeyEnum.DB}.postgresUrl`,
+				`${ConfigKeyEnum.PRISMA}.url`,
 			),
 		});
 

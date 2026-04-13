@@ -19,9 +19,6 @@ export function EndpointsTableComponent({
 							Name
 						</th>
 						<th className="px-4 py-3 text-left text-sm font-medium text-white/60">
-							Protocol
-						</th>
-						<th className="px-4 py-3 text-left text-sm font-medium text-white/60">
 							{proxyUrlColumn === "path" ? "Proxy URL" : "Slug"}
 						</th>
 						<th className="px-4 py-3 text-left text-sm font-medium text-white/60">
@@ -39,7 +36,6 @@ export function EndpointsTableComponent({
 					{endpoints.map((ep) => (
 						<tr key={ep.id} className="hover:bg-white/5">
 							<td className="px-4 py-3">{ep.name}</td>
-							<td className="px-4 py-3 text-sm text-white/70">{ep.protocol}</td>
 							<td className="px-4 py-3 font-mono text-sm text-white/80">
 								{proxyUrlColumn === "path" ? `/r/${ep.slug}` : ep.slug}
 							</td>

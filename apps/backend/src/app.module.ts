@@ -9,7 +9,7 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { ConfigKeyEnum } from "./common/enums/config.enum";
 import { CorrelationIdMiddleware } from "./common/middleware/correlation-id.middleware";
-import { CoreModule } from "./core/core.module";
+import { ConfigModule } from "./core/config/config.module";
 import { PrismaModule } from "./core/prisma/prisma.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
@@ -24,7 +24,8 @@ import { ProxyModule } from "./proxy/proxy.module";
 
 @Module({
 	imports: [
-		CoreModule,
+		ConfigModule,
+		PrismaModule,
 		ScheduleModule.forRoot(),
 		ThrottlerModule.forRootAsync({
 			inject: [ConfigService],

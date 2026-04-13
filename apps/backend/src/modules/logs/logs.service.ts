@@ -1,13 +1,12 @@
 import type { Endpoint, RequestLog } from "@prisma/generated/client";
 import type { LogsListQueryDto } from "./dto/logs-list-query.dto";
 import {
-	BadRequestException,
 	ForbiddenException,
 	Inject,
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
-import { EndpointProtocol, Prisma } from "@prisma/generated/client";
+import { Prisma } from "@prisma/generated/client";
 import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { type ProxyLogPayload, ProxyService } from "../../proxy/proxy.service";
@@ -85,16 +84,6 @@ export class LogsService {
 	}> {
 		const log = await this.findOne(logId, userId);
 		const { endpoint } = log;
-		const replayable = new Set<EndpointProtocol>([
-			EndpointProtocol.HTTP,
-			EndpointProtocol.GRAPHQL,
-			EndpointProtocol.SSE,
-		]);
-		if (!replayable.has(endpoint.protocol)) {
-			throw new BadRequestException(
-				"Replay is only supported for HTTP, GraphQL, and SSE endpoints",
-			);
-		}
 		const targetUrl = this.proxyService.buildTargetUrl(
 			endpoint,
 			log.path,

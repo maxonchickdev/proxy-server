@@ -10,7 +10,6 @@ export type EndpointDto = {
 	protocol: EndpointProtocol;
 	rateLimitConfig: RateLimitConfig | null;
 	transformRules: TransformRule[] | null;
-	tcpProxyPort: number | null;
 	isActive: boolean;
 	createdAt: string;
 };

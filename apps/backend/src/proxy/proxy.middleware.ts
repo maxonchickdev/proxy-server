@@ -2,11 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import type { ProtocolHandler } from "./handlers/protocol-handler.interface.js";
 import { Inject, Injectable, type NestMiddleware } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { EndpointProtocol } from "@prisma/generated/client";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
-import { GraphqlProxyHandler } from "./handlers/graphql-proxy.handler.js";
 import { HttpProxyHandler } from "./handlers/http-proxy.handler.js";
-import { SseProxyHandler } from "./handlers/sse-proxy.handler.js";
 import { ProxyService } from "./proxy.service.js";
 import { ProxyRateLimitService } from "./proxy-rate-limit.service.js";
 import { proxyRequestConstants } from "./proxy-request.constants.js";
@@ -23,12 +20,9 @@ export class ProxyMiddleware implements NestMiddleware {
 		@Inject(ConfigService) private readonly config: ConfigService,
 		@Inject(ProxyRateLimitService)
 		private readonly rateLimit: ProxyRateLimitService,
-		@Inject(GraphqlProxyHandler)
-		private readonly graphqlHandler: GraphqlProxyHandler,
-		@Inject(SseProxyHandler) private readonly sseHandler: SseProxyHandler,
 		@Inject(HttpProxyHandler) private readonly httpHandler: HttpProxyHandler,
 	) {
-		this.handlers = [this.graphqlHandler, this.sseHandler, this.httpHandler];
+		this.handlers = [this.httpHandler];
 	}
 
 	async use(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -45,33 +39,24 @@ export class ProxyMiddleware implements NestMiddleware {
 			});
 			return;
 		}
-		if (
-			endpoint.protocol === EndpointProtocol.GRPC ||
-			endpoint.protocol === EndpointProtocol.TCP
-		) {
+		let targetUrlParsed: URL;
+		try {
+			targetUrlParsed = new URL(endpoint.targetUrl);
+		} catch {
 			this.writeJson(res, proxyRequestConstants.HTTP_BAD_REQUEST, {
-				error: "Invalid protocol for HTTP proxy",
-				message:
-					"This endpoint uses gRPC or TCP; connect to the dedicated proxy port.",
+				error: "Invalid target URL",
+				message: "Endpoint target URL is not a valid URL",
 			});
 			return;
 		}
-		if (endpoint.protocol === EndpointProtocol.WEBSOCKET) {
-			const upgrade = req.headers.upgrade;
-			const conn = req.headers.connection;
-			const isWsUpgrade =
-				typeof upgrade === "string" &&
-				upgrade.toLowerCase() === "websocket" &&
-				typeof conn === "string" &&
-				conn.toLowerCase().includes("upgrade");
-			if (!isWsUpgrade) {
-				res.status(proxyRequestConstants.HTTP_UPGRADE_REQUIRED).json({
-					error: "Upgrade Required",
-					message: "Use a WebSocket client for this endpoint",
-				});
-				return;
-			}
-			next();
+		if (
+			targetUrlParsed.protocol !== "http:" &&
+			targetUrlParsed.protocol !== "https:"
+		) {
+			this.writeJson(res, proxyRequestConstants.HTTP_BAD_REQUEST, {
+				error: "Unsupported target scheme",
+				message: "Only http and https target URLs are supported",
+			});
 			return;
 		}
 		const clientKey =
@@ -99,7 +84,7 @@ export class ProxyMiddleware implements NestMiddleware {
 			return;
 		}
 		const queryString = this.extractQueryString(req.url);
-		const targetHost = new URL(endpoint.targetUrl).host;
+		const targetHost = targetUrlParsed.host;
 		const headers = this.proxyService.cleanHeadersForUpstream(
 			req.headers as HeadersRecord,
 			targetHost,

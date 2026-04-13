@@ -10,8 +10,8 @@ import {
 	ApiTooManyRequestsResponse,
 	getSchemaPath,
 } from "@nestjs/swagger";
-import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { AnalyticsService } from "./analytics.service";
 import { AnalyticsTimeseriesQueryDto } from "./dto/analytics-timeseries-query.dto";
 

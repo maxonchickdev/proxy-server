@@ -16,7 +16,7 @@ export class ProxyRateLimitService {
 
 	constructor(private readonly config: ConfigService) {
 		const url =
-			this.config.get<string>(`${ConfigKeyEnum.CACHE}.redisUrl`) ?? "";
+			this.config.get<string>(`${ConfigKeyEnum.REDIS}.redisUrl`) ?? "";
 		if (url.trim()) {
 			this.redis = new Redis(url, {
 				maxRetriesPerRequest: 1,

@@ -25,7 +25,7 @@ export class TimeoutInterceptor implements NestInterceptor {
 	) {
 		this.appRequestTimeout = Number(
 			this.configService.getOrThrow<number>(
-				`${ConfigKeyEnum.APP}.appRequestTimeout`,
+				`${ConfigKeyEnum.APP}.requestTimeout`,
 			),
 		);
 	}

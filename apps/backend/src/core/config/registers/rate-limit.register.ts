@@ -1,15 +1,20 @@
-import type { RateLimitType } from "../types/rate-limiting.type.js";
 import { registerAs } from "@nestjs/config";
-import { ConfigKeyEnum } from "../enums/config.enum.js";
+import { ConfigKeyEnum } from "../../../common/enums/config.enum";
+import { RateLimitType } from "../types/rate-limiting.type";
 
 export const rateLimitRegister = registerAs(
 	ConfigKeyEnum.RATE_LIMIT,
 	(): RateLimitType => {
 		const ttl = Number(process.env.THROTTLE_TTL_MS);
 		const limit = Number(process.env.THROTTLE_LIMIT);
+
+		if (!ttl || !limit) {
+			throw new Error("Missing some envs");
+		}
+
 		return {
-			ttl: Number.isFinite(ttl) && ttl > 0 ? ttl : 60_000,
-			limit: Number.isFinite(limit) && limit > 0 ? limit : 100,
+			ttl,
+			limit,
 		};
 	},
 );

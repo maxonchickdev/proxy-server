@@ -43,7 +43,6 @@ export function mapEndpointToDto(endpoint: Endpoint): EndpointDto {
 		protocol: endpoint.protocol as EndpointProtocol,
 		rateLimitConfig: parseRateLimit(endpoint.rateLimitConfig ?? null),
 		transformRules: parseTransformRules(endpoint.transformRules ?? null),
-		tcpProxyPort: endpoint.tcpProxyPort,
 		isActive: endpoint.isActive,
 		createdAt: endpoint.createdAt.toISOString(),
 	};

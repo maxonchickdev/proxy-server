@@ -12,11 +12,7 @@ import {
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
-import {
-	type Endpoint,
-	EndpointProtocol,
-	Prisma,
-} from "@prisma/generated/client";
+import { type Endpoint, Prisma } from "@prisma/generated/client";
 import { customAlphabet } from "nanoid";
 import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
@@ -42,21 +38,18 @@ export class EndpointsService {
 			slug = generateSlug();
 			attempts++;
 		}
-		const protocol = toEndpointProtocol(dto.protocol);
 		const created = await this.prisma.endpoint.create({
 			data: {
 				userId,
 				name: dto.name,
 				slug,
 				targetUrl: dto.targetUrl,
-				protocol,
 				...(dto.rateLimitConfig != null && {
 					rateLimitConfig: toJsonValue(dto.rateLimitConfig),
 				}),
 				...(dto.transformRules != null && {
 					transformRules: toJsonValue(dto.transformRules),
 				}),
-				...(dto.tcpProxyPort != null && { tcpProxyPort: dto.tcpProxyPort }),
 				isActive: dto.isActive ?? true,
 			},
 		});
@@ -128,9 +121,6 @@ export class EndpointsService {
 			data: {
 				...(dto.name !== undefined && { name: dto.name }),
 				...(dto.targetUrl !== undefined && { targetUrl: dto.targetUrl }),
-				...(dto.protocol !== undefined && {
-					protocol: toEndpointProtocol(dto.protocol),
-				}),
 				...(dto.rateLimitConfig !== undefined && {
 					rateLimitConfig:
 						dto.rateLimitConfig === null
@@ -142,9 +132,6 @@ export class EndpointsService {
 						dto.transformRules === null
 							? Prisma.DbNull
 							: toJsonValue(dto.transformRules),
-				}),
-				...(dto.tcpProxyPort !== undefined && {
-					tcpProxyPort: dto.tcpProxyPort === null ? null : dto.tcpProxyPort,
 				}),
 				...(dto.isActive !== undefined && { isActive: dto.isActive }),
 			},
@@ -162,13 +149,6 @@ export class EndpointsService {
 		});
 		return { success: true };
 	}
-}
-
-function toEndpointProtocol(value: string | undefined): EndpointProtocol {
-	if (value === undefined) return EndpointProtocol.HTTP;
-	const allowed = Object.values(EndpointProtocol) as string[];
-	if (allowed.includes(value)) return value as EndpointProtocol;
-	return EndpointProtocol.HTTP;
 }
 
 function toJsonValue(value: unknown): Prisma.InputJsonValue {

@@ -8,6 +8,14 @@ import { mergeLogMetadata } from "../proxy-log-metadata.util.js";
 import { proxyRequestConstants } from "../proxy-request.constants.js";
 import { TransformPipelineService } from "../transform-pipeline.service.js";
 
+type ForwardCtx = ProxyContext & {
+	targetUrl: string;
+	headers: Record<string, string | string[] | undefined>;
+	requestBody: Buffer | null;
+	path: string;
+	logRequestHeaders: Record<string, string>;
+};
+
 @Injectable()
 export class HttpProxyHandler implements ProtocolHandler {
 	private readonly logger = new Logger(HttpProxyHandler.name);
@@ -43,25 +51,208 @@ export class HttpProxyHandler implements ProtocolHandler {
 			applied.headers as Record<string, string | string[] | undefined>,
 			targetHost,
 		);
-		await this.forwardToUpstreamAndLog({
+		const logRequestHeaders = upstreamHeaders as Record<string, string>;
+		const forwardBase: ForwardCtx = {
 			...ctx,
 			targetUrl,
 			headers: upstreamHeaders as Record<string, string | string[] | undefined>,
 			requestBody: applied.requestBody,
 			path: applied.path,
-			logRequestHeaders: upstreamHeaders,
+			logRequestHeaders,
+		};
+		if (this.acceptsEventStream(applied.headers)) {
+			await this.forwardEventStreamAndLog(forwardBase);
+			return;
+		}
+		await this.forwardToUpstreamAndLog(forwardBase);
+	}
+
+	private acceptsEventStream(headers: Record<string, string>): boolean {
+		const accept = this.getHeaderCaseInsensitive(headers, "accept");
+		return (
+			typeof accept === "string" &&
+			accept.toLowerCase().includes("text/event-stream")
+		);
+	}
+
+	private getHeaderCaseInsensitive(
+		headers: Record<string, string>,
+		name: string,
+	): string | undefined {
+		const lower = name.toLowerCase();
+		for (const [k, v] of Object.entries(headers)) {
+			if (k.toLowerCase() === lower) return v;
+		}
+		return undefined;
+	}
+
+	private async forwardEventStreamAndLog(ctx: ForwardCtx): Promise<void> {
+		const method = ctx.req.method ?? "GET";
+		const upstreamBody = this.buildUpstreamBody(method, ctx.requestBody);
+		let eventCount = 0;
+		let bytesTransferred = 0;
+		try {
+			const upstreamRes = await fetch(ctx.targetUrl, {
+				method,
+				headers: ctx.headers as HeadersInit,
+				body: upstreamBody,
+				signal: AbortSignal.timeout(proxyRequestConstants.UPSTREAM_TIMEOUT_MS),
+			});
+			const headerObj: Record<string, string> = {};
+			upstreamRes.headers.forEach((v, k) => {
+				headerObj[k] = v;
+			});
+			const adjustedHeaders = this.transforms.applyStreamingResponseHeaders(
+				ctx.endpoint,
+				headerObj,
+			);
+			const hopByHop = new Set([
+				"transfer-encoding",
+				"content-encoding",
+				"connection",
+				"content-length",
+			]);
+			ctx.res.status(upstreamRes.status);
+			for (const [key, value] of Object.entries(adjustedHeaders)) {
+				if (hopByHop.has(key.toLowerCase())) continue;
+				ctx.res.setHeader(key, value);
+			}
+			const body = upstreamRes.body;
+			if (!body) {
+				ctx.res.end();
+				this.logStreamComplete(
+					ctx,
+					upstreamRes.status,
+					eventCount,
+					bytesTransferred,
+					headerObj,
+				);
+				return;
+			}
+			const reader = body.getReader();
+			const decoder = new TextDecoder();
+			try {
+				while (true) {
+					const { done, value } = await reader.read();
+					if (done) break;
+					if (value) {
+						bytesTransferred += value.byteLength;
+						ctx.res.write(Buffer.from(value));
+						const text = decoder.decode(value, { stream: true });
+						const matches = text.match(/\n\n/g);
+						eventCount += matches ? matches.length : 0;
+					}
+				}
+			} finally {
+				reader.releaseLock();
+			}
+			ctx.res.end();
+			const durationMs = Date.now() - ctx.startTime;
+			this.proxyService.logRequest({
+				endpointId: ctx.endpoint.id,
+				method,
+				path: ctx.path,
+				queryParams: ctx.queryString || null,
+				requestHeaders: this.proxyService.maskSensitiveHeaders(
+					ctx.logRequestHeaders,
+				),
+				requestBody: this.proxyService.truncateForLog(
+					ctx.requestBody,
+					proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
+				),
+				responseStatus: upstreamRes.status,
+				responseHeaders: this.proxyService.maskSensitiveHeaders(headerObj),
+				responseBody: null,
+				durationMs,
+				clientIp: this.proxyService.getClientIp(ctx.req.headers),
+				protocol: EndpointProtocol.HTTP,
+				metadata: mergeLogMetadata(ctx.logMetadata, {
+					streaming: true,
+					sseApproxEventCount: eventCount,
+					sseBytesTransferred: bytesTransferred,
+				}),
+			});
+		} catch (err: unknown) {
+			const durationMs = Date.now() - ctx.startTime;
+			this.logger.error(
+				JSON.stringify({
+					msg: "streaming_upstream_failed",
+					targetUrl: ctx.targetUrl,
+					error: err instanceof Error ? err.message : String(err),
+				}),
+				err instanceof Error ? err.stack : undefined,
+			);
+			if (!ctx.res.headersSent) {
+				ctx.res.status(proxyRequestConstants.HTTP_BAD_GATEWAY).json({
+					error: "Bad Gateway",
+					message: "Could not reach target",
+				});
+			} else {
+				ctx.res.end();
+			}
+			this.proxyService.logRequest({
+				endpointId: ctx.endpoint.id,
+				method,
+				path: ctx.path,
+				queryParams: ctx.queryString || null,
+				requestHeaders: this.proxyService.maskSensitiveHeaders(
+					ctx.logRequestHeaders,
+				),
+				requestBody: this.proxyService.truncateForLog(
+					ctx.requestBody,
+					proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
+				),
+				responseStatus: proxyRequestConstants.HTTP_BAD_GATEWAY,
+				responseHeaders: null,
+				responseBody: null,
+				durationMs,
+				clientIp: this.proxyService.getClientIp(ctx.req.headers),
+				protocol: EndpointProtocol.HTTP,
+				metadata: mergeLogMetadata(ctx.logMetadata, {
+					streaming: true,
+					sseApproxEventCount: eventCount,
+					sseBytesTransferred: bytesTransferred,
+					streamError: true,
+				}),
+			});
+		}
+	}
+
+	private logStreamComplete(
+		ctx: ForwardCtx,
+		status: number,
+		eventCount: number,
+		bytesTransferred: number,
+		responseHeaders: Record<string, string>,
+	): void {
+		const durationMs = Date.now() - ctx.startTime;
+		this.proxyService.logRequest({
+			endpointId: ctx.endpoint.id,
+			method: ctx.req.method ?? "GET",
+			path: ctx.path,
+			queryParams: ctx.queryString || null,
+			requestHeaders: this.proxyService.maskSensitiveHeaders(
+				ctx.logRequestHeaders,
+			),
+			requestBody: this.proxyService.truncateForLog(
+				ctx.requestBody,
+				proxyRequestConstants.LOG_BODY_TRUNCATION_BYTES,
+			),
+			responseStatus: status,
+			responseHeaders: this.proxyService.maskSensitiveHeaders(responseHeaders),
+			responseBody: null,
+			durationMs,
+			clientIp: this.proxyService.getClientIp(ctx.req.headers),
+			protocol: EndpointProtocol.HTTP,
+			metadata: mergeLogMetadata(ctx.logMetadata, {
+				streaming: true,
+				sseApproxEventCount: eventCount,
+				sseBytesTransferred: bytesTransferred,
+			}),
 		});
 	}
 
-	private async forwardToUpstreamAndLog(
-		ctx: ProxyContext & {
-			targetUrl: string;
-			headers: Record<string, string | string[] | undefined>;
-			requestBody: Buffer | null;
-			path: string;
-			logRequestHeaders: Record<string, string>;
-		},
-	): Promise<void> {
+	private async forwardToUpstreamAndLog(ctx: ForwardCtx): Promise<void> {
 		const method = ctx.req.method ?? "GET";
 		const upstreamBody = this.buildUpstreamBody(method, ctx.requestBody);
 		try {
@@ -99,7 +290,6 @@ export class HttpProxyHandler implements ProtocolHandler {
 			);
 		} catch (err: unknown) {
 			const durationMs = Date.now() - ctx.startTime;
-			const status = proxyRequestConstants.HTTP_BAD_GATEWAY;
 			this.logger.error(
 				JSON.stringify({
 					msg: "upstream_fetch_failed",
@@ -108,11 +298,15 @@ export class HttpProxyHandler implements ProtocolHandler {
 				}),
 				err instanceof Error ? err.stack : undefined,
 			);
-			ctx.res.status(status).json({
+			ctx.res.status(proxyRequestConstants.HTTP_BAD_GATEWAY).json({
 				error: "Bad Gateway",
 				message: "Could not reach target",
 			});
-			this.logFailedProxyRequest(ctx, status, durationMs);
+			this.logFailedProxyRequest(
+				ctx,
+				proxyRequestConstants.HTTP_BAD_GATEWAY,
+				durationMs,
+			);
 		}
 	}
 
@@ -152,7 +346,10 @@ export class HttpProxyHandler implements ProtocolHandler {
 	}
 
 	private logSuccessfulProxyRequest(
-		ctx: ProxyContext & { path: string },
+		ctx: ProxyContext & {
+			path: string;
+			logRequestHeaders: Record<string, string>;
+		},
 		upstreamStatus: number,
 		_responseBuffer: Buffer,
 		responseHeadersObj: Record<string, string>,

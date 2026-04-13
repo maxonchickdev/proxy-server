@@ -4,6 +4,5 @@ export type EmailType = {
 	user: string;
 	pass: string;
 	from: string;
-
 	logOtpOnSmtpFailure: boolean;
 };

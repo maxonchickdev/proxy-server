@@ -31,12 +31,12 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { Throttle } from "@nestjs/throttler";
-import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
-import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { Public } from "../../common/decorators/public.decorator";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { EnvironmentsEnum } from "../../common/enums/environments.enum";
+import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
+import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { AuthService } from "./auth.service";
 import { authThrottle } from "./auth-throttle.constants";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
