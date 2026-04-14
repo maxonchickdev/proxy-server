@@ -6,6 +6,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { nanoid } from "nanoid";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
+import { JwtType } from "../../core/config/types/jwt.type";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { parseDurationToMs } from "./utils/duration.util";
 import { hashOpaqueToken } from "./utils/token-hash.util";
@@ -14,17 +15,22 @@ const REFRESH_TOKEN_NANOID_LENGTH = 64;
 
 @Injectable()
 export class TokenService {
+	private readonly refreshExpiresIn: string;
+
 	constructor(
 		@Inject(PrismaService) private readonly prisma: PrismaService,
 		@Inject(JwtService) private readonly jwtService: JwtService,
-		@Inject(ConfigService) private readonly config: ConfigService,
-	) {}
+		@Inject(ConfigService) readonly configService: ConfigService,
+	) {
+		const { refreshExpiresIn } = configService.getOrThrow<JwtType>(
+			ConfigKeyEnum.JWT,
+		);
+
+		this.refreshExpiresIn = refreshExpiresIn;
+	}
 
 	private get refreshExpiresMs(): number {
-		const s = this.config.getOrThrow<string>(
-			`${ConfigKeyEnum.JWT}.refreshExpiresIn`,
-		);
-		return parseDurationToMs(s);
+		return parseDurationToMs(this.refreshExpiresIn);
 	}
 
 	async validateRefreshToken(rawToken: string): Promise<{

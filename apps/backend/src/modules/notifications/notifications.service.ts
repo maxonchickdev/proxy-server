@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ConfigKeyEnum } from "../../common/enums/config.enum.js";
+import { AppType } from "../../core/config/types/app.type.js";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
 import { AlertThrottleService } from "./alert-throttle.service";
@@ -26,6 +27,7 @@ type AlertContext = {
 @Injectable()
 export class NotificationsService {
 	private readonly logger = new Logger(NotificationsService.name);
+	private readonly dashboardBaseUrl: string;
 
 	constructor(
 		@Inject(PrismaService) private readonly prisma: PrismaService,
@@ -33,9 +35,15 @@ export class NotificationsService {
 		@Inject(SlackService) private readonly slack: SlackService,
 		@Inject(AlertThrottleService)
 		private readonly throttle: AlertThrottleService,
-		@Inject(ConfigService) private readonly config: ConfigService,
+		@Inject(ConfigService) readonly configService: ConfigService,
 		@Inject(EmailService) private readonly emailService: EmailService,
-	) {}
+	) {
+		const { dashboardBaseUrl } = configService.getOrThrow<AppType>(
+			ConfigKeyEnum.APP,
+		);
+
+		this.dashboardBaseUrl = dashboardBaseUrl;
+	}
 
 	async evaluateAndNotify(
 		endpointId: string,
@@ -46,9 +54,6 @@ export class NotificationsService {
 			select: { name: true },
 		});
 		const endpointName = endpoint?.name ?? "Endpoint";
-		const dashboardBaseUrl =
-			this.config.get<string>(`${ConfigKeyEnum.APP}.dashboardBaseUrl`) ??
-			"http://localhost:5173";
 		const rules = await this.prisma.alertRule.findMany({
 			where: { endpointId, isActive: true },
 			include: { channel: true },
@@ -67,7 +72,7 @@ export class NotificationsService {
 				endpointName,
 				ruleId: rule.id,
 				channelId: rule.channelId,
-				dashboardBaseUrl,
+				dashboardBaseUrl: this.dashboardBaseUrl,
 			};
 			await this.sendToChannel(rule.channel, ctx).catch((err: unknown) =>
 				this.logger.error(

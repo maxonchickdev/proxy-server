@@ -37,6 +37,8 @@ import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { EnvironmentsEnum } from "../../common/enums/environments.enum";
 import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
+import { EnvironmentType } from "../../core/config/types/environment.type";
+import { JwtType } from "../../core/config/types/jwt.type";
 import { AuthService } from "./auth.service";
 import { authThrottle } from "./auth-throttle.constants";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
@@ -54,22 +56,27 @@ const REFRESH_COOKIE_NAME = "refresh_token";
 @ApiExtraModels(AuthResponseSchema)
 @Controller("auth")
 export class AuthController {
+	private readonly isProduction: boolean;
+	private readonly refreshExpiresIn: string;
+
 	constructor(
 		@Inject(AuthService) private readonly authService: AuthService,
-		@Inject(ConfigService) private readonly config: ConfigService,
-	) {}
-
-	private get isProduction(): boolean {
-		return (
-			this.config.getOrThrow<string>(`${ConfigKeyEnum.ENVIRONMENT}.nodeEnv`) ===
-			EnvironmentsEnum.PRODUCTION
+		@Inject(ConfigService) readonly configService: ConfigService,
+	) {
+		const { nodeEnv } = configService.getOrThrow<EnvironmentType>(
+			ConfigKeyEnum.ENVIRONMENT,
 		);
+		this.isProduction = nodeEnv === EnvironmentsEnum.PRODUCTION;
+
+		const { refreshExpiresIn } = configService.getOrThrow<JwtType>(
+			ConfigKeyEnum.JWT,
+		);
+
+		this.refreshExpiresIn = refreshExpiresIn;
 	}
 
 	private refreshCookieMaxAgeMs(): number {
-		return parseDurationToMs(
-			this.config.getOrThrow<string>(`${ConfigKeyEnum.JWT}.refreshExpiresIn`),
-		);
+		return parseDurationToMs(this.refreshExpiresIn);
 	}
 
 	private setRefreshCookie(res: Response, rawRefresh: string): void {

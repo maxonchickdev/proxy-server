@@ -75,7 +75,7 @@ import { swaggerRegister } from "./registers/swagger.register";
 					otherwise: Joi.string().optional(),
 				}),
 
-				PROXY_BASE_DOMAIN: Joi.string(),
+				PROXY_BASE_DOMAIN: Joi.string().required(),
 			}),
 		}),
 	],

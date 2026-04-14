@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { type Observable, tap } from "rxjs";
+import { EnvironmentType } from "../../core/config/types/environment.type.js";
 import { httpConstants } from "../constants/http.constants.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
@@ -21,13 +22,12 @@ export class LoggingInterceptor implements NestInterceptor {
 	private readonly logger = new Logger(LoggingInterceptor.name);
 	private readonly isProduction: boolean;
 
-	constructor(
-		@Inject(ConfigService) private readonly configService: ConfigService,
-	) {
-		this.isProduction =
-			this.configService.getOrThrow<string>(
-				`${ConfigKeyEnum.ENVIRONMENT}.nodeEnv`,
-			) === EnvironmentsEnum.PRODUCTION;
+	constructor(@Inject(ConfigService) readonly configService: ConfigService) {
+		const { nodeEnv } = configService.getOrThrow<EnvironmentType>(
+			ConfigKeyEnum.ENVIRONMENT,
+		);
+
+		this.isProduction = nodeEnv === EnvironmentsEnum.PRODUCTION;
 	}
 
 	intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {

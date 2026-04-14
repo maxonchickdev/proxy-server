@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost } from "@nestjs/core";
+import { EnvironmentType } from "../../core/config/types/environment.type.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
 
@@ -31,11 +32,18 @@ const INTERNAL_ERROR_TYPE = "InternalServerErrorException";
 @Catch()
 export class CatchEverythingFilter implements ExceptionFilter {
 	private readonly logger = new Logger(CatchEverythingFilter.name);
+	private readonly isProduction: boolean;
 
 	constructor(
 		@Inject(HttpAdapterHost) private readonly httpAdapterHost: HttpAdapterHost,
-		@Inject(ConfigService) private readonly configService: ConfigService,
-	) {}
+		@Inject(ConfigService) readonly configService: ConfigService,
+	) {
+		const { nodeEnv } = configService.getOrThrow<EnvironmentType>(
+			ConfigKeyEnum.ENVIRONMENT,
+		);
+
+		this.isProduction = nodeEnv === EnvironmentsEnum.PRODUCTION;
+	}
 
 	catch(exception: unknown, host: ArgumentsHost): void {
 		const { httpAdapter } = this.httpAdapterHost;
@@ -132,8 +140,7 @@ export class CatchEverythingFilter implements ExceptionFilter {
 		error: string;
 		message: string | string[];
 	} {
-		const isProduction = this.isProduction();
-		const message = isProduction ? "Validation failed" : error.message;
+		const message = this.isProduction ? "Validation failed" : error.message;
 		return {
 			error: "PrismaClientValidationError",
 			message,
@@ -146,10 +153,9 @@ export class CatchEverythingFilter implements ExceptionFilter {
 		error: string;
 		message: string | string[];
 	} {
-		const isProduction = this.isProduction();
 		return {
 			error: INTERNAL_ERROR_TYPE,
-			message: isProduction
+			message: this.isProduction
 				? INTERNAL_ERROR_MESSAGE
 				: exception instanceof Error
 					? exception.message
@@ -174,13 +180,6 @@ export class CatchEverythingFilter implements ExceptionFilter {
 				: "Record not found";
 		}
 		return error.message;
-	}
-
-	private isProduction(): boolean {
-		return (
-			this.configService.get<string>(`${ConfigKeyEnum.ENVIRONMENT}.nodeEnv`) ===
-			EnvironmentsEnum.PRODUCTION
-		);
 	}
 
 	private isPrismaKnownRequestError(

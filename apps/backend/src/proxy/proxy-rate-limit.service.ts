@@ -1,9 +1,10 @@
 import type { Endpoint, Prisma } from "@prisma/generated/client";
 import type { RateLimitConfig } from "@proxy-server/shared";
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
+import { RedisType } from "../core/config/types/redis.type.js";
 
 const RATE_KEY_PREFIX = "ratelimit:";
 
@@ -14,9 +15,9 @@ export class ProxyRateLimitService {
 	private readonly memory = new Map<string, number[]>();
 	private useMemoryOnly = false;
 
-	constructor(private readonly config: ConfigService) {
-		const url =
-			this.config.get<string>(`${ConfigKeyEnum.REDIS}.redisUrl`) ?? "";
+	constructor(@Inject(ConfigService) readonly configService: ConfigService) {
+		const { url } = configService.getOrThrow<RedisType>(ConfigKeyEnum.REDIS);
+
 		if (url.trim()) {
 			this.redis = new Redis(url, {
 				maxRetriesPerRequest: 1,

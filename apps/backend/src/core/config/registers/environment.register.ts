@@ -5,11 +5,7 @@ import { EnvironmentType } from "../types/environment.type";
 export const environmentRegister = registerAs(
 	ConfigKeyEnum.ENVIRONMENT,
 	(): EnvironmentType => {
-		const nodeEnv = process.env.NODE_ENV;
-
-		if (!nodeEnv) {
-			throw new Error("Missing some envs");
-		}
+		const nodeEnv = process.env.NODE_ENV || "";
 
 		return {
 			nodeEnv,

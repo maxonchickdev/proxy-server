@@ -1,8 +1,7 @@
 import { Module } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
-import { JwtModule } from "@nestjs/jwt";
-import { PassportModule } from "@nestjs/passport";
-import { ConfigKeyEnum } from "../../common/enums/config.enum";
+import { JwtModule } from "../../core/jwt/jwt.module";
+import { PassportModule } from "../../core/passport/passport.module";
+import { PrismaModule } from "../../core/prisma/prisma.module";
 import { EmailModule } from "../email/email.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
@@ -13,28 +12,7 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { TokenService } from "./token.service";
 
 @Module({
-	imports: [
-		EmailModule,
-		PassportModule.register({ defaultStrategy: "jwt" }),
-		JwtModule.registerAsync({
-			useFactory: (config: ConfigService) => {
-				const expiresIn = config.getOrThrow<string>(
-					`${ConfigKeyEnum.JWT}.accessExpiresIn`,
-				);
-				return {
-					secret: config.getOrThrow<string>(`${ConfigKeyEnum.JWT}.secret`),
-					signOptions: {
-						expiresIn: expiresIn as
-							| `${number}m`
-							| `${number}h`
-							| `${number}d`
-							| `${number}s`,
-					},
-				};
-			},
-			inject: [ConfigService],
-		}),
-	],
+	imports: [PrismaModule, EmailModule, JwtModule, PassportModule],
 	controllers: [AuthController],
 	providers: [
 		TokenService,

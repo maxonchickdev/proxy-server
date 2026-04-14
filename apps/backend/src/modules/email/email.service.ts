@@ -1,50 +1,30 @@
 import type { Transporter } from "nodemailer";
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import * as nodemailer from "nodemailer";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
-import { emailConstants } from "./email.constants";
+import { EmailType } from "../../core/config/types/email.type";
 
 @Injectable()
 export class EmailService {
 	private readonly logger = new Logger(EmailService.name);
 	private transporter: Transporter | null = null;
 	private readonly logOtpOnSmtpFailure: boolean;
+	private readonly from: string;
 
-	constructor(private readonly config: ConfigService) {
-		const host = this.config.get<string>(`${ConfigKeyEnum.EMAIL}.host`) ?? "";
-		const port =
-			this.config.get<number>(`${ConfigKeyEnum.EMAIL}.port`) ??
-			emailConstants.DEFAULT_SMTP_PORT;
-		const user = this.config.get<string>(`${ConfigKeyEnum.EMAIL}.user`) ?? "";
-		const pass = this.config.get<string>(`${ConfigKeyEnum.EMAIL}.pass`) ?? "";
-		this.logOtpOnSmtpFailure =
-			this.config.get<boolean>(`${ConfigKeyEnum.EMAIL}.logOtpOnSmtpFailure`) ??
-			false;
+	constructor(@Inject(ConfigService) readonly configService: ConfigService) {
+		const { host, port, user, pass, from, logOtpOnSmtpFailure } =
+			configService.getOrThrow<EmailType>(ConfigKeyEnum.EMAIL);
 
-		if (host) {
-			const secure = port === 465;
-			this.transporter = nodemailer.createTransport({
-				host,
-				port,
-				secure,
-				...(user || pass ? { auth: { user, pass } } : {}),
-			});
-			this.logger.log(
-				`SMTP enabled: ${host}:${port} (secure=${secure}) — if mail never arrives, check provider settings and backend logs for send errors`,
-			);
-		} else {
-			this.logger.warn(
-				"SMTP_HOST is empty — verification/reset codes will be printed to logs only (dev mode).",
-			);
-		}
-	}
+		this.logOtpOnSmtpFailure = logOtpOnSmtpFailure;
+		this.from = from;
 
-	private get from(): string {
-		return (
-			this.config.get<string>(`${ConfigKeyEnum.EMAIL}.from`) ??
-			emailConstants.DEFAULT_FROM_ADDRESS
-		);
+		this.transporter = nodemailer.createTransport({
+			host,
+			port,
+			secure: false,
+			...(user || pass ? { auth: { user, pass } } : {}),
+		});
 	}
 
 	async sendVerificationCode(to: string, code: string): Promise<void> {

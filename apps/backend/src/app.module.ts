@@ -3,14 +3,12 @@ import {
 	Module,
 	type NestModule,
 } from "@nestjs/common";
-import { ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
-import { ScheduleModule } from "@nestjs/schedule";
-import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
-import { ConfigKeyEnum } from "./common/enums/config.enum";
 import { CorrelationIdMiddleware } from "./common/middleware/correlation-id.middleware";
 import { ConfigModule } from "./core/config/config.module";
 import { PrismaModule } from "./core/prisma/prisma.module";
+import { RateLimitModule } from "./core/rate-limit/rate-limit.module";
+import { ScheduleModule } from "./core/schedule/schedule.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
@@ -26,17 +24,7 @@ import { ProxyModule } from "./proxy/proxy.module";
 	imports: [
 		ConfigModule,
 		PrismaModule,
-		ScheduleModule.forRoot(),
-		ThrottlerModule.forRootAsync({
-			inject: [ConfigService],
-			useFactory: (config: ConfigService) => {
-				const ttl =
-					config.get<number>(`${ConfigKeyEnum.RATE_LIMIT}.ttl`) ?? 60_000;
-				const limit =
-					config.get<number>(`${ConfigKeyEnum.RATE_LIMIT}.limit`) ?? 100;
-				return [{ name: "default", ttl, limit }];
-			},
-		}),
+		ScheduleModule,
 		PrismaModule,
 		AuthModule,
 		HealthModule,
@@ -46,11 +34,11 @@ import { ProxyModule } from "./proxy/proxy.module";
 		NotificationsModule,
 		IntegrationsModule,
 		ProxyModule,
+		RateLimitModule,
 	],
 	providers: [
 		CorrelationIdMiddleware,
 		ProxyMiddleware,
-		{ provide: APP_GUARD, useClass: ThrottlerGuard },
 		{ provide: APP_GUARD, useClass: JwtAuthGuard },
 	],
 })

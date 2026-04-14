@@ -1,7 +1,8 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
+import { RedisType } from "../../core/config/types/redis.type";
 import { alertThrottleConstants } from "./alert-throttle.constants";
 
 @Injectable()
@@ -11,9 +12,8 @@ export class AlertThrottleService {
 	private readonly memory = new Map<string, number>();
 	private useMemoryOnly = false;
 
-	constructor(private readonly config: ConfigService) {
-		const url =
-			this.config.get<string>(`${ConfigKeyEnum.REDIS}.redisUrl`) ?? "";
+	constructor(@Inject(ConfigService) readonly configService: ConfigService) {
+		const { url } = configService.getOrThrow<RedisType>(ConfigKeyEnum.REDIS);
 		if (url.trim()) {
 			this.redis = new Redis(url, {
 				maxRetriesPerRequest: 1,

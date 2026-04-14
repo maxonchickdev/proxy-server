@@ -14,20 +14,17 @@ import {
 	throwError,
 	timeout,
 } from "rxjs";
+import { AppType } from "../../core/config/types/app.type.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 
 @Injectable()
 export class TimeoutInterceptor implements NestInterceptor {
-	private readonly appRequestTimeout: number;
+	private readonly requestTimeout: number;
 
-	constructor(
-		@Inject(ConfigService) private readonly configService: ConfigService,
-	) {
-		this.appRequestTimeout = Number(
-			this.configService.getOrThrow<number>(
-				`${ConfigKeyEnum.APP}.requestTimeout`,
-			),
-		);
+	constructor(@Inject(ConfigService) readonly configService: ConfigService) {
+		this.requestTimeout = configService.getOrThrow<AppType>(
+			ConfigKeyEnum.APP,
+		).requestTimeout;
 	}
 
 	intercept(
@@ -35,7 +32,7 @@ export class TimeoutInterceptor implements NestInterceptor {
 		next: CallHandler<unknown>,
 	): Observable<unknown> {
 		return next.handle().pipe(
-			timeout(this.appRequestTimeout),
+			timeout(this.requestTimeout),
 			catchError((e) => {
 				if (e instanceof TimeoutError) {
 					throw new GatewayTimeoutException("Timeout has occurred");

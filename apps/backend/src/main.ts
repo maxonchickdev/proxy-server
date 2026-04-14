@@ -15,6 +15,9 @@ import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor";
 import { AuthResponseSchema } from "./common/swagger/schemas/auth-response.schema";
 import { AuthUserSchema } from "./common/swagger/schemas/auth-user.schema";
 import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.schema";
+import { AppType } from "./core/config/types/app.type";
+import { EnvironmentType } from "./core/config/types/environment.type";
+import { SwaggerType } from "./core/config/types/swagger.type";
 
 const logger = new Logger("Bootstrap");
 
@@ -23,22 +26,12 @@ export const setupSwagger = (
 	configService: ConfigService,
 	appPort: number,
 ): string => {
-	const swaggerPath = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.path`,
-	);
-	const appName = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.name`,
-	);
-	const appDescription = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.descr`,
-	);
-	const siteTitle = configService.getOrThrow<string>(
-		`${ConfigKeyEnum.SWAGGER}.siteTitle`,
-	);
+	const { siteTitle, name, descr, path } =
+		configService.getOrThrow<SwaggerType>(ConfigKeyEnum.SWAGGER);
 
-	const swaggerConfig = new DocumentBuilder()
-		.setTitle(appName)
-		.setDescription(appDescription)
+	const documentBuilder = new DocumentBuilder()
+		.setTitle(name)
+		.setDescription(descr)
 		.setVersion("1.0")
 		.setContact("Proxy Server", "", "")
 		.setLicense("ISC", "")
@@ -65,7 +58,7 @@ export const setupSwagger = (
 		.addTag("Notifications", "Alert rules and notification channels")
 		.build();
 
-	const document = SwaggerModule.createDocument(app, swaggerConfig, {
+	const document = SwaggerModule.createDocument(app, documentBuilder, {
 		deepScanRoutes: true,
 		ignoreGlobalPrefix: false,
 		operationIdFactory: (controllerKey: string, methodKey: string) =>
@@ -73,17 +66,17 @@ export const setupSwagger = (
 		extraModels: [AuthResponseSchema, AuthUserSchema, ErrorResponseSchema],
 	});
 
-	SwaggerModule.setup(swaggerPath, app, document, {
+	SwaggerModule.setup(path, app, document, {
 		customSiteTitle: siteTitle,
 		explorer: false,
-		jsonDocumentUrl: `${swaggerPath}/json`,
-		yamlDocumentUrl: `${swaggerPath}/yaml`,
+		jsonDocumentUrl: `${path}/json`,
+		yamlDocumentUrl: `${path}/yaml`,
 		swaggerOptions: {
 			persistAuthorization: true,
 		},
 	});
 
-	return swaggerPath;
+	return path;
 };
 
 (async () => {
@@ -92,13 +85,15 @@ export const setupSwagger = (
 	app.use(cookieParser());
 
 	const configService = app.get(ConfigService);
-	const corsOrigins = configService.getOrThrow<string[]>(
-		`${ConfigKeyEnum.APP}.corsOrigin`,
+
+	const { corsOrigin, port } = configService.getOrThrow<AppType>(
+		ConfigKeyEnum.APP,
 	);
-	const isProduction =
-		configService.getOrThrow<string>(`${ConfigKeyEnum.ENVIRONMENT}.nodeEnv`) ===
-		EnvironmentsEnum.PRODUCTION;
-	const appPort = configService.getOrThrow<number>(`${ConfigKeyEnum.APP}.port`);
+	const { nodeEnv } = configService.getOrThrow<EnvironmentType>(
+		ConfigKeyEnum.ENVIRONMENT,
+	);
+
+	const isProduction = nodeEnv === EnvironmentsEnum.PRODUCTION;
 
 	app.enableVersioning({
 		defaultVersion: "1",
@@ -107,7 +102,7 @@ export const setupSwagger = (
 	});
 
 	const swaggerPath = !isProduction
-		? setupSwagger(app, configService, appPort)
+		? setupSwagger(app, configService, port)
 		: "";
 
 	const httpAdapterHost = app.get(HttpAdapterHost);
@@ -125,7 +120,7 @@ export const setupSwagger = (
 	);
 
 	app.enableCors({
-		origin: corsOrigins,
+		origin: corsOrigin,
 		credentials: true,
 	});
 
@@ -142,7 +137,7 @@ export const setupSwagger = (
 		new LoggingInterceptor(configService),
 	);
 
-	await app.listen(appPort);
+	await app.listen(port);
 
 	const baseUrl = await app.getUrl();
 	logger.log(`Application listening at ${baseUrl}`);

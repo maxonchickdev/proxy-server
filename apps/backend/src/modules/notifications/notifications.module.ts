@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { PrismaModule } from "../../core/prisma/prisma.module";
 import { EmailModule } from "../email/email.module";
 import { AlertRulesService } from "./alert-rules.service";
 import { AlertThrottleService } from "./alert-throttle.service";
@@ -12,7 +13,7 @@ import { SlackService } from "./slack.service";
 import { TelegramService } from "./telegram.service";
 
 @Module({
-	imports: [ConfigModule, EmailModule],
+	imports: [ConfigModule, EmailModule, PrismaModule],
 	controllers: [NotificationsController],
 	providers: [
 		NotificationsService,

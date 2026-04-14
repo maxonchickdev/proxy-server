@@ -3,6 +3,7 @@ import type { ProtocolHandler } from "./handlers/protocol-handler.interface.js";
 import { Inject, Injectable, type NestMiddleware } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
+import { ProxyType } from "../core/config/types/proxy.type.js";
 import { HttpProxyHandler } from "./handlers/http-proxy.handler.js";
 import { ProxyService } from "./proxy.service.js";
 import { ProxyRateLimitService } from "./proxy-rate-limit.service.js";
@@ -14,15 +15,22 @@ type HeadersRecord = Record<string, string | string[] | undefined>;
 @Injectable()
 export class ProxyMiddleware implements NestMiddleware {
 	private readonly handlers: ProtocolHandler[];
+	private readonly baseDomain: string;
 
 	constructor(
 		@Inject(ProxyService) private readonly proxyService: ProxyService,
-		@Inject(ConfigService) private readonly config: ConfigService,
+		@Inject(ConfigService) readonly configService: ConfigService,
 		@Inject(ProxyRateLimitService)
 		private readonly rateLimit: ProxyRateLimitService,
 		@Inject(HttpProxyHandler) private readonly httpHandler: HttpProxyHandler,
 	) {
 		this.handlers = [this.httpHandler];
+
+		const { baseDomain } = configService.getOrThrow<ProxyType>(
+			ConfigKeyEnum.PROXY,
+		);
+
+		this.baseDomain = baseDomain;
 	}
 
 	async use(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -127,9 +135,7 @@ export class ProxyMiddleware implements NestMiddleware {
 	} {
 		const host = req.headers.host ?? "";
 		const path = (req.originalUrl ?? req.url ?? req.path ?? "").split("?")[0];
-		const baseDomain =
-			this.config.get<string>(`${ConfigKeyEnum.PROXY}.baseDomain`) ?? "lvh.me";
-		return extractSlugAndPathFromProxyRequest(host, path, baseDomain);
+		return extractSlugAndPathFromProxyRequest(host, path, this.baseDomain);
 	}
 
 	private bufferBody(req: Request, limit: number): Promise<Buffer | null> {
