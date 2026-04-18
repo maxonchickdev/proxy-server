@@ -1,6 +1,6 @@
+import type { ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import type { ReactNode } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { ErrorBoundaryComponent } from "@/components/error-boundary.component";
 import { LayoutComponent } from "@/components/layout.component";
@@ -45,42 +45,36 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 	return <>{children}</>;
 }
 
-function AppRoutes() {
-	return (
-		<Routes>
-			<Route path="/login" element={<LoginPage />} />
-			<Route path="/register" element={<RegisterPage />} />
-			<Route path="/verify-email" element={<VerifyEmailPage />} />
-			<Route path="/forgot-password" element={<ForgotPasswordPage />} />
-			<Route path="/reset-password" element={<ResetPasswordPage />} />
-			<Route
-				path="/"
-				element={
-					<ProtectedRoute>
-						<LayoutComponent />
-					</ProtectedRoute>
-				}
-			>
-				<Route index element={<DashboardPage />} />
-				<Route path="endpoints" element={<EndpointsPage />} />
-				<Route path="endpoints/:id" element={<EndpointDetailPage />} />
-				<Route path="logs" element={<LogsPage />} />
-				<Route path="logs/:endpointId" element={<LogsPage />} />
-				<Route path="settings" element={<SettingsPage />} />
-				<Route path="integrations" element={<IntegrationsPage />} />
-			</Route>
-			<Route path="*" element={<Navigate to="/" replace />} />
-		</Routes>
-	);
-}
-
 export default function App() {
 	return (
 		<BrowserRouter>
 			<QueryClientProvider client={queryClient}>
 				<AuthProvider>
 					<ErrorBoundaryComponent>
-						<AppRoutes />
+						<Routes>
+							<Route path="/login" element={<LoginPage />} />
+							<Route path="/register" element={<RegisterPage />} />
+							<Route path="/verify-email" element={<VerifyEmailPage />} />
+							<Route path="/forgot-password" element={<ForgotPasswordPage />} />
+							<Route path="/reset-password" element={<ResetPasswordPage />} />
+							<Route
+								path="/"
+								element={
+									<ProtectedRoute>
+										<LayoutComponent />
+									</ProtectedRoute>
+								}
+							>
+								<Route index element={<DashboardPage />} />
+								<Route path="endpoints" element={<EndpointsPage />} />
+								<Route path="endpoints/:id" element={<EndpointDetailPage />} />
+								<Route path="logs" element={<LogsPage />} />
+								<Route path="logs/:endpointId" element={<LogsPage />} />
+								<Route path="settings" element={<SettingsPage />} />
+								<Route path="integrations" element={<IntegrationsPage />} />
+							</Route>
+							<Route path="*" element={<Navigate to="/" replace />} />
+						</Routes>
 					</ErrorBoundaryComponent>
 					<ReactQueryDevtools initialIsOpen={false} />
 				</AuthProvider>

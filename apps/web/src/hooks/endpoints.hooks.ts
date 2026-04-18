@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { endpointsApi, type EndpointListResponse } from "@/api/client.api";
+import { type EndpointListResponse, endpointsApi } from "@/apis/client.api";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const endpointsQueryKey = ["endpoints"] as const;

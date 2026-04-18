@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
-import { notificationsApi } from "@/api/client.api";
-import { ButtonComponent } from "@/components/ui/button.component";
-import { CardComponent } from "@/components/ui/card.component";
-import { InputComponent } from "@/components/ui/input.component";
-import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
+import { notificationsApi } from "@/apis/client.api";
+import { ButtonComponent } from "@/components/button.component";
+import { CardComponent } from "@/components/card.component";
+import { InputComponent } from "@/components/input.component";
+import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 export const IntegrationsPage = () => {

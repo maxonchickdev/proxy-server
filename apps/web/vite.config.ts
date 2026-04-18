@@ -1,24 +1,13 @@
-import type { IncomingMessage } from "node:http";
-import path from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import { defineConfig } from "vite";
+
+const webRoot = dirname(fileURLToPath(import.meta.url));
+const monorepoRoot = resolve(webRoot, "../..");
 
 const apiTarget = "http://localhost:3000/api/v1";
-
-function bypassProxyForSpaDocumentNavigation(
-	req: IncomingMessage,
-): string | undefined {
-	const method = req.method ?? "GET";
-	if (method !== "GET" && method !== "HEAD") {
-		return undefined;
-	}
-	const accept = req.headers.accept;
-	if (typeof accept === "string" && accept.includes("text/html")) {
-		return "/index.html";
-	}
-	return undefined;
-}
 
 const proxyPaths = [
 	"/auth",
@@ -30,33 +19,32 @@ const proxyPaths = [
 	"/integrations",
 ];
 
-const sharedSrcIndex = path.resolve(
-	__dirname,
-	"../../libs/shared/src/index.ts",
-);
+const sharedSrcIndex = resolve(monorepoRoot, "libs/shared/src/index.ts");
 
 export default defineConfig({
-	envDir: path.resolve(__dirname, "../.."),
+	root: process.cwd(),
+	base: "/",
+	mode: "development",
+	envDir: monorepoRoot,
+	cacheDir: "node_modules/.vite",
 	plugins: [react(), tailwindcss()],
 	optimizeDeps: {
 		exclude: ["@proxy-server/shared"],
 	},
 	resolve: {
 		alias: {
-			"@": path.resolve(__dirname, "src"),
-
+			"@": resolve(webRoot, "src"),
 			"@proxy-server/shared": sharedSrcIndex,
 		},
 	},
 	server: {
 		proxy: Object.fromEntries(
-			proxyPaths.map((pathPrefix) => [
+			proxyPaths.map((pathPrefix: string) => [
 				pathPrefix,
 				{
 					target: apiTarget,
 					changeOrigin: true,
-					secure: false,
-					bypass: bypassProxyForSpaDocumentNavigation,
+					secure: true,
 				},
 			]),
 		),

@@ -1,9 +1,9 @@
 import { type FormEvent, useState } from "react";
+import { ButtonComponent } from "@/components/button.component";
+import { CardComponent } from "@/components/card.component";
 import { EndpointsTableComponent } from "@/components/endpoints-table.component";
-import { ButtonComponent } from "@/components/ui/button.component";
-import { CardComponent } from "@/components/ui/card.component";
-import { InputComponent } from "@/components/ui/input.component";
-import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
+import { InputComponent } from "@/components/input.component";
+import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useCreateEndpoint, useEndpointsList } from "@/hooks/endpoints.hooks";
 
 export const EndpointsPage = () => {

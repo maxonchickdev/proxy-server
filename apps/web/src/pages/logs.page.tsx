@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { RequestLogsTableComponent } from "@/components/request-logs-table.component";
-import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
 import { useEndpointsList } from "@/hooks/endpoints.hooks";
 import { useLogsByEndpoint, useReplayLog } from "@/hooks/logs.hooks";
 

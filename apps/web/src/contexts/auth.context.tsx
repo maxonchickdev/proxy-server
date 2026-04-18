@@ -1,20 +1,20 @@
+import type { UserDto } from "@proxy-server/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	createContext,
+	type ReactNode,
 	useCallback,
 	useContext,
 	useLayoutEffect,
 	useMemo,
 	useRef,
-	type ReactNode,
 } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 	authApi,
 	configureApiClient,
 	refreshAccessToken,
-} from "@/api/client.api";
-import type { UserDto } from "@proxy-server/shared";
+} from "@/apis/client.api";
 
 const AUTH_SESSION_QUERY_KEY = ["auth", "session"] as const;
 

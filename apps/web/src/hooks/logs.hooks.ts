@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { logsApi } from "@/api/client.api";
+import { logsApi } from "@/apis/client.api";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const LOGS_POLL_MS = 10_000;

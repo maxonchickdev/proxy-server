@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApi } from "@/api/client.api";
+import { analyticsApi } from "@/apis/client.api";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const ANALYTICS_POLL_MS = 10_000;

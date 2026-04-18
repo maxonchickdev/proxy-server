@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { EndpointsTableComponent } from "@/components/endpoints-table.component";
-import { LoadingSkeletonComponent } from "@/components/ui/loading-skeleton.component";
+import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useEndpointsList } from "@/hooks/endpoints.hooks";
 
 export const DashboardPage = () => {

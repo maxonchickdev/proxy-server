@@ -34,7 +34,7 @@ export const setupSwagger = (
 		.setDescription(descr)
 		.setVersion("1.0")
 		.setContact("Proxy Server", "", "")
-		.setLicense("ISC", "")
+		.setLicense("MIT", "")
 		.addServer(`http://localhost:${appPort}`, EnvironmentsEnum.DEVELOPMENT)
 		.addServer(`http://lvh.me:${appPort}`, EnvironmentsEnum.PRODUCTION)
 		.addBearerAuth(
@@ -86,7 +86,7 @@ export const setupSwagger = (
 
 	const configService = app.get(ConfigService);
 
-	const { corsOrigin, port } = configService.getOrThrow<AppType>(
+	const { port, corsOrigin } = configService.getOrThrow<AppType>(
 		ConfigKeyEnum.APP,
 	);
 	const { nodeEnv } = configService.getOrThrow<EnvironmentType>(
@@ -121,6 +121,7 @@ export const setupSwagger = (
 
 	app.enableCors({
 		origin: corsOrigin,
+		methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
 		credentials: true,
 	});
 

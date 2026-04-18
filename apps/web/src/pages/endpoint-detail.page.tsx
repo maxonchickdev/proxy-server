@@ -9,17 +9,16 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { ButtonComponent } from "@/components/button.component";
+import { CardComponent } from "@/components/card.component";
+import { InputComponent } from "@/components/input.component";
 import { RequestLogsTableComponent } from "@/components/request-logs-table.component";
-import { ButtonComponent } from "@/components/ui/button.component";
-import { CardComponent } from "@/components/ui/card.component";
-import { InputComponent } from "@/components/ui/input.component";
 import {
 	useAnalyticsSummary,
 	useAnalyticsTimeseries,
 } from "@/hooks/analytics.hooks";
 import { useEndpointDetail, useUpdateEndpoint } from "@/hooks/endpoints.hooks";
 import { useLogsByEndpoint, useReplayLog } from "@/hooks/logs.hooks";
-import { getWebEnv } from "@/env";
 
 export const EndpointDetailPage = () => {
 	const { id } = useParams<{ id: string }>();
@@ -57,7 +56,7 @@ export const EndpointDetailPage = () => {
 	const updateMutation = useUpdateEndpoint();
 	const replayMutation = useReplayLog(id);
 
-	const apiBase = getWebEnv().publicApiOrigin;
+	const apiBase = "http://localhost:3000";
 	const proxyUrl = endpoint ? `${apiBase}/r/${endpoint.slug}` : "";
 
 	const handleCopyProxyUrl = () => {
