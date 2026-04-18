@@ -10,11 +10,19 @@
 	"linter": {
 		"rules": {
 			"a11y": {
-				"noLabelWithoutControl": "off",
-				"useButtonType": "off"
+				"noLabelWithoutControl": "error",
+				"useButtonType": "error"
 			},
 			"style": {
-				"noNonNullAssertion": "off"
+				"noNonNullAssertion": "error",
+				"useExportType": "error",
+				"noNamespace": "error"
+			},
+			"performance": {
+				"noNamespaceImport": "error"
+			},
+			"correctness": {
+				"noUnusedVariables": "error"
 			}
 		}
 	}

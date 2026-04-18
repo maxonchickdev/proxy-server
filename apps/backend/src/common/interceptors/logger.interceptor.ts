@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { EnvironmentType } from "../../core/config/types/environment.type.js";
 import {
 	type CallHandler,
 	type ExecutionContext,
@@ -10,7 +11,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { type Observable, tap } from "rxjs";
-import { EnvironmentType } from "../../core/config/types/environment.type.js";
 import { httpConstants } from "../constants/http.constants.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";

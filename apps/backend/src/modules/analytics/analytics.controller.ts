@@ -1,3 +1,4 @@
+import type { AnalyticsTimeseriesQueryDto } from "./dto/analytics-timeseries-query.dto";
 import { Controller, Get, Inject, Param, Query } from "@nestjs/common";
 import {
 	ApiBearerAuth,
@@ -13,7 +14,6 @@ import {
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { AnalyticsService } from "./analytics.service";
-import { AnalyticsTimeseriesQueryDto } from "./dto/analytics-timeseries-query.dto";
 
 @ApiTags("Analytics")
 @ApiBearerAuth("Bearer")

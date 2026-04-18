@@ -1,3 +1,4 @@
+import type { PrismaType } from "../config/types/prisma.type";
 import {
 	Inject,
 	Injectable,
@@ -8,7 +9,6 @@ import { ConfigService } from "@nestjs/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/generated/client";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
-import { PrismaType } from "../config/types/prisma.type";
 
 @Injectable()
 export class PrismaService

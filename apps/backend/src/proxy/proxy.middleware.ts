@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from "express";
+import type { ProxyType } from "../core/config/types/proxy.type.js";
 import type { ProtocolHandler } from "./handlers/protocol-handler.interface.js";
 import { Inject, Injectable, type NestMiddleware } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
-import { ProxyType } from "../core/config/types/proxy.type.js";
 import { HttpProxyHandler } from "./handlers/http-proxy.handler.js";
 import { ProxyService } from "./proxy.service.js";
 import { ProxyRateLimitService } from "./proxy-rate-limit.service.js";

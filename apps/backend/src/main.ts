@@ -1,5 +1,8 @@
 import "reflect-metadata";
 import type { NestExpressApplication } from "@nestjs/platform-express";
+import type { AppType } from "./core/config/types/app.type";
+import type { EnvironmentType } from "./core/config/types/environment.type";
+import type { SwaggerType } from "./core/config/types/swagger.type";
 import { Logger, ValidationPipe, VersioningType } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost, NestFactory } from "@nestjs/core";
@@ -15,9 +18,6 @@ import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor";
 import { AuthResponseSchema } from "./common/swagger/schemas/auth-response.schema";
 import { AuthUserSchema } from "./common/swagger/schemas/auth-user.schema";
 import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.schema";
-import { AppType } from "./core/config/types/app.type";
-import { EnvironmentType } from "./core/config/types/environment.type";
-import { SwaggerType } from "./core/config/types/swagger.type";
 
 const logger = new Logger("Bootstrap");
 

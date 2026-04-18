@@ -15,9 +15,14 @@ const analyticsQueryKeys = {
 
 export function useAnalyticsSummary(endpointId: string | undefined) {
 	const canQuery = useCanQueryProtectedApi();
+
+	if (!endpointId) {
+		throw new Error("Error occured");
+	}
+
 	return useQuery({
 		queryKey: analyticsQueryKeys.summary(endpointId),
-		queryFn: () => analyticsApi.summary(endpointId!),
+		queryFn: () => analyticsApi.summary(endpointId),
 		enabled: canQuery && Boolean(endpointId),
 		staleTime: 5_000,
 		refetchOnWindowFocus: true,
@@ -30,9 +35,14 @@ export function useAnalyticsTimeseries(
 	params?: { bucket?: "hour" | "day"; limit?: number },
 ) {
 	const canQuery = useCanQueryProtectedApi();
+
+	if (!endpointId) {
+		throw new Error("Error occured");
+	}
+
 	return useQuery({
 		queryKey: analyticsQueryKeys.timeseries(endpointId, params),
-		queryFn: () => analyticsApi.timeseries(endpointId!, params),
+		queryFn: () => analyticsApi.timeseries(endpointId, params),
 		enabled: canQuery && Boolean(endpointId),
 		staleTime: 5_000,
 		refetchOnWindowFocus: true,

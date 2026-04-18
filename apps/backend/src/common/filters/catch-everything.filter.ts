@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/generated/client.js";
 import type { ErrorResponseBody } from "@proxy-server/shared";
 import type { Request } from "express";
+import type { EnvironmentType } from "../../core/config/types/environment.type.js";
 import type { HttpExceptionResponse } from "../types/http-exception-response.type.js";
 import {
 	type ArgumentsHost,
@@ -13,7 +14,6 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { HttpAdapterHost } from "@nestjs/core";
-import { EnvironmentType } from "../../core/config/types/environment.type.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 import { EnvironmentsEnum } from "../enums/environments.enum.js";
 

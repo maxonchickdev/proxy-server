@@ -1,8 +1,8 @@
+import type { RedisType } from "../../core/config/types/redis.type";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
-import { RedisType } from "../../core/config/types/redis.type";
 import { alertThrottleConstants } from "./alert-throttle.constants";
 
 @Injectable()

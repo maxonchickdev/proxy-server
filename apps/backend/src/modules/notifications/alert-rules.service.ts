@@ -1,5 +1,6 @@
 import type { AlertRule, Prisma } from "@prisma/generated/client";
 import type { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
+import type { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
 import {
 	ForbiddenException,
 	Inject,
@@ -8,7 +9,6 @@ import {
 } from "@nestjs/common";
 import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
 
 type AlertRuleWithChannel = Prisma.AlertRuleGetPayload<{
 	include: { channel: true };

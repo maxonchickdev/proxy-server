@@ -1,4 +1,4 @@
-import type { Endpoint, RequestLog } from "@prisma/generated/client";
+import type { Endpoint, Prisma, RequestLog } from "@prisma/generated/client";
 import type { LogsListQueryDto } from "./dto/logs-list-query.dto";
 import {
 	ForbiddenException,
@@ -6,7 +6,6 @@ import {
 	Injectable,
 	NotFoundException,
 } from "@nestjs/common";
-import { Prisma } from "@prisma/generated/client";
 import { paginationConstants } from "../../common/constants/pagination.constants";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { type ProxyLogPayload, ProxyService } from "../../proxy/proxy.service";

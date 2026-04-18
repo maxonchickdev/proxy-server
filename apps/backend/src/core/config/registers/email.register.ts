@@ -1,6 +1,6 @@
+import type { EmailType } from "../types/email.type";
 import { registerAs } from "@nestjs/config";
 import { ConfigKeyEnum } from "../../../common/enums/config.enum";
-import { EmailType } from "../types/email.type";
 
 export const emailRegister = registerAs(ConfigKeyEnum.EMAIL, (): EmailType => {
 	const host = process.env.SMTP_HOST || "";

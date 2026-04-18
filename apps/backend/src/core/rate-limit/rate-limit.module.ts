@@ -1,3 +1,4 @@
+import type { RateLimitType } from "../config/types/rate-limiting.type";
 import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { APP_GUARD } from "@nestjs/core";
@@ -7,7 +8,6 @@ import {
 } from "@nestjs/throttler";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { ConfigModule } from "../config/config.module";
-import { RateLimitType } from "../config/types/rate-limiting.type";
 
 @Module({
 	imports: [

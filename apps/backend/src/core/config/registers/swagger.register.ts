@@ -1,6 +1,6 @@
+import type { SwaggerType } from "../types/swagger.type";
 import { registerAs } from "@nestjs/config";
 import { ConfigKeyEnum } from "../../../common/enums/config.enum";
-import { SwaggerType } from "../types/swagger.type";
 
 export const swaggerRegister = registerAs(
 	ConfigKeyEnum.SWAGGER,

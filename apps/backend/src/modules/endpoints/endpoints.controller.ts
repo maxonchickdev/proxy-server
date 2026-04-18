@@ -1,4 +1,7 @@
 import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import type { CreateEndpointDto } from "./dto/create-endpoint.dto";
+import type { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
+import type { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import {
 	Body,
 	Controller,
@@ -27,9 +30,6 @@ import {
 } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
-import { CreateEndpointDto } from "./dto/create-endpoint.dto";
-import { ListEndpointsQueryDto } from "./dto/list-endpoints-query.dto";
-import { UpdateEndpointDto } from "./dto/update-endpoint.dto";
 import { EndpointsService } from "./endpoints.service";
 
 @ApiTags("Endpoints")

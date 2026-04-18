@@ -1,3 +1,4 @@
+import type { AppType } from "../../core/config/types/app.type.js";
 import {
 	type CallHandler,
 	type ExecutionContext,
@@ -14,7 +15,6 @@ import {
 	throwError,
 	timeout,
 } from "rxjs";
-import { AppType } from "../../core/config/types/app.type.js";
 import { ConfigKeyEnum } from "../enums/config.enum.js";
 
 @Injectable()

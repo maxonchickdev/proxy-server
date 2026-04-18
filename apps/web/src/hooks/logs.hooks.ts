@@ -16,9 +16,14 @@ export function useLogsByEndpoint(
 	params?: { limit?: number; offset?: number },
 ) {
 	const canQuery = useCanQueryProtectedApi();
+
+	if (!endpointId) {
+		throw new Error("Error occured");
+	}
+
 	return useQuery({
 		queryKey: logsQueryKeys.byEndpoint(endpointId, params),
-		queryFn: () => logsApi.byEndpoint(endpointId!, params),
+		queryFn: () => logsApi.byEndpoint(endpointId, params),
 		enabled: canQuery && Boolean(endpointId),
 		staleTime: 5_000,
 		refetchOnWindowFocus: true,
@@ -28,6 +33,7 @@ export function useLogsByEndpoint(
 
 export function useReplayLog(endpointId: string | undefined) {
 	const queryClient = useQueryClient();
+
 	return useMutation({
 		mutationFn: (logId: string) => logsApi.replay(logId),
 		onSuccess: () => {

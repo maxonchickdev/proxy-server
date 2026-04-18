@@ -7,12 +7,12 @@
 	"linter": {
 		"rules": {
 			"style": {
-				"noNonNullAssertion": "off",
-				"useImportType": "off"
+				"noNonNullAssertion": "error",
+				"useImportType": "error"
 			},
 			"suspicious": {
-				"noExplicitAny": "off",
-				"noThenProperty": "off"
+				"noExplicitAny": "error",
+				"noThenProperty": "error"
 			}
 		}
 	},

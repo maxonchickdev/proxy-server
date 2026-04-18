@@ -56,22 +56,18 @@ import { swaggerRegister } from "./registers/swagger.register";
 
 				SWAGGER_PATH: Joi.when("NODE_ENV", {
 					is: Joi.string().valid("development", "test"),
-					then: Joi.string().min(1).required(),
 					otherwise: Joi.string().optional(),
 				}),
 				SWAGGER_NAME: Joi.when("NODE_ENV", {
 					is: Joi.string().valid("development", "test"),
-					then: Joi.string().min(1).required(),
 					otherwise: Joi.string().optional(),
 				}),
 				SWAGGER_DESCR: Joi.when("NODE_ENV", {
 					is: Joi.string().valid("development", "test"),
-					then: Joi.string().required(),
 					otherwise: Joi.string().optional(),
 				}),
 				SWAGGER_SITE_TITLE: Joi.when("NODE_ENV", {
 					is: Joi.string().valid("development", "test"),
-					then: Joi.string().min(1).required(),
 					otherwise: Joi.string().optional(),
 				}),
 

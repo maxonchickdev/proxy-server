@@ -1,10 +1,10 @@
 import type { Endpoint, Prisma } from "@prisma/generated/client";
 import type { RateLimitConfig } from "@proxy-server/shared";
+import type { RedisType } from "../core/config/types/redis.type.js";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import Redis from "ioredis";
 import { ConfigKeyEnum } from "../common/enums/config.enum.js";
-import { RedisType } from "../core/config/types/redis.type.js";
 
 const RATE_KEY_PREFIX = "ratelimit:";
 

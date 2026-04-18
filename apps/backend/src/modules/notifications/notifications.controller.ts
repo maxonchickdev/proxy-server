@@ -1,3 +1,7 @@
+import type { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
+import type { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
+import type { CreateChannelDto } from "./dto/create-channel.dto";
+import type { CreateReportScheduleDto } from "./dto/create-report-schedule.dto";
 import {
 	Body,
 	Controller,
@@ -24,12 +28,8 @@ import {
 	getSchemaPath,
 } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
-import { PaginationQueryDto } from "../../common/dto/pagination-query.dto";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { AlertRulesService } from "./alert-rules.service";
-import { CreateAlertRuleDto } from "./dto/create-alert-rule.dto";
-import { CreateChannelDto } from "./dto/create-channel.dto";
-import { CreateReportScheduleDto } from "./dto/create-report-schedule.dto";
 import { NotificationChannelsService } from "./notification-channels.service";
 import { ReportSchedulesService } from "./report-schedules.service";
 

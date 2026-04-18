@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
 import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
+import type { EnvironmentType } from "../../core/config/types/environment.type";
+import type { JwtType } from "../../core/config/types/jwt.type";
 import type { AuthResponseType } from "./types/auth-response.type";
 import type { RequestWithRefreshAuth } from "./types/request-with-refresh-auth.type";
 import {
@@ -37,8 +39,6 @@ import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { EnvironmentsEnum } from "../../common/enums/environments.enum";
 import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
-import { EnvironmentType } from "../../core/config/types/environment.type";
-import { JwtType } from "../../core/config/types/jwt.type";
 import { AuthService } from "./auth.service";
 import { authThrottle } from "./auth-throttle.constants";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";

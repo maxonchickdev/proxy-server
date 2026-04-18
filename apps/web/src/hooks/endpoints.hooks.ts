@@ -15,9 +15,13 @@ export function useEndpointsList(params?: { limit?: number; offset?: number }) {
 
 export function useEndpointDetail(id: string | undefined) {
 	const canQuery = useCanQueryProtectedApi();
+
+	if (!id) {
+		throw new Error("Error occured");
+	}
 	return useQuery({
 		queryKey: ["endpoints", id],
-		queryFn: () => endpointsApi.get(id!),
+		queryFn: () => endpointsApi.get(id),
 		enabled: canQuery && Boolean(id),
 		staleTime: 10_000,
 		refetchOnWindowFocus: true,
