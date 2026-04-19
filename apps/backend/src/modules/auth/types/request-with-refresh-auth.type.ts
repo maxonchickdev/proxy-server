@@ -1,6 +1,6 @@
 import type { RefreshRequestAuth } from "./refresh-request.type";
 
-export type RequestWithRefreshAuth = {
+export type RequestWithRefreshAuthType = {
 	cookies?: Record<string, string>;
 	refreshAuth?: RefreshRequestAuth;
 };

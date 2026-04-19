@@ -8,7 +8,7 @@ import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
 import { authCryptoConst } from "./consts/auth-crypto.const";
-import { generateSixDigitCode } from "./utils/auth-code.util";
+import { generateSixDigitCodeUtil } from "./utils/auth-code.util";
 
 @Injectable()
 export class PasswordResetService {
@@ -27,7 +27,7 @@ export class PasswordResetService {
 		if (!user) {
 			return { message: "If an account exists, a reset code was sent." };
 		}
-		const plainCode = generateSixDigitCode();
+		const plainCode = generateSixDigitCodeUtil();
 		const passwordResetCodeHash = await bcrypt.hash(
 			plainCode,
 			authCryptoConst.saltRounds,

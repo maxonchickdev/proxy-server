@@ -17,7 +17,7 @@ import { EmailService } from "../email/email.service";
 import { authCryptoConst } from "./consts/auth-crypto.const";
 import { PasswordResetService } from "./password-reset.service";
 import { TokenService } from "./token.service";
-import { generateSixDigitCode } from "./utils/auth-code.util";
+import { generateSixDigitCodeUtil } from "./utils/auth-code.util";
 
 @Injectable()
 export class AuthService {
@@ -45,7 +45,7 @@ export class AuthService {
 			authCryptoConst.saltRounds,
 		);
 
-		const plainCode = generateSixDigitCode();
+		const plainCode = generateSixDigitCodeUtil();
 
 		const verificationCodeHash = await bcrypt.hash(
 			plainCode,
@@ -122,7 +122,7 @@ export class AuthService {
 		if (user.isEmailVerified) {
 			throw new BadRequestException("Email is already verified");
 		}
-		const plainCode = generateSixDigitCode();
+		const plainCode = generateSixDigitCodeUtil();
 		const verificationCodeHash = await bcrypt.hash(
 			plainCode,
 			authCryptoConst.saltRounds,

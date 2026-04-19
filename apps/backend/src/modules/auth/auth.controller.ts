@@ -3,7 +3,7 @@ import type { CurrentUserPayload } from "../../common/types/current-user-payload
 import type { EnvironmentType } from "../../core/config/types/environment.type";
 import type { JwtType } from "../../core/config/types/jwt.type";
 import type { AuthResponseType } from "./types/auth-response.type";
-import type { RequestWithRefreshAuth } from "./types/request-with-refresh-auth.type";
+import type { RequestWithRefreshAuthType } from "./types/request-with-refresh-auth.type";
 import {
 	Body,
 	Controller,
@@ -19,6 +19,8 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import {
+	ApiBadRequestResponse,
+	ApiBearerAuth,
 	ApiBody,
 	ApiConflictResponse,
 	ApiCreatedResponse,
@@ -38,7 +40,10 @@ import { Public } from "../../common/decorators/public.decorator";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { EnvironmentsEnum } from "../../common/enums/environments.enum";
 import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
+import { AuthUserSchema } from "../../common/swagger/schemas/auth-user.schema";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
+import { LogoutResponseSchema } from "../../common/swagger/schemas/logout-response.schema";
+import { MessageResponseSchema } from "../../common/swagger/schemas/message-response.schema";
 import { AuthService } from "./auth.service";
 import { authThrottleConst } from "./consts/auth-throttle.const";
 import { refreshCookieName } from "./consts/refresh-cookie.const";
@@ -50,10 +55,16 @@ import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
 import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { RefreshAuthGuard } from "./guards/refresh-auth.guard";
-import { parseDurationToMs } from "./utils/duration.util";
+import { parseDurationToMsUtil } from "./utils/duration.util";
 
 @ApiTags(swaggerConst.tag)
-@ApiExtraModels(AuthResponseSchema)
+@ApiExtraModels(
+	AuthResponseSchema,
+	AuthUserSchema,
+	ErrorResponseSchema,
+	LogoutResponseSchema,
+	MessageResponseSchema,
+)
 @Controller(swaggerConst.route)
 export class AuthController {
 	private readonly isProduction: boolean;
@@ -76,7 +87,7 @@ export class AuthController {
 	}
 
 	private refreshCookieMaxAgeMs(): number {
-		return parseDurationToMs(this.refreshExpiresIn);
+		return parseDurationToMsUtil(this.refreshExpiresIn);
 	}
 
 	private setRefreshCookie(res: Response, rawRefresh: string): void {
@@ -126,6 +137,11 @@ export class AuthController {
 	})
 	@ApiCreatedResponse({
 		description: swaggerConst.routes.signUp.responses.created,
+		schema: { $ref: getSchemaPath(MessageResponseSchema) },
+	})
+	@ApiBadRequestResponse({
+		description: swaggerConst.routes.signUp.responses.badRequest,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiConflictResponse({
 		description: swaggerConst.routes.signUp.responses.conflict,
@@ -155,11 +171,16 @@ export class AuthController {
 	@ApiBody({ type: VerifyEmailDto })
 	@ApiOperation({
 		summary: swaggerConst.routes.verifyEmail.operation.summary,
+		description: swaggerConst.routes.verifyEmail.operation.descr,
 		security: [],
 	})
 	@ApiOkResponse({
 		description: swaggerConst.routes.verifyEmail.responses.ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
+	})
+	@ApiBadRequestResponse({
+		description: swaggerConst.routes.verifyEmail.responses.badRequest,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
 		description: swaggerConst.routes.verifyEmail.responses.unauthorized,
@@ -185,10 +206,21 @@ export class AuthController {
 	@ApiBody({ type: ResendVerificationDto })
 	@ApiOperation({
 		summary: swaggerConst.routes.resendVerification.operation.summary,
+		description: swaggerConst.routes.resendVerification.operation.descr,
 		security: [],
 	})
 	@ApiOkResponse({
 		description: swaggerConst.routes.resendVerification.responses.ok,
+		schema: { $ref: getSchemaPath(MessageResponseSchema) },
+	})
+	@ApiBadRequestResponse({
+		description: swaggerConst.routes.resendVerification.responses.badRequest,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
+	})
+	@ApiTooManyRequestsResponse({
+		description:
+			swaggerConst.routes.resendVerification.responses.tooManyRequests,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async resendVerification(
 		@Body() dto: ResendVerificationDto,
@@ -214,6 +246,10 @@ export class AuthController {
 	@ApiOkResponse({
 		description: swaggerConst.routes.signIn.responses.ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
+	})
+	@ApiBadRequestResponse({
+		description: swaggerConst.routes.signIn.responses.badRequest,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
 		description: swaggerConst.routes.signIn.responses.unauthorized,
@@ -251,10 +287,20 @@ export class AuthController {
 	@ApiBody({ type: ForgotPasswordDto })
 	@ApiOperation({
 		summary: swaggerConst.routes.forgotPassword.operation.summary,
+		description: swaggerConst.routes.forgotPassword.operation.descr,
 		security: [],
 	})
 	@ApiOkResponse({
 		description: swaggerConst.routes.forgotPassword.responses.ok,
+		schema: { $ref: getSchemaPath(MessageResponseSchema) },
+	})
+	@ApiBadRequestResponse({
+		description: swaggerConst.routes.forgotPassword.responses.badRequest,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
+	})
+	@ApiTooManyRequestsResponse({
+		description: swaggerConst.routes.forgotPassword.responses.tooManyRequests,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async forgotPassword(
 		@Body() dto: ForgotPasswordDto,
@@ -274,13 +320,23 @@ export class AuthController {
 	@ApiBody({ type: ResetPasswordDto })
 	@ApiOperation({
 		summary: swaggerConst.routes.resetPassword.operation.summary,
+		description: swaggerConst.routes.resetPassword.operation.descr,
 		security: [],
 	})
 	@ApiOkResponse({
 		description: swaggerConst.routes.resetPassword.responses.ok,
+		schema: { $ref: getSchemaPath(MessageResponseSchema) },
+	})
+	@ApiBadRequestResponse({
+		description: swaggerConst.routes.resetPassword.responses.badRequest,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
 		description: swaggerConst.routes.resetPassword.responses.unauthorized,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
+	})
+	@ApiTooManyRequestsResponse({
+		description: swaggerConst.routes.resetPassword.responses.tooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async resetPassword(
@@ -307,7 +363,7 @@ export class AuthController {
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async refresh(
-		@Req() req: Request & RequestWithRefreshAuth,
+		@Req() req: Request & RequestWithRefreshAuthType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<AuthResponseType> {
 		const raw = req.refreshAuth?.rawRefreshToken;
@@ -320,12 +376,19 @@ export class AuthController {
 
 	@HttpCode(HttpStatus.OK)
 	@Post(swaggerConst.routes.logout.route)
+	@ApiBearerAuth("Bearer")
 	@ApiOperation({
 		summary: swaggerConst.routes.logout.operation.summary,
 		description: swaggerConst.routes.logout.operation.descr,
-		security: [],
 	})
-	@ApiOkResponse({ description: swaggerConst.routes.logout.responses.ok })
+	@ApiOkResponse({
+		description: swaggerConst.routes.logout.responses.ok,
+		schema: { $ref: getSchemaPath(LogoutResponseSchema) },
+	})
+	@ApiUnauthorizedResponse({
+		description: swaggerConst.routes.logout.responses.unauthorized,
+		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
+	})
 	async logout(
 		@Req() req: Request,
 		@Res({ passthrough: true }) res: Response,
@@ -337,11 +400,15 @@ export class AuthController {
 	}
 
 	@Get(swaggerConst.routes.me.route)
+	@ApiBearerAuth("Bearer")
 	@ApiOperation({
 		summary: swaggerConst.routes.me.operation.summary,
-		security: [],
+		description: swaggerConst.routes.me.operation.descr,
 	})
-	@ApiOkResponse({ description: swaggerConst.routes.me.responses.ok })
+	@ApiOkResponse({
+		description: swaggerConst.routes.me.responses.ok,
+		schema: { $ref: getSchemaPath(AuthUserSchema) },
+	})
 	@ApiUnauthorizedResponse({
 		description: swaggerConst.routes.me.responses.unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },

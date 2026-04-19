@@ -18,6 +18,8 @@ import { TimeoutInterceptor } from "./common/interceptors/timeout.interceptor";
 import { AuthResponseSchema } from "./common/swagger/schemas/auth-response.schema";
 import { AuthUserSchema } from "./common/swagger/schemas/auth-user.schema";
 import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.schema";
+import { LogoutResponseSchema } from "./common/swagger/schemas/logout-response.schema";
+import { MessageResponseSchema } from "./common/swagger/schemas/message-response.schema";
 
 const logger = new Logger("Bootstrap");
 
@@ -63,7 +65,13 @@ const setupSwagger = (
 		ignoreGlobalPrefix: false,
 		operationIdFactory: (controllerKey: string, methodKey: string) =>
 			`${controllerKey}_${methodKey}`,
-		extraModels: [AuthResponseSchema, AuthUserSchema, ErrorResponseSchema],
+		extraModels: [
+			AuthResponseSchema,
+			AuthUserSchema,
+			ErrorResponseSchema,
+			LogoutResponseSchema,
+			MessageResponseSchema,
+		],
 	});
 
 	SwaggerModule.setup(path, app, document, {

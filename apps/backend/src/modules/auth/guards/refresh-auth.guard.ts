@@ -1,4 +1,4 @@
-import type { RequestWithRefreshAuth } from "../types/request-with-refresh-auth.type";
+import type { RequestWithRefreshAuthType } from "../types/request-with-refresh-auth.type";
 import {
 	type CanActivate,
 	type ExecutionContext,
@@ -14,7 +14,7 @@ export class RefreshAuthGuard implements CanActivate {
 	constructor(@Inject(AuthService) private readonly authService: AuthService) {}
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
-		const req = context.switchToHttp().getRequest<RequestWithRefreshAuth>();
+		const req = context.switchToHttp().getRequest<RequestWithRefreshAuthType>();
 		const raw = req.cookies?.[refreshCookieName];
 		if (!raw) {
 			throw new UnauthorizedException("Missing refresh token");

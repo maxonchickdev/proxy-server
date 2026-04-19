@@ -1,4 +1,4 @@
-export function parseDurationToMs(input: string): number {
+export function parseDurationToMsUtil(input: string): number {
 	const s = input.trim();
 	const m = /^(\d+)([smhd])$/i.exec(s);
 	if (!m) {

@@ -9,8 +9,8 @@ import { nanoid } from "nanoid";
 import { ConfigKeyEnum } from "../../common/enums/config.enum";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { refreshTokenNanoidLength } from "./consts/refresh-token-nanoid-length.const";
-import { parseDurationToMs } from "./utils/duration.util";
-import { hashOpaqueToken } from "./utils/token-hash.util";
+import { parseDurationToMsUtil } from "./utils/duration.util";
+import { hashOpaqueTokenUtil } from "./utils/token-hash.util";
 
 @Injectable()
 export class TokenService {
@@ -29,14 +29,14 @@ export class TokenService {
 	}
 
 	private get refreshExpiresMs(): number {
-		return parseDurationToMs(this.refreshExpiresIn);
+		return parseDurationToMsUtil(this.refreshExpiresIn);
 	}
 
 	async validateRefreshToken(rawToken: string): Promise<{
 		tokenId: string;
 		user: CurrentUserPayload;
 	}> {
-		const tokenHash = hashOpaqueToken(rawToken);
+		const tokenHash = hashOpaqueTokenUtil(rawToken);
 		const row = await this.prismaService.refreshToken.findUnique({
 			where: { tokenHash },
 			include: {
@@ -81,7 +81,7 @@ export class TokenService {
 
 	async logout(rawToken: string | undefined): Promise<void> {
 		if (!rawToken) return;
-		const tokenHash = hashOpaqueToken(rawToken);
+		const tokenHash = hashOpaqueTokenUtil(rawToken);
 		await this.prismaService.refreshToken.updateMany({
 			where: { tokenHash, isRevoked: false },
 			data: { isRevoked: true },
@@ -107,7 +107,7 @@ export class TokenService {
 		const payload: JwtPayloadType = { sub: user.id, email: user.email };
 		const accessToken = this.jwtService.sign(payload);
 		const rawRefresh = nanoid(refreshTokenNanoidLength);
-		const tokenHash = hashOpaqueToken(rawRefresh);
+		const tokenHash = hashOpaqueTokenUtil(rawRefresh);
 		const expiresAt = new Date(Date.now() + this.refreshExpiresMs);
 		await this.prismaService.refreshToken.create({
 			data: {
