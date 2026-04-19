@@ -40,7 +40,9 @@ import { EnvironmentsEnum } from "../../common/enums/environments.enum";
 import { AuthResponseSchema } from "../../common/swagger/schemas/auth-response.schema";
 import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response.schema";
 import { AuthService } from "./auth.service";
-import { authThrottle } from "./auth-throttle.constants";
+import { authThrottleConst } from "./consts/auth-throttle.const";
+import { refreshCookieName } from "./consts/refresh-cookie.const";
+import { swaggerConst } from "./consts/swagger.const";
 import { ForgotPasswordDto } from "./dto/forgot-password.dto";
 import { ResendVerificationDto } from "./dto/resend-verification.dto";
 import { ResetPasswordDto } from "./dto/reset-password.dto";
@@ -50,11 +52,9 @@ import { VerifyEmailDto } from "./dto/verify-email.dto";
 import { RefreshAuthGuard } from "./guards/refresh-auth.guard";
 import { parseDurationToMs } from "./utils/duration.util";
 
-const REFRESH_COOKIE_NAME = "refresh_token";
-
-@ApiTags("Auth")
+@ApiTags(swaggerConst.tag)
 @ApiExtraModels(AuthResponseSchema)
-@Controller("auth")
+@Controller(swaggerConst.route)
 export class AuthController {
 	private readonly isProduction: boolean;
 	private readonly refreshExpiresIn: string;
@@ -80,7 +80,7 @@ export class AuthController {
 	}
 
 	private setRefreshCookie(res: Response, rawRefresh: string): void {
-		res.cookie(REFRESH_COOKIE_NAME, rawRefresh, {
+		res.cookie(refreshCookieName, rawRefresh, {
 			httpOnly: true,
 			secure: this.isProduction,
 			sameSite: "lax",
@@ -90,7 +90,7 @@ export class AuthController {
 	}
 
 	private clearRefreshCookie(res: Response): void {
-		res.clearCookie(REFRESH_COOKIE_NAME, {
+		res.clearCookie(refreshCookieName, {
 			path: "/",
 			httpOnly: true,
 			sameSite: "lax",
@@ -112,30 +112,31 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottle.SIGN_UP.limit,
-			ttl: authThrottle.SIGN_UP.ttlMs,
+			limit: authThrottleConst.signUp.limit,
+			ttl: authThrottleConst.signUp.ttlMs,
 		},
 	})
 	@HttpCode(HttpStatus.CREATED)
-	@Post("sign-up")
+	@Post(swaggerConst.routes.signUp.route)
 	@ApiBody({ type: SignUpDto })
 	@ApiOperation({
-		summary: "Register a new user",
-		description:
-			"Sends a verification code to email. Use verify-email to complete registration.",
+		summary: swaggerConst.routes.signUp.operation.summary,
+		description: swaggerConst.routes.signUp.operation.descr,
 		security: [],
 	})
-	@ApiCreatedResponse({ description: "User created; check email for code" })
+	@ApiCreatedResponse({
+		description: swaggerConst.routes.signUp.responses.created,
+	})
 	@ApiConflictResponse({
-		description: "Conflict - Resource already exists or state conflict",
+		description: swaggerConst.routes.signUp.responses.conflict,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description: "Too Many Requests - Rate limit exceeded",
+		description: swaggerConst.routes.signUp.responses.tooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiInternalServerErrorResponse({
-		description: "Internal Server Error - Unexpected server error",
+		description: swaggerConst.routes.signUp.responses.internalServerError,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async signUp(@Body() signUpDto: SignUpDto): Promise<{ message: string }> {
@@ -145,20 +146,23 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottle.VERIFY_EMAIL.limit,
-			ttl: authThrottle.VERIFY_EMAIL.ttlMs,
+			limit: authThrottleConst.verifyEmail.limit,
+			ttl: authThrottleConst.verifyEmail.ttlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post("verify-email")
+	@Post(swaggerConst.routes.verifyEmail.route)
 	@ApiBody({ type: VerifyEmailDto })
-	@ApiOperation({ summary: "Verify email with 6-digit code", security: [] })
+	@ApiOperation({
+		summary: swaggerConst.routes.verifyEmail.operation.summary,
+		security: [],
+	})
 	@ApiOkResponse({
-		description: "Verified; tokens issued",
+		description: swaggerConst.routes.verifyEmail.responses.ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: "Invalid or expired code",
+		description: swaggerConst.routes.verifyEmail.responses.unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async verifyEmail(
@@ -172,15 +176,20 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottle.RESEND_VERIFICATION.limit,
-			ttl: authThrottle.RESEND_VERIFICATION.ttlMs,
+			limit: authThrottleConst.resendVerification.limit,
+			ttl: authThrottleConst.resendVerification.ttlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post("resend-verification")
+	@Post(swaggerConst.routes.resendVerification.route)
 	@ApiBody({ type: ResendVerificationDto })
-	@ApiOperation({ summary: "Resend verification code", security: [] })
-	@ApiOkResponse({ description: "Generic success message" })
+	@ApiOperation({
+		summary: swaggerConst.routes.resendVerification.operation.summary,
+		security: [],
+	})
+	@ApiOkResponse({
+		description: swaggerConst.routes.resendVerification.responses.ok,
+	})
 	async resendVerification(
 		@Body() dto: ResendVerificationDto,
 	): Promise<{ message: string }> {
@@ -190,37 +199,36 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottle.SIGN_IN.limit,
-			ttl: authThrottle.SIGN_IN.ttlMs,
+			limit: authThrottleConst.signIn.limit,
+			ttl: authThrottleConst.signIn.ttlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post("sign-in")
+	@Post(swaggerConst.routes.signIn.route)
 	@ApiBody({ type: SignInDto })
 	@ApiOperation({
-		summary: "Authenticate user",
-		description:
-			"Requires verified email. Refresh token is set as httpOnly cookie.",
+		summary: swaggerConst.routes.signIn.operation.summary,
+		description: swaggerConst.routes.signIn.operation.descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: "Successfully authenticated",
+		description: swaggerConst.routes.signIn.responses.ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: "Unauthorized - Missing or invalid authentication",
+		description: swaggerConst.routes.signIn.responses.unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiForbiddenResponse({
-		description: "Email not verified",
+		description: swaggerConst.routes.signIn.responses.forbidden,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description: "Too Many Requests - Rate limit exceeded",
+		description: swaggerConst.routes.signIn.responses.tooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiInternalServerErrorResponse({
-		description: "Internal Server Error - Unexpected server error",
+		description: swaggerConst.routes.signIn.responses.internalServerError,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async signIn(
@@ -234,15 +242,20 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottle.FORGOT_PASSWORD.limit,
-			ttl: authThrottle.FORGOT_PASSWORD.ttlMs,
+			limit: authThrottleConst.forgotPassword.limit,
+			ttl: authThrottleConst.forgotPassword.ttlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post("forgot-password")
+	@Post(swaggerConst.routes.forgotPassword.route)
 	@ApiBody({ type: ForgotPasswordDto })
-	@ApiOperation({ summary: "Request password reset code", security: [] })
-	@ApiOkResponse({ description: "Generic message (no email enumeration)" })
+	@ApiOperation({
+		summary: swaggerConst.routes.forgotPassword.operation.summary,
+		security: [],
+	})
+	@ApiOkResponse({
+		description: swaggerConst.routes.forgotPassword.responses.ok,
+	})
 	async forgotPassword(
 		@Body() dto: ForgotPasswordDto,
 	): Promise<{ message: string }> {
@@ -252,17 +265,22 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottle.RESET_PASSWORD.limit,
-			ttl: authThrottle.RESET_PASSWORD.ttlMs,
+			limit: authThrottleConst.resetPassword.limit,
+			ttl: authThrottleConst.resetPassword.ttlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post("reset-password")
+	@Post(swaggerConst.routes.resetPassword.route)
 	@ApiBody({ type: ResetPasswordDto })
-	@ApiOperation({ summary: "Reset password with code", security: [] })
-	@ApiOkResponse({ description: "Password reset" })
+	@ApiOperation({
+		summary: swaggerConst.routes.resetPassword.operation.summary,
+		security: [],
+	})
+	@ApiOkResponse({
+		description: swaggerConst.routes.resetPassword.responses.ok,
+	})
 	@ApiUnauthorizedResponse({
-		description: "Invalid or expired code",
+		description: swaggerConst.routes.resetPassword.responses.unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async resetPassword(
@@ -274,18 +292,18 @@ export class AuthController {
 	@Public()
 	@UseGuards(RefreshAuthGuard)
 	@HttpCode(HttpStatus.OK)
-	@Post("refresh")
+	@Post(swaggerConst.routes.refresh.route)
 	@ApiOperation({
-		summary: "Refresh access token",
-		description: "Uses httpOnly refresh cookie; rotates refresh token.",
+		summary: swaggerConst.routes.refresh.operation.summary,
+		description: swaggerConst.routes.refresh.operation.descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: "New access token",
+		description: swaggerConst.routes.refresh.responses.ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: "Invalid session",
+		description: swaggerConst.routes.refresh.responses.unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	async refresh(
@@ -301,29 +319,34 @@ export class AuthController {
 	}
 
 	@HttpCode(HttpStatus.OK)
-	@Post("logout")
-	@ApiOperation({ summary: "Revoke refresh session", security: [] })
-	@ApiOkResponse({ description: "Logged out" })
+	@Post(swaggerConst.routes.logout.route)
+	@ApiOperation({
+		summary: swaggerConst.routes.logout.operation.summary,
+		description: swaggerConst.routes.logout.operation.descr,
+		security: [],
+	})
+	@ApiOkResponse({ description: swaggerConst.routes.logout.responses.ok })
 	async logout(
 		@Req() req: Request,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<{ success: boolean }> {
-		const raw = req.cookies?.[REFRESH_COOKIE_NAME] as string | undefined;
+		const raw = req.cookies?.[refreshCookieName] as string | undefined;
 		await this.authService.logout(raw);
 		this.clearRefreshCookie(res);
 		return { success: true };
 	}
 
-	@Get("me")
-	@ApiOperation({ summary: "Current user", security: [] })
-	@ApiOkResponse({ description: "Current user profile" })
+	@Get(swaggerConst.routes.me.route)
+	@ApiOperation({
+		summary: swaggerConst.routes.me.operation.summary,
+		security: [],
+	})
+	@ApiOkResponse({ description: swaggerConst.routes.me.responses.ok })
 	@ApiUnauthorizedResponse({
-		description: "Unauthorized",
+		description: swaggerConst.routes.me.responses.unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
-	async me(
-		@CurrentUser() user: CurrentUserPayload,
-	): Promise<CurrentUserPayload> {
+	me(@CurrentUser() user: CurrentUserPayload): Promise<CurrentUserPayload> {
 		return this.authService.getMe(user.id);
 	}
 }

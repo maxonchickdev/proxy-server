@@ -5,7 +5,7 @@ import { parseResponseHelper } from "./parse-response.helper";
 
 let refreshInFlight: Promise<RefreshSessionResultType> | null = null;
 
-const refreshAccessTokenHelper =
+export const refreshAccessTokenHelper =
 	async (): Promise<RefreshSessionResultType> => {
 		if (refreshInFlight !== null) {
 			return refreshInFlight;
@@ -31,5 +31,3 @@ const refreshAccessTokenHelper =
 		});
 		return refreshInFlight;
 	};
-
-export { refreshAccessTokenHelper };

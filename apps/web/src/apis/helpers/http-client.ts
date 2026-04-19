@@ -4,7 +4,7 @@ import { getApiClientConfig } from "./configure-api-client.helper";
 import { parseResponseHelper } from "./parse-response.helper";
 import { refreshAccessTokenHelper } from "./refresh-access-token.helper";
 
-class HttpClient {
+export class HttpClient {
 	async request<T>(
 		path: string,
 		options: RequestInit = {},
@@ -41,6 +41,4 @@ class HttpClient {
 	}
 }
 
-const httpClient = new HttpClient();
-
-export { HttpClient, httpClient };
+export const httpClient = new HttpClient();

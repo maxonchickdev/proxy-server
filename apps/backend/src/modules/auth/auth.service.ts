@@ -2,7 +2,6 @@ import type { CurrentUserPayload } from "../../common/types/current-user-payload
 import type { SignInDto } from "./dto/sign-in.dto";
 import type { SignUpDto } from "./dto/sign-up.dto";
 import type { AuthResponseType } from "./types/auth-response.type";
-import { randomInt } from "node:crypto";
 import {
 	BadRequestException,
 	ConflictException,
@@ -15,12 +14,10 @@ import {
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
-import { authVerificationConstants } from "./auth-verification.constants";
+import { authCryptoConst } from "./consts/auth-crypto.const";
 import { PasswordResetService } from "./password-reset.service";
 import { TokenService } from "./token.service";
-
-const CODE_TTL_MS = 15 * 60 * 1000;
-const SALT_ROUNDS = 10;
+import { generateSixDigitCode } from "./utils/auth-code.util";
 
 @Injectable()
 export class AuthService {
@@ -34,15 +31,6 @@ export class AuthService {
 		private readonly passwordResetService: PasswordResetService,
 	) {}
 
-	private generateSixDigitCode(): string {
-		return String(
-			randomInt(
-				authVerificationConstants.SIX_DIGIT_CODE_MIN_INCLUSIVE,
-				authVerificationConstants.SIX_DIGIT_CODE_MAX_EXCLUSIVE,
-			),
-		);
-	}
-
 	async signUp(signUpDto: SignUpDto): Promise<{ message: string }> {
 		const emailLower = signUpDto.email.toLowerCase();
 		const existing = await this.prismaService.user.findUnique({
@@ -51,10 +39,21 @@ export class AuthService {
 		if (existing) {
 			throw new ConflictException("User with this email already exists");
 		}
-		const passwordHash = await bcrypt.hash(signUpDto.password, SALT_ROUNDS);
-		const plainCode = this.generateSixDigitCode();
-		const verificationCodeHash = await bcrypt.hash(plainCode, SALT_ROUNDS);
-		const verificationExpiresAt = new Date(Date.now() + CODE_TTL_MS);
+
+		const passwordHash = await bcrypt.hash(
+			signUpDto.password,
+			authCryptoConst.saltRounds,
+		);
+
+		const plainCode = generateSixDigitCode();
+
+		const verificationCodeHash = await bcrypt.hash(
+			plainCode,
+			authCryptoConst.saltRounds,
+		);
+		const verificationExpiresAt = new Date(
+			Date.now() + authCryptoConst.codeTtlMs,
+		);
 		await this.prismaService.user.create({
 			data: {
 				email: emailLower,
@@ -123,13 +122,16 @@ export class AuthService {
 		if (user.isEmailVerified) {
 			throw new BadRequestException("Email is already verified");
 		}
-		const plainCode = this.generateSixDigitCode();
-		const verificationCodeHash = await bcrypt.hash(plainCode, SALT_ROUNDS);
+		const plainCode = generateSixDigitCode();
+		const verificationCodeHash = await bcrypt.hash(
+			plainCode,
+			authCryptoConst.saltRounds,
+		);
 		await this.prismaService.user.update({
 			where: { id: user.id },
 			data: {
 				verificationCodeHash,
-				verificationExpiresAt: new Date(Date.now() + CODE_TTL_MS),
+				verificationExpiresAt: new Date(Date.now() + authCryptoConst.codeTtlMs),
 			},
 		});
 		await this.emailService

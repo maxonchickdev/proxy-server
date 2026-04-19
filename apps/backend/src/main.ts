@@ -21,7 +21,7 @@ import { ErrorResponseSchema } from "./common/swagger/schemas/error-response.sch
 
 const logger = new Logger("Bootstrap");
 
-export const setupSwagger = (
+const setupSwagger = (
 	app: NestExpressApplication,
 	configService: ConfigService,
 	appPort: number,

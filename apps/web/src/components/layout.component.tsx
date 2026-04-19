@@ -1,7 +1,7 @@
 import { Link, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/auth.context";
 
-const LayoutComponent = () => {
+export const LayoutComponent = () => {
 	const { user, logout } = useAuth();
 
 	const handleLogout = () => {
@@ -50,5 +50,3 @@ const LayoutComponent = () => {
 		</div>
 	);
 };
-
-export { LayoutComponent };

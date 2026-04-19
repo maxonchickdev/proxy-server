@@ -5,7 +5,7 @@ import { RequestLogsTableComponent } from "@/components/request-logs-table.compo
 import { useEndpointsList } from "@/hooks/endpoints.hooks";
 import { useLogsByEndpoint, useReplayLog } from "@/hooks/logs.hooks";
 
-const LogsPage = () => {
+export const LogsPage = () => {
 	const { endpointId } = useParams<{ endpointId?: string }>();
 	const {
 		data: endpointsData,
@@ -104,5 +104,3 @@ const LogsPage = () => {
 		</div>
 	);
 };
-
-export { LogsPage };

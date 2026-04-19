@@ -1,4 +1,3 @@
-import { randomInt } from "node:crypto";
 import {
 	Inject,
 	Injectable,
@@ -8,10 +7,8 @@ import {
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
-import { authVerificationConstants } from "./auth-verification.constants";
-
-const CODE_TTL_MS = 15 * 60 * 1000;
-const SALT_ROUNDS = 10;
+import { authCryptoConst } from "./consts/auth-crypto.const";
+import { generateSixDigitCode } from "./utils/auth-code.util";
 
 @Injectable()
 export class PasswordResetService {
@@ -22,15 +19,6 @@ export class PasswordResetService {
 		@Inject(EmailService) private readonly emailService: EmailService,
 	) {}
 
-	private generateSixDigitCode(): string {
-		return String(
-			randomInt(
-				authVerificationConstants.SIX_DIGIT_CODE_MIN_INCLUSIVE,
-				authVerificationConstants.SIX_DIGIT_CODE_MAX_EXCLUSIVE,
-			),
-		);
-	}
-
 	async forgotPassword(email: string): Promise<{ message: string }> {
 		const emailLower = email.toLowerCase();
 		const user = await this.prismaService.user.findUnique({
@@ -39,13 +27,18 @@ export class PasswordResetService {
 		if (!user) {
 			return { message: "If an account exists, a reset code was sent." };
 		}
-		const plainCode = this.generateSixDigitCode();
-		const passwordResetCodeHash = await bcrypt.hash(plainCode, SALT_ROUNDS);
+		const plainCode = generateSixDigitCode();
+		const passwordResetCodeHash = await bcrypt.hash(
+			plainCode,
+			authCryptoConst.saltRounds,
+		);
 		await this.prismaService.user.update({
 			where: { id: user.id },
 			data: {
 				passwordResetCodeHash,
-				passwordResetExpiresAt: new Date(Date.now() + CODE_TTL_MS),
+				passwordResetExpiresAt: new Date(
+					Date.now() + authCryptoConst.codeTtlMs,
+				),
 			},
 		});
 		await this.emailService
@@ -76,7 +69,10 @@ export class PasswordResetService {
 		if (!ok) {
 			throw new UnauthorizedException("Invalid or expired reset code");
 		}
-		const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+		const passwordHash = await bcrypt.hash(
+			newPassword,
+			authCryptoConst.saltRounds,
+		);
 		await this.prismaService.$transaction([
 			this.prismaService.user.update({
 				where: { id: user.id },

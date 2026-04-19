@@ -1,6 +1,6 @@
 import { errorMessageFromParsedBodyHelper } from "./error-message-from-parsed-body.helper";
 
-const parseResponseHelper = async <T>(res: Response): Promise<T> => {
+export const parseResponseHelper = async <T>(res: Response): Promise<T> => {
 	const text = await res.text();
 	if (!text) {
 		if (!res.ok) throw new Error(res.statusText || "Request failed");
@@ -18,5 +18,3 @@ const parseResponseHelper = async <T>(res: Response): Promise<T> => {
 		throw e;
 	}
 };
-
-export { parseResponseHelper };

@@ -1,11 +1,11 @@
 import { type FormEvent, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { authApi } from "@/apis/client.api";
+import { authApi } from "@/apis/auth.api";
 import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 import { useAuth } from "@/contexts/auth.context";
 
-const RegisterPage = () => {
+export const RegisterPage = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState("");
@@ -110,5 +110,3 @@ const RegisterPage = () => {
 		</main>
 	);
 };
-
-export { RegisterPage };

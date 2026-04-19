@@ -1,7 +1,11 @@
 export function parseDurationToMs(input: string): number {
 	const s = input.trim();
 	const m = /^(\d+)([smhd])$/i.exec(s);
-	if (!m) return 7 * 24 * 60 * 60 * 1000;
+	if (!m) {
+		throw new Error(
+			`Invalid duration "${input}": expected pattern like 15m, 7d, 24h, or 3600s`,
+		);
+	}
 	const n = Number(m[1]);
 	const u = m[2].toLowerCase();
 	const mult =

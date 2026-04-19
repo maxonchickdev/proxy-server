@@ -4,7 +4,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 	variant?: "primary" | "ghost";
 };
 
-const ButtonComponent = ({
+export const ButtonComponent = ({
 	variant = "primary",
 	className = "",
 	type = "button",
@@ -16,5 +16,3 @@ const ButtonComponent = ({
 			: "border border-white/40 px-3 py-1.5 text-sm hover:bg-white hover:text-black disabled:opacity-50";
 	return <button type={type} className={`${base} ${className}`} {...rest} />;
 };
-
-export { ButtonComponent };

@@ -26,5 +26,5 @@ export class SignUpDto {
 	})
 	@IsOptional()
 	@IsString()
-	name?: string | undefined;
+	name!: string | null;
 }

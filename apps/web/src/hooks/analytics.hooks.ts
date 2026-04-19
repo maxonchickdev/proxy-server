@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { analyticsApi } from "@/apis/client.api";
+import { analyticsApi } from "@/apis/analytics.api";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const ANALYTICS_POLL_MS = 10_000;
@@ -13,7 +13,7 @@ const analyticsQueryKeys = {
 	) => ["analytics", endpointId, "timeseries", params] as const,
 };
 
-const useAnalyticsSummary = (endpointId: string | undefined) => {
+export const useAnalyticsSummary = (endpointId: string | undefined) => {
 	const canQuery = useCanQueryProtectedApi();
 
 	if (!endpointId) {
@@ -30,7 +30,7 @@ const useAnalyticsSummary = (endpointId: string | undefined) => {
 	});
 };
 
-const useAnalyticsTimeseries = (
+export const useAnalyticsTimeseries = (
 	endpointId: string | undefined,
 	params?: { bucket?: "hour" | "day"; limit?: number },
 ) => {
@@ -49,5 +49,3 @@ const useAnalyticsTimeseries = (
 		refetchInterval: endpointId ? ANALYTICS_POLL_MS : false,
 	});
 };
-
-export { useAnalyticsSummary, useAnalyticsTimeseries };

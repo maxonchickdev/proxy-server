@@ -7,7 +7,7 @@ import type {
 import type { HttpClient } from "./helpers/http-client";
 import { httpClient } from "./helpers/http-client";
 
-class EndpointsApi {
+export class EndpointsApi {
 	constructor(private readonly http: HttpClient) {}
 
 	list(params?: { limit?: number; offset?: number }) {
@@ -60,6 +60,4 @@ class EndpointsApi {
 	}
 }
 
-const endpointsApi = new EndpointsApi(httpClient);
-
-export { EndpointsApi, endpointsApi };
+export const endpointsApi = new EndpointsApi(httpClient);

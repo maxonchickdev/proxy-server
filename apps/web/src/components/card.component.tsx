@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-const CardComponent = ({
+export const CardComponent = ({
 	children,
 	className = "",
 }: {
@@ -11,5 +11,3 @@ const CardComponent = ({
 		<div className={`border border-white/20 p-6 ${className}`}>{children}</div>
 	);
 };
-
-export { CardComponent };

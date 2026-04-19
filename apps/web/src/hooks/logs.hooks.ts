@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { logsApi } from "@/apis/client.api";
+import { logsApi } from "@/apis/logs.api";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const LOGS_POLL_MS = 10_000;
@@ -11,7 +11,7 @@ const logsQueryKeys = {
 	) => ["logs", "endpoint", endpointId, params] as const,
 };
 
-const useLogsByEndpoint = (
+export const useLogsByEndpoint = (
 	endpointId: string | undefined,
 	params?: { limit?: number; offset?: number },
 ) => {
@@ -31,7 +31,7 @@ const useLogsByEndpoint = (
 	});
 };
 
-const useReplayLog = (endpointId: string | undefined) => {
+export const useReplayLog = (endpointId: string | undefined) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
@@ -45,5 +45,3 @@ const useReplayLog = (endpointId: string | undefined) => {
 		},
 	});
 };
-
-export { useLogsByEndpoint, useReplayLog };

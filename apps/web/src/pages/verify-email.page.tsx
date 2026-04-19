@@ -1,11 +1,11 @@
 import { type FormEvent, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { authApi } from "@/apis/client.api";
+import { authApi } from "@/apis/auth.api";
 import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 import { useAuth } from "@/contexts/auth.context";
 
-const VerifyEmailPage = () => {
+export const VerifyEmailPage = () => {
 	const [searchParams] = useSearchParams();
 	const initialEmail = searchParams.get("email") ?? "";
 	const [email, setEmail] = useState(initialEmail);
@@ -132,5 +132,3 @@ const VerifyEmailPage = () => {
 		</main>
 	);
 };
-
-export { VerifyEmailPage };

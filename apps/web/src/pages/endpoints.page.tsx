@@ -6,7 +6,7 @@ import { InputComponent } from "@/components/input.component";
 import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useCreateEndpoint, useEndpointsList } from "@/hooks/endpoints.hooks";
 
-const EndpointsPage = () => {
+export const EndpointsPage = () => {
 	const [name, setName] = useState("");
 	const [targetUrl, setTargetUrl] = useState("");
 	const [rateMax, setRateMax] = useState("");
@@ -186,5 +186,3 @@ const EndpointsPage = () => {
 		</div>
 	);
 };
-
-export { EndpointsPage };

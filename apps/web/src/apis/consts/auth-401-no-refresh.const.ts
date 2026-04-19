@@ -1,6 +1,6 @@
 import { toApiUrl } from "../helpers/api-url.helper";
 
-const auth401NoRefreshConst = new Set([
+export const auth401NoRefreshConst = new Set([
 	toApiUrl("/auth/sign-in"),
 	toApiUrl("/auth/sign-up"),
 	toApiUrl("/auth/verify-email"),
@@ -8,5 +8,3 @@ const auth401NoRefreshConst = new Set([
 	toApiUrl("/auth/forgot-password"),
 	toApiUrl("/auth/reset-password"),
 ]);
-
-export { auth401NoRefreshConst };

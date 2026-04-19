@@ -6,7 +6,7 @@ import type {
 import type { HttpClient } from "./helpers/http-client";
 import { httpClient } from "./helpers/http-client";
 
-class AnalyticsApi {
+export class AnalyticsApi {
 	constructor(private readonly http: HttpClient) {}
 
 	summary(endpointId: string) {
@@ -35,6 +35,4 @@ class AnalyticsApi {
 	}
 }
 
-const analyticsApi = new AnalyticsApi(httpClient);
-
-export { AnalyticsApi, analyticsApi };
+export const analyticsApi = new AnalyticsApi(httpClient);

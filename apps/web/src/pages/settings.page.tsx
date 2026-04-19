@@ -1,4 +1,4 @@
-const SettingsPage = () => {
+export const SettingsPage = () => {
 	return (
 		<section className="space-y-8" aria-labelledby="settings-heading">
 			<h1 id="settings-heading" className="text-2xl font-medium">
@@ -18,5 +18,3 @@ const SettingsPage = () => {
 		</section>
 	);
 };
-
-export { SettingsPage };

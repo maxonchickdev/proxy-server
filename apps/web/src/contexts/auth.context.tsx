@@ -10,11 +10,9 @@ import {
 	useRef,
 } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-	authApi,
-	configureApiClient,
-	refreshAccessToken,
-} from "@/apis/client.api";
+import { authApi } from "@/apis/auth.api";
+import { configureApiClientHelper } from "@/apis/helpers/configure-api-client.helper";
+import { refreshAccessTokenHelper } from "@/apis/helpers/refresh-access-token.helper";
 
 const AUTH_SESSION_QUERY_KEY = ["auth", "session"] as const;
 
@@ -113,13 +111,13 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const ACCESS_REFRESH_MS = 14 * 60 * 1000;
 
-const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const accessTokenRef = useRef<string | null>(readBootstrapAccessToken());
 	const sessionQuery = useQuery({
 		queryKey: AUTH_SESSION_QUERY_KEY,
-		queryFn: async (): Promise<AuthSession> => refreshAccessToken(),
+		queryFn: async (): Promise<AuthSession> => refreshAccessTokenHelper(),
 		refetchInterval: (query) => {
 			const data = query.state.data;
 			if (data?.accessToken) {
@@ -161,7 +159,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 		void navigate("/login", { replace: true });
 	}, [clearSession, navigate]);
 	useLayoutEffect(() => {
-		configureApiClient({
+		configureApiClientHelper({
 			getAccessToken: () => accessTokenRef.current,
 			setSession: (token, u) => {
 				if (token && u) {
@@ -203,7 +201,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-const useAuth = () => {
+export const useAuth = () => {
 	const ctx = useContext(AuthContext);
 	if (!ctx) {
 		throw new Error("useAuth must be used within AuthProvider");
@@ -211,9 +209,7 @@ const useAuth = () => {
 	return ctx;
 };
 
-const useCanQueryProtectedApi = (): boolean => {
+export const useCanQueryProtectedApi = (): boolean => {
 	const { isReady, accessToken } = useAuth();
 	return isReady && Boolean(accessToken);
 };
-
-export { AuthProvider, useAuth, useCanQueryProtectedApi };

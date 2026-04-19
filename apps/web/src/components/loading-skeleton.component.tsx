@@ -4,7 +4,10 @@ type Props = {
 	rows?: number;
 };
 
-const LoadingSkeletonComponent = ({ className = "", rows = 1 }: Props) => {
+export const LoadingSkeletonComponent = ({
+	className = "",
+	rows = 1,
+}: Props) => {
 	const rowHeightRem = 2.5;
 	return (
 		<div
@@ -15,5 +18,3 @@ const LoadingSkeletonComponent = ({ className = "", rows = 1 }: Props) => {
 		/>
 	);
 };
-
-export { LoadingSkeletonComponent };

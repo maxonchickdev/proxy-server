@@ -7,6 +7,7 @@ import {
 	UnauthorizedException,
 } from "@nestjs/common";
 import { AuthService } from "../auth.service";
+import { refreshCookieName } from "../consts/refresh-cookie.const";
 
 @Injectable()
 export class RefreshAuthGuard implements CanActivate {
@@ -14,7 +15,7 @@ export class RefreshAuthGuard implements CanActivate {
 
 	async canActivate(context: ExecutionContext): Promise<boolean> {
 		const req = context.switchToHttp().getRequest<RequestWithRefreshAuth>();
-		const raw = req.cookies?.refresh_token;
+		const raw = req.cookies?.[refreshCookieName];
 		if (!raw) {
 			throw new UnauthorizedException("Missing refresh token");
 		}

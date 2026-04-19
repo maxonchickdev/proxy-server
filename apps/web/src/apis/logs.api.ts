@@ -2,7 +2,7 @@ import type { RequestLogDto } from "@/types/request-log.dto";
 import type { HttpClient } from "./helpers/http-client";
 import { httpClient } from "./helpers/http-client";
 
-class LogsApi {
+export class LogsApi {
 	constructor(private readonly http: HttpClient) {}
 
 	byEndpoint(
@@ -39,6 +39,4 @@ class LogsApi {
 	}
 }
 
-const logsApi = new LogsApi(httpClient);
-
-export { LogsApi, logsApi };
+export const logsApi = new LogsApi(httpClient);

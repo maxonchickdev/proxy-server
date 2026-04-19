@@ -1,14 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
-import { notificationsApi } from "@/apis/client.api";
 import { API_V1_BASE_PATH } from "@/apis/consts/api-base-path.const";
+import { notificationsApi } from "@/apis/notifications.api";
 import { ButtonComponent } from "@/components/button.component";
 import { CardComponent } from "@/components/card.component";
 import { InputComponent } from "@/components/input.component";
 import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
-const IntegrationsPage = () => {
+export const IntegrationsPage = () => {
 	const can = useCanQueryProtectedApi();
 	const qc = useQueryClient();
 	const { data: channelsData, isLoading: chLoading } = useQuery({
@@ -165,5 +165,3 @@ const IntegrationsPage = () => {
 		</div>
 	);
 };
-
-export { IntegrationsPage };

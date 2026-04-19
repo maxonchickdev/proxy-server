@@ -1,10 +1,10 @@
 import { type FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
-import { authApi } from "@/apis/client.api";
+import { authApi } from "@/apis/auth.api";
 import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 
-const ForgotPasswordPage = () => {
+export const ForgotPasswordPage = () => {
 	const [email, setEmail] = useState("");
 	const [message, setMessage] = useState("");
 	const [error, setError] = useState("");
@@ -97,5 +97,3 @@ const ForgotPasswordPage = () => {
 		</main>
 	);
 };
-
-export { ForgotPasswordPage };

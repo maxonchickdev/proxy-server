@@ -1,10 +1,14 @@
+import type { EndpointListResponse } from "@/apis/types/endpoint-list-response.type";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { type EndpointListResponse, endpointsApi } from "@/apis/client.api";
+import { endpointsApi } from "@/apis/endpoints.api";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const endpointsQueryKey = ["endpoints"] as const;
 
-const useEndpointsList = (params?: { limit?: number; offset?: number }) => {
+export const useEndpointsList = (params?: {
+	limit?: number;
+	offset?: number;
+}) => {
 	const canQuery = useCanQueryProtectedApi();
 	return useQuery({
 		queryKey: [...endpointsQueryKey, params] as const,
@@ -13,7 +17,7 @@ const useEndpointsList = (params?: { limit?: number; offset?: number }) => {
 	});
 };
 
-const useEndpointDetail = (id: string | undefined) => {
+export const useEndpointDetail = (id: string | undefined) => {
 	const canQuery = useCanQueryProtectedApi();
 
 	if (!id) {
@@ -28,7 +32,7 @@ const useEndpointDetail = (id: string | undefined) => {
 	});
 };
 
-const useCreateEndpoint = () => {
+export const useCreateEndpoint = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: endpointsApi.create,
@@ -38,7 +42,7 @@ const useCreateEndpoint = () => {
 	});
 };
 
-const useUpdateEndpoint = () => {
+export const useUpdateEndpoint = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: ({
@@ -53,11 +57,4 @@ const useUpdateEndpoint = () => {
 			void queryClient.invalidateQueries({ queryKey: ["endpoints", id] });
 		},
 	});
-};
-
-export {
-	useCreateEndpoint,
-	useEndpointDetail,
-	useEndpointsList,
-	useUpdateEndpoint,
 };

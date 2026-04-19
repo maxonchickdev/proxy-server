@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { JwtModule } from "../../core/jwt/jwt.module";
 import { PassportModule } from "../../core/passport/passport.module";
 import { PrismaModule } from "../../core/prisma/prisma.module";
+import { RateLimitModule } from "../../core/rate-limit/rate-limit.module";
 import { EmailModule } from "../email/email.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
@@ -12,7 +13,13 @@ import { JwtStrategy } from "./strategies/jwt.strategy";
 import { TokenService } from "./token.service";
 
 @Module({
-	imports: [PrismaModule, EmailModule, JwtModule, PassportModule],
+	imports: [
+		PrismaModule,
+		EmailModule,
+		JwtModule,
+		PassportModule,
+		RateLimitModule,
+	],
 	controllers: [AuthController],
 	providers: [
 		TokenService,

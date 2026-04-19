@@ -1,6 +1,6 @@
 import type { RequestLogDto } from "@/types/request-log.dto";
 
-const RequestLogsTableComponent = ({
+export const RequestLogsTableComponent = ({
 	logs,
 	onReplay,
 }: {
@@ -81,5 +81,3 @@ const RequestLogsTableComponent = ({
 		</div>
 	);
 };
-
-export { RequestLogsTableComponent };

@@ -4,7 +4,7 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 	label: string;
 };
 
-const InputComponent = ({
+export const InputComponent = ({
 	label,
 	id,
 	className = "",
@@ -28,5 +28,3 @@ const InputComponent = ({
 		</div>
 	);
 };
-
-export { InputComponent };

@@ -3,7 +3,7 @@ import { EndpointsTableComponent } from "@/components/endpoints-table.component"
 import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useEndpointsList } from "@/hooks/endpoints.hooks";
 
-const DashboardPage = () => {
+export const DashboardPage = () => {
 	const { data, isLoading, isError, error } = useEndpointsList();
 	const endpoints = data?.items ?? [];
 	const totalEndpoints = data?.total ?? endpoints.length;
@@ -53,5 +53,3 @@ const DashboardPage = () => {
 		</div>
 	);
 };
-
-export { DashboardPage };

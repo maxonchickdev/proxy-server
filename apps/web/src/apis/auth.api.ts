@@ -1,9 +1,8 @@
 import type { UserDto } from "@proxy-server/shared";
-import type { HttpClient } from "./helpers/http-client";
 import { toApiUrl } from "./helpers/api-url.helper";
-import { httpClient } from "./helpers/http-client";
+import { type HttpClient, httpClient } from "./helpers/http-client";
 
-class AuthApi {
+export class AuthApi {
 	constructor(private readonly http: HttpClient) {}
 
 	register(data: { email: string; password: string; name?: string }) {
@@ -71,6 +70,4 @@ class AuthApi {
 	}
 }
 
-const authApi = new AuthApi(httpClient);
-
-export { AuthApi, authApi };
+export const authApi = new AuthApi(httpClient);
