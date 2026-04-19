@@ -7,17 +7,7 @@ import { defineConfig } from "vite";
 const webRoot = dirname(fileURLToPath(import.meta.url));
 const monorepoRoot = resolve(webRoot, "../..");
 
-const apiTarget = "http://localhost:3000/api/v1";
-
-const proxyPaths = [
-	"/auth",
-	"/endpoints",
-	"/logs",
-	"/analytics",
-	"/r",
-	"/notifications",
-	"/integrations",
-];
+const apiTarget = "http://localhost:3000";
 
 const sharedSrcIndex = resolve(monorepoRoot, "libs/shared/src/index.ts");
 
@@ -38,15 +28,17 @@ export default defineConfig({
 		},
 	},
 	server: {
-		proxy: Object.fromEntries(
-			proxyPaths.map((pathPrefix: string) => [
-				pathPrefix,
-				{
-					target: apiTarget,
-					changeOrigin: true,
-					secure: true,
-				},
-			]),
-		),
+		proxy: {
+			"/api/v1": {
+				target: apiTarget,
+				changeOrigin: true,
+				secure: true,
+			},
+			"/r": {
+				target: apiTarget,
+				changeOrigin: true,
+				secure: true,
+			},
+		},
 	},
 });

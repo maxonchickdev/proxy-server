@@ -5,7 +5,7 @@ import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 import { useAuth } from "@/contexts/auth.context";
 
-export const LoginPage = () => {
+const LoginPage = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -97,3 +97,5 @@ export const LoginPage = () => {
 		</main>
 	);
 };
+
+export { LoginPage };

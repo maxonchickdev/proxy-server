@@ -4,14 +4,14 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
 	label: string;
 };
 
-export function InputComponent({
+const InputComponent = ({
 	label,
 	id,
 	className = "",
 	"aria-describedby": ariaDescribedByProp,
 	"aria-invalid": ariaInvalidProp,
 	...rest
-}: Props) {
+}: Props) => {
 	const inputId = id ?? rest.name ?? label.replace(/\s/g, "-").toLowerCase();
 	return (
 		<div>
@@ -27,4 +27,6 @@ export function InputComponent({
 			/>
 		</div>
 	);
-}
+};
+
+export { InputComponent };

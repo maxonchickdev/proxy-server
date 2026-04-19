@@ -13,7 +13,7 @@ const analyticsQueryKeys = {
 	) => ["analytics", endpointId, "timeseries", params] as const,
 };
 
-export function useAnalyticsSummary(endpointId: string | undefined) {
+const useAnalyticsSummary = (endpointId: string | undefined) => {
 	const canQuery = useCanQueryProtectedApi();
 
 	if (!endpointId) {
@@ -28,12 +28,12 @@ export function useAnalyticsSummary(endpointId: string | undefined) {
 		refetchOnWindowFocus: true,
 		refetchInterval: endpointId ? ANALYTICS_POLL_MS : false,
 	});
-}
+};
 
-export function useAnalyticsTimeseries(
+const useAnalyticsTimeseries = (
 	endpointId: string | undefined,
 	params?: { bucket?: "hour" | "day"; limit?: number },
-) {
+) => {
 	const canQuery = useCanQueryProtectedApi();
 
 	if (!endpointId) {
@@ -48,4 +48,6 @@ export function useAnalyticsTimeseries(
 		refetchOnWindowFocus: true,
 		refetchInterval: endpointId ? ANALYTICS_POLL_MS : false,
 	});
-}
+};
+
+export { useAnalyticsSummary, useAnalyticsTimeseries };

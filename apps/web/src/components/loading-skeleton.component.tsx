@@ -4,7 +4,7 @@ type Props = {
 	rows?: number;
 };
 
-export function LoadingSkeletonComponent({ className = "", rows = 1 }: Props) {
+const LoadingSkeletonComponent = ({ className = "", rows = 1 }: Props) => {
 	const rowHeightRem = 2.5;
 	return (
 		<div
@@ -14,4 +14,6 @@ export function LoadingSkeletonComponent({ className = "", rows = 1 }: Props) {
 			aria-live="polite"
 		/>
 	);
-}
+};
+
+export { LoadingSkeletonComponent };

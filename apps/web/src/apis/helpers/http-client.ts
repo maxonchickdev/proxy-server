@@ -1,4 +1,5 @@
 import { auth401NoRefreshConst } from "../consts/auth-401-no-refresh.const";
+import { toApiUrl } from "./api-url.helper";
 import { getApiClientConfig } from "./configure-api-client.helper";
 import { parseResponseHelper } from "./parse-response.helper";
 import { refreshAccessTokenHelper } from "./refresh-access-token.helper";
@@ -20,13 +21,14 @@ class HttpClient {
 			headers.Authorization = `Bearer ${token}`;
 		}
 
-		const res = await fetch(path, {
+		const url = toApiUrl(path);
+		const res = await fetch(url, {
 			...options,
 			headers,
 			credentials: "include",
 		});
 
-		if (res.status === 401 && !retried && !auth401NoRefreshConst.has(path)) {
+		if (res.status === 401 && !retried && !auth401NoRefreshConst.has(url)) {
 			const refreshed = await refreshAccessTokenHelper();
 			if (refreshed) {
 				cfg.setSession(refreshed.accessToken, refreshed.user);

@@ -3,7 +3,7 @@ import { Component, type ErrorInfo, type ReactNode } from "react";
 type Props = { children: ReactNode };
 type State = { hasError: boolean; message: string };
 
-export class ErrorBoundaryComponent extends Component<Props, State> {
+class ErrorBoundaryComponent extends Component<Props, State> {
 	constructor(props: Props) {
 		super(props);
 		this.state = { hasError: false, message: "" };
@@ -43,3 +43,5 @@ export class ErrorBoundaryComponent extends Component<Props, State> {
 		return this.props.children;
 	}
 }
+
+export { ErrorBoundaryComponent };

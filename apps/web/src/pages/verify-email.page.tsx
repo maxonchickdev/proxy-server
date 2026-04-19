@@ -5,7 +5,7 @@ import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 import { useAuth } from "@/contexts/auth.context";
 
-export const VerifyEmailPage = () => {
+const VerifyEmailPage = () => {
 	const [searchParams] = useSearchParams();
 	const initialEmail = searchParams.get("email") ?? "";
 	const [email, setEmail] = useState(initialEmail);
@@ -132,3 +132,5 @@ export const VerifyEmailPage = () => {
 		</main>
 	);
 };
+
+export { VerifyEmailPage };

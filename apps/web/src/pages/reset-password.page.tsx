@@ -4,7 +4,7 @@ import { authApi } from "@/apis/client.api";
 import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 
-export const ResetPasswordPage = () => {
+const ResetPasswordPage = () => {
 	const [searchParams] = useSearchParams();
 	const initialEmail = searchParams.get("email") ?? "";
 	const [email, setEmail] = useState(initialEmail);
@@ -104,3 +104,5 @@ export const ResetPasswordPage = () => {
 		</main>
 	);
 };
+
+export { ResetPasswordPage };

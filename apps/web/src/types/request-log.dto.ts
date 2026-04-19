@@ -1,4 +1,4 @@
-export type RequestLogDto = {
+type RequestLogDto = {
 	id: string;
 	createdAt: string;
 	method: string;
@@ -9,3 +9,5 @@ export type RequestLogDto = {
 	metadata?: unknown;
 	queryParams?: string | null;
 };
+
+export type { RequestLogDto };

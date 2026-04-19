@@ -4,16 +4,16 @@ import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
 const endpointsQueryKey = ["endpoints"] as const;
 
-export function useEndpointsList(params?: { limit?: number; offset?: number }) {
+const useEndpointsList = (params?: { limit?: number; offset?: number }) => {
 	const canQuery = useCanQueryProtectedApi();
 	return useQuery({
 		queryKey: [...endpointsQueryKey, params] as const,
 		queryFn: (): Promise<EndpointListResponse> => endpointsApi.list(params),
 		enabled: canQuery,
 	});
-}
+};
 
-export function useEndpointDetail(id: string | undefined) {
+const useEndpointDetail = (id: string | undefined) => {
 	const canQuery = useCanQueryProtectedApi();
 
 	if (!id) {
@@ -26,9 +26,9 @@ export function useEndpointDetail(id: string | undefined) {
 		staleTime: 10_000,
 		refetchOnWindowFocus: true,
 	});
-}
+};
 
-export function useCreateEndpoint() {
+const useCreateEndpoint = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: endpointsApi.create,
@@ -36,9 +36,9 @@ export function useCreateEndpoint() {
 			void queryClient.invalidateQueries({ queryKey: endpointsQueryKey });
 		},
 	});
-}
+};
 
-export function useUpdateEndpoint() {
+const useUpdateEndpoint = () => {
 	const queryClient = useQueryClient();
 	return useMutation({
 		mutationFn: ({
@@ -53,4 +53,11 @@ export function useUpdateEndpoint() {
 			void queryClient.invalidateQueries({ queryKey: ["endpoints", id] });
 		},
 	});
-}
+};
+
+export {
+	useCreateEndpoint,
+	useEndpointDetail,
+	useEndpointsList,
+	useUpdateEndpoint,
+};

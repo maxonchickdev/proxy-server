@@ -11,10 +11,10 @@ const logsQueryKeys = {
 	) => ["logs", "endpoint", endpointId, params] as const,
 };
 
-export function useLogsByEndpoint(
+const useLogsByEndpoint = (
 	endpointId: string | undefined,
 	params?: { limit?: number; offset?: number },
-) {
+) => {
 	const canQuery = useCanQueryProtectedApi();
 
 	if (!endpointId) {
@@ -29,9 +29,9 @@ export function useLogsByEndpoint(
 		refetchOnWindowFocus: true,
 		refetchInterval: endpointId ? LOGS_POLL_MS : false,
 	});
-}
+};
 
-export function useReplayLog(endpointId: string | undefined) {
+const useReplayLog = (endpointId: string | undefined) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
@@ -44,4 +44,6 @@ export function useReplayLog(endpointId: string | undefined) {
 			}
 		},
 	});
-}
+};
+
+export { useLogsByEndpoint, useReplayLog };

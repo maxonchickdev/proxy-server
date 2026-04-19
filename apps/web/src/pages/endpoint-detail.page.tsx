@@ -20,7 +20,7 @@ import {
 import { useEndpointDetail, useUpdateEndpoint } from "@/hooks/endpoints.hooks";
 import { useLogsByEndpoint, useReplayLog } from "@/hooks/logs.hooks";
 
-export const EndpointDetailPage = () => {
+const EndpointDetailPage = () => {
 	const { id } = useParams<{ id: string }>();
 	const [copied, setCopied] = useState(false);
 	const [toggleError, setToggleError] = useState<string | null>(null);
@@ -402,3 +402,5 @@ export const EndpointDetailPage = () => {
 		</div>
 	);
 };
+
+export { EndpointDetailPage };

@@ -1,5 +1,6 @@
 import type { UserDto } from "@proxy-server/shared";
 import type { RefreshSessionResultType } from "../types/refresh-session-result.type";
+import { toApiUrl } from "./api-url.helper";
 import { parseResponseHelper } from "./parse-response.helper";
 
 let refreshInFlight: Promise<RefreshSessionResultType> | null = null;
@@ -11,7 +12,7 @@ const refreshAccessTokenHelper =
 		}
 		refreshInFlight = (async (): Promise<RefreshSessionResultType> => {
 			try {
-				const res = await fetch("/auth/refresh", {
+				const res = await fetch(toApiUrl("/auth/refresh"), {
 					method: "POST",
 					credentials: "include",
 				});

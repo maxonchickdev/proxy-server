@@ -6,10 +6,10 @@ type Props = {
 	proxyUrlColumn?: "path" | "slug-only";
 };
 
-export function EndpointsTableComponent({
+const EndpointsTableComponent = ({
 	endpoints,
 	proxyUrlColumn = "path",
-}: Props) {
+}: Props) => {
 	return (
 		<div className="overflow-hidden border border-white/20">
 			<table className="w-full">
@@ -63,4 +63,6 @@ export function EndpointsTableComponent({
 			</table>
 		</div>
 	);
-}
+};
+
+export { EndpointsTableComponent };

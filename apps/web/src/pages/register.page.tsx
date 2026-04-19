@@ -5,7 +5,7 @@ import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 import { useAuth } from "@/contexts/auth.context";
 
-export const RegisterPage = () => {
+const RegisterPage = () => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState("");
@@ -110,3 +110,5 @@ export const RegisterPage = () => {
 		</main>
 	);
 };
+
+export { RegisterPage };

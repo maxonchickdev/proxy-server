@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { type FormEvent, useState } from "react";
 import { notificationsApi } from "@/apis/client.api";
+import { API_V1_BASE_PATH } from "@/apis/consts/api-base-path.const";
 import { ButtonComponent } from "@/components/button.component";
 import { CardComponent } from "@/components/card.component";
 import { InputComponent } from "@/components/input.component";
 import { LoadingSkeletonComponent } from "@/components/loading-skeleton.component";
 import { useCanQueryProtectedApi } from "@/contexts/auth.context";
 
-export const IntegrationsPage = () => {
+const IntegrationsPage = () => {
 	const can = useCanQueryProtectedApi();
 	const qc = useQueryClient();
 	const { data: channelsData, isLoading: chLoading } = useQuery({
@@ -63,15 +64,18 @@ export const IntegrationsPage = () => {
 			<p className="max-w-2xl text-white/60">
 				Configure Slack interactivity and slash commands to POST to{" "}
 				<code className="text-white/80">
-					{origin}/integrations/slack/actions
+					{origin}
+					{API_V1_BASE_PATH}/integrations/slack/actions
 				</code>{" "}
 				and{" "}
 				<code className="text-white/80">
-					{origin}/integrations/slack/commands
+					{origin}
+					{API_V1_BASE_PATH}/integrations/slack/commands
 				</code>
 				. Telegram bot updates:{" "}
 				<code className="text-white/80">
-					{origin}/integrations/telegram/webhook
+					{origin}
+					{API_V1_BASE_PATH}/integrations/telegram/webhook
 				</code>
 				.
 			</p>
@@ -161,3 +165,5 @@ export const IntegrationsPage = () => {
 		</div>
 	);
 };
+
+export { IntegrationsPage };

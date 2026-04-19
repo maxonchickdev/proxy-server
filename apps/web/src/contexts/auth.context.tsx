@@ -24,7 +24,7 @@ const LEGACY_ACCESS_TOKEN_KEY = "proxy-server.accessToken";
 
 type AuthSession = { accessToken: string; user: UserDto } | null;
 
-function parseStoredUser(value: unknown): UserDto | null {
+const parseStoredUser = (value: unknown): UserDto | null => {
 	if (!value || typeof value !== "object") {
 		return null;
 	}
@@ -36,9 +36,9 @@ function parseStoredUser(value: unknown): UserDto | null {
 		return null;
 	}
 	return { id: o.id, email: o.email, name: o.name as string | null };
-}
+};
 
-function readStoredSession(): AuthSession | undefined {
+const readStoredSession = (): AuthSession | undefined => {
 	if (typeof sessionStorage === "undefined") {
 		return undefined;
 	}
@@ -63,9 +63,9 @@ function readStoredSession(): AuthSession | undefined {
 	} catch {
 		return undefined;
 	}
-}
+};
 
-function readLegacyAccessTokenOnly(): string | null {
+const readLegacyAccessTokenOnly = (): string | null => {
 	if (typeof sessionStorage === "undefined") {
 		return null;
 	}
@@ -75,17 +75,17 @@ function readLegacyAccessTokenOnly(): string | null {
 	} catch {
 		return null;
 	}
-}
+};
 
-function readBootstrapAccessToken(): string | null {
+const readBootstrapAccessToken = (): string | null => {
 	const full = readStoredSession();
 	if (full) {
 		return full.accessToken;
 	}
 	return readLegacyAccessTokenOnly();
-}
+};
 
-function writeStoredSession(session: AuthSession): void {
+const writeStoredSession = (session: AuthSession): void => {
 	if (typeof sessionStorage === "undefined") {
 		return;
 	}
@@ -99,7 +99,7 @@ function writeStoredSession(session: AuthSession): void {
 	} catch {
 		/* ignore quota / privacy mode */
 	}
-}
+};
 
 interface AuthContextValue {
 	user: UserDto | null;
@@ -113,7 +113,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const ACCESS_REFRESH_MS = 14 * 60 * 1000;
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const accessTokenRef = useRef<string | null>(readBootstrapAccessToken());
@@ -178,6 +178,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			onSessionExpired,
 		});
 	}, [clearSession, onSessionExpired, queryClient]);
+
 	const logout = useCallback(async () => {
 		const token = accessTokenRef.current;
 		try {
@@ -202,7 +203,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+const useAuth = () => {
 	const ctx = useContext(AuthContext);
 	if (!ctx) {
 		throw new Error("useAuth must be used within AuthProvider");
@@ -210,7 +211,9 @@ export const useAuth = () => {
 	return ctx;
 };
 
-export function useCanQueryProtectedApi(): boolean {
+const useCanQueryProtectedApi = (): boolean => {
 	const { isReady, accessToken } = useAuth();
 	return isReady && Boolean(accessToken);
-}
+};
+
+export { AuthProvider, useAuth, useCanQueryProtectedApi };

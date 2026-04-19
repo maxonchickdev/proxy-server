@@ -4,7 +4,7 @@ import { authApi } from "@/apis/client.api";
 import { ButtonComponent } from "@/components/button.component";
 import { InputComponent } from "@/components/input.component";
 
-export const ForgotPasswordPage = () => {
+const ForgotPasswordPage = () => {
 	const [email, setEmail] = useState("");
 	const [message, setMessage] = useState("");
 	const [error, setError] = useState("");
@@ -97,3 +97,5 @@ export const ForgotPasswordPage = () => {
 		</main>
 	);
 };
+
+export { ForgotPasswordPage };

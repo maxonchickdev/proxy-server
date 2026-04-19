@@ -26,7 +26,7 @@ const queryClient = new QueryClient({
 	},
 });
 
-function ProtectedRoute({ children }: { children: ReactNode }) {
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
 	const { user, isReady } = useAuth();
 	if (!isReady) {
 		return (
@@ -43,9 +43,9 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 		return <Navigate to="/login" replace />;
 	}
 	return <>{children}</>;
-}
+};
 
-export default function App() {
+export const App = () => {
 	return (
 		<BrowserRouter>
 			<QueryClientProvider client={queryClient}>
@@ -81,4 +81,4 @@ export default function App() {
 			</QueryClientProvider>
 		</BrowserRouter>
 	);
-}
+};

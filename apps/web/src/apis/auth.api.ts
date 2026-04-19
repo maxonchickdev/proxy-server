@@ -1,5 +1,6 @@
 import type { UserDto } from "@proxy-server/shared";
 import type { HttpClient } from "./helpers/http-client";
+import { toApiUrl } from "./helpers/api-url.helper";
 import { httpClient } from "./helpers/http-client";
 
 class AuthApi {
@@ -62,7 +63,7 @@ class AuthApi {
 			"Content-Type": "application/json",
 		};
 		if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-		await fetch("/auth/logout", {
+		await fetch(toApiUrl("/auth/logout"), {
 			method: "POST",
 			credentials: "include",
 			headers,

@@ -1,12 +1,12 @@
 import type { RequestLogDto } from "@/types/request-log.dto";
 
-export function RequestLogsTableComponent({
+const RequestLogsTableComponent = ({
 	logs,
 	onReplay,
 }: {
 	logs: RequestLogDto[];
 	onReplay?: (logId: string) => void;
-}) {
+}) => {
 	if (logs.length === 0) {
 		return (
 			<p className="text-white/60">
@@ -80,4 +80,6 @@ export function RequestLogsTableComponent({
 			</table>
 		</div>
 	);
-}
+};
+
+export { RequestLogsTableComponent };
