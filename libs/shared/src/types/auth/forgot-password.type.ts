@@ -1,3 +1,3 @@
-import type { SignInType } from "./sign-in.type";
+import type { SignIn } from "./sign-in.type";
 
-export type ForgotPasswordType = Omit<SignInType, "password">;
+export type ForgotPassword = Omit<SignIn, "password">;

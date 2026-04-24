@@ -1,3 +1,3 @@
-import type { SignUpType } from "./sign-up.type";
+import type { SignUp } from "./sign-up.type";
 
-export type SignInType = Omit<SignUpType, "name">;
+export type SignIn = Omit<SignUp, "name">;

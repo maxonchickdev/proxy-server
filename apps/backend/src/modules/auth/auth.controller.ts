@@ -45,19 +45,19 @@ import { ErrorResponseSchema } from "../../common/swagger/schemas/error-response
 import { LogoutResponseSchema } from "../../common/swagger/schemas/logout-response.schema";
 import { MessageResponseSchema } from "../../common/swagger/schemas/message-response.schema";
 import { AuthService } from "./auth.service";
-import { authThrottleConst } from "./consts/auth-throttle.const";
-import { refreshCookieName } from "./consts/refresh-cookie.const";
-import { swaggerConst } from "./consts/swagger.const";
-import { ForgotPasswordDto } from "./dto/forgot-password.dto";
-import { ResendVerificationDto } from "./dto/resend-verification.dto";
-import { ResetPasswordDto } from "./dto/reset-password.dto";
-import { SignInDto } from "./dto/sign-in.dto";
-import { SignUpDto } from "./dto/sign-up.dto";
-import { VerifyEmailDto } from "./dto/verify-email.dto";
+import { AuthThrottle } from "./constsants/auth-throttle.constant";
+import { RefreshCookieName } from "./constsants/refresh-cookie.constant";
+import { Swagger } from "./constsants/swagger.constant";
+import { ForgotPasswordDto } from "./dtos/forgot-password.dto";
+import { ResendVerificationDto } from "./dtos/resend-verification.dto";
+import { ResetPasswordDto } from "./dtos/reset-password.dto";
+import { SignInDto } from "./dtos/sign-in.dto";
+import { SignUpDto } from "./dtos/sign-up.dto";
+import { VerifyEmailDto } from "./dtos/verify-email.dto";
 import { RefreshAuthGuard } from "./guards/refresh-auth.guard";
 import { parseDurationToMsUtil } from "./utils/duration.util";
 
-@ApiTags(swaggerConst.tag)
+@ApiTags(Swagger.Tag)
 @ApiExtraModels(
 	AuthResponseSchema,
 	AuthUserSchema,
@@ -65,7 +65,7 @@ import { parseDurationToMsUtil } from "./utils/duration.util";
 	LogoutResponseSchema,
 	MessageResponseSchema,
 )
-@Controller(swaggerConst.route)
+@Controller(Swagger.Route)
 export class AuthController {
 	private readonly isProduction: boolean;
 	private readonly refreshExpiresIn: string;
@@ -91,7 +91,7 @@ export class AuthController {
 	}
 
 	private setRefreshCookie(res: Response, rawRefresh: string): void {
-		res.cookie(refreshCookieName, rawRefresh, {
+		res.cookie(RefreshCookieName, rawRefresh, {
 			httpOnly: true,
 			secure: this.isProduction,
 			sameSite: "lax",
@@ -101,7 +101,7 @@ export class AuthController {
 	}
 
 	private clearRefreshCookie(res: Response): void {
-		res.clearCookie(refreshCookieName, {
+		res.clearCookie(RefreshCookieName, {
 			path: "/",
 			httpOnly: true,
 			sameSite: "lax",
@@ -123,36 +123,36 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottleConst.signUp.limit,
-			ttl: authThrottleConst.signUp.ttlMs,
+			limit: AuthThrottle.SignUp.Limit,
+			ttl: AuthThrottle.SignUp.TtlMs,
 		},
 	})
 	@HttpCode(HttpStatus.CREATED)
-	@Post(swaggerConst.routes.signUp.route)
+	@Post(Swagger.Routes.SignUp.Route)
 	@ApiBody({ type: SignUpDto })
 	@ApiOperation({
-		summary: swaggerConst.routes.signUp.operation.summary,
-		description: swaggerConst.routes.signUp.operation.descr,
+		summary: Swagger.Routes.SignUp.Operation.Summary,
+		description: Swagger.Routes.SignUp.Operation.Descr,
 		security: [],
 	})
 	@ApiCreatedResponse({
-		description: swaggerConst.routes.signUp.responses.created,
+		description: Swagger.Routes.SignUp.Responses.Created,
 		schema: { $ref: getSchemaPath(MessageResponseSchema) },
 	})
 	@ApiBadRequestResponse({
-		description: swaggerConst.routes.signUp.responses.badRequest,
+		description: Swagger.Routes.SignUp.Responses.BadRequest,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiConflictResponse({
-		description: swaggerConst.routes.signUp.responses.conflict,
+		description: Swagger.Routes.SignUp.Responses.Conflict,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description: swaggerConst.routes.signUp.responses.tooManyRequests,
+		description: Swagger.Routes.SignUp.Responses.TooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiInternalServerErrorResponse({
-		description: swaggerConst.routes.signUp.responses.internalServerError,
+		description: Swagger.Routes.SignUp.Responses.InternalServerError,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public signUp(@Body() signUpDto: SignUpDto): Promise<{ message: string }> {
@@ -162,28 +162,28 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottleConst.verifyEmail.limit,
-			ttl: authThrottleConst.verifyEmail.ttlMs,
+			limit: AuthThrottle.VerifyEmail.Limit,
+			ttl: AuthThrottle.VerifyEmail.TtlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.verifyEmail.route)
+	@Post(Swagger.Routes.VerifyEmail.Route)
 	@ApiBody({ type: VerifyEmailDto })
 	@ApiOperation({
-		summary: swaggerConst.routes.verifyEmail.operation.summary,
-		description: swaggerConst.routes.verifyEmail.operation.descr,
+		summary: Swagger.Routes.VerifyEmail.Operation.Summary,
+		description: Swagger.Routes.VerifyEmail.Operation.Descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.verifyEmail.responses.ok,
+		description: Swagger.Routes.VerifyEmail.Responses.Ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiBadRequestResponse({
-		description: swaggerConst.routes.verifyEmail.responses.badRequest,
+		description: Swagger.Routes.VerifyEmail.Responses.BadRequest,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: swaggerConst.routes.verifyEmail.responses.unauthorized,
+		description: Swagger.Routes.VerifyEmail.Responses.Unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public async verifyEmail(
@@ -197,29 +197,28 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottleConst.resendVerification.limit,
-			ttl: authThrottleConst.resendVerification.ttlMs,
+			limit: AuthThrottle.ResendVerification.Limit,
+			ttl: AuthThrottle.ResendVerification.TtlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.resendVerification.route)
+	@Post(Swagger.Routes.ResendVerification.Route)
 	@ApiBody({ type: ResendVerificationDto })
 	@ApiOperation({
-		summary: swaggerConst.routes.resendVerification.operation.summary,
-		description: swaggerConst.routes.resendVerification.operation.descr,
+		summary: Swagger.Routes.ResendVerification.Operation.Summary,
+		description: Swagger.Routes.ResendVerification.Operation.Descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.resendVerification.responses.ok,
+		description: Swagger.Routes.ResendVerification.Responses.Ok,
 		schema: { $ref: getSchemaPath(MessageResponseSchema) },
 	})
 	@ApiBadRequestResponse({
-		description: swaggerConst.routes.resendVerification.responses.badRequest,
+		description: Swagger.Routes.ResendVerification.Responses.BadRequest,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description:
-			swaggerConst.routes.resendVerification.responses.tooManyRequests,
+		description: Swagger.Routes.ResendVerification.Responses.TooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public resendVerification(
@@ -231,40 +230,40 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottleConst.signIn.limit,
-			ttl: authThrottleConst.signIn.ttlMs,
+			limit: AuthThrottle.SignIn.Limit,
+			ttl: AuthThrottle.SignIn.TtlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.signIn.route)
+	@Post(Swagger.Routes.SignIn.Route)
 	@ApiBody({ type: SignInDto })
 	@ApiOperation({
-		summary: swaggerConst.routes.signIn.operation.summary,
-		description: swaggerConst.routes.signIn.operation.descr,
+		summary: Swagger.Routes.SignIn.Operation.Summary,
+		description: Swagger.Routes.SignIn.Operation.Descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.signIn.responses.ok,
+		description: Swagger.Routes.SignIn.Responses.Ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiBadRequestResponse({
-		description: swaggerConst.routes.signIn.responses.badRequest,
+		description: Swagger.Routes.SignIn.Responses.BadRequest,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: swaggerConst.routes.signIn.responses.unauthorized,
+		description: Swagger.Routes.SignIn.Responses.Unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiForbiddenResponse({
-		description: swaggerConst.routes.signIn.responses.forbidden,
+		description: Swagger.Routes.SignIn.Responses.Forbidden,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description: swaggerConst.routes.signIn.responses.tooManyRequests,
+		description: Swagger.Routes.SignIn.Responses.TooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiInternalServerErrorResponse({
-		description: swaggerConst.routes.signIn.responses.internalServerError,
+		description: Swagger.Routes.SignIn.Responses.InternalServerError,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public async signIn(
@@ -278,28 +277,28 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottleConst.forgotPassword.limit,
-			ttl: authThrottleConst.forgotPassword.ttlMs,
+			limit: AuthThrottle.ForgotPassword.Limit,
+			ttl: AuthThrottle.ForgotPassword.TtlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.forgotPassword.route)
+	@Post(Swagger.Routes.ForgotPassword.Route)
 	@ApiBody({ type: ForgotPasswordDto })
 	@ApiOperation({
-		summary: swaggerConst.routes.forgotPassword.operation.summary,
-		description: swaggerConst.routes.forgotPassword.operation.descr,
+		summary: Swagger.Routes.ForgotPassword.Operation.Summary,
+		description: Swagger.Routes.ForgotPassword.Operation.Descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.forgotPassword.responses.ok,
+		description: Swagger.Routes.ForgotPassword.Responses.Ok,
 		schema: { $ref: getSchemaPath(MessageResponseSchema) },
 	})
 	@ApiBadRequestResponse({
-		description: swaggerConst.routes.forgotPassword.responses.badRequest,
+		description: Swagger.Routes.ForgotPassword.Responses.BadRequest,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description: swaggerConst.routes.forgotPassword.responses.tooManyRequests,
+		description: Swagger.Routes.ForgotPassword.Responses.TooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public forgotPassword(
@@ -311,32 +310,32 @@ export class AuthController {
 	@Public()
 	@Throttle({
 		default: {
-			limit: authThrottleConst.resetPassword.limit,
-			ttl: authThrottleConst.resetPassword.ttlMs,
+			limit: AuthThrottle.ResetPassword.Limit,
+			ttl: AuthThrottle.ResetPassword.TtlMs,
 		},
 	})
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.resetPassword.route)
+	@Post(Swagger.Routes.ResetPassword.Route)
 	@ApiBody({ type: ResetPasswordDto })
 	@ApiOperation({
-		summary: swaggerConst.routes.resetPassword.operation.summary,
-		description: swaggerConst.routes.resetPassword.operation.descr,
+		summary: Swagger.Routes.ResetPassword.Operation.Summary,
+		description: Swagger.Routes.ResetPassword.Operation.Descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.resetPassword.responses.ok,
+		description: Swagger.Routes.ResetPassword.Responses.Ok,
 		schema: { $ref: getSchemaPath(MessageResponseSchema) },
 	})
 	@ApiBadRequestResponse({
-		description: swaggerConst.routes.resetPassword.responses.badRequest,
+		description: Swagger.Routes.ResetPassword.Responses.BadRequest,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: swaggerConst.routes.resetPassword.responses.unauthorized,
+		description: Swagger.Routes.ResetPassword.Responses.Unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	@ApiTooManyRequestsResponse({
-		description: swaggerConst.routes.resetPassword.responses.tooManyRequests,
+		description: Swagger.Routes.ResetPassword.Responses.TooManyRequests,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public resetPassword(
@@ -348,18 +347,18 @@ export class AuthController {
 	@Public()
 	@UseGuards(RefreshAuthGuard)
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.refresh.route)
+	@Post(Swagger.Routes.Refresh.Route)
 	@ApiOperation({
-		summary: swaggerConst.routes.refresh.operation.summary,
-		description: swaggerConst.routes.refresh.operation.descr,
+		summary: Swagger.Routes.Refresh.Operation.Summary,
+		description: Swagger.Routes.Refresh.Operation.Descr,
 		security: [],
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.refresh.responses.ok,
+		description: Swagger.Routes.Refresh.Responses.Ok,
 		schema: { $ref: getSchemaPath(AuthResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: swaggerConst.routes.refresh.responses.unauthorized,
+		description: Swagger.Routes.Refresh.Responses.Unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public async refresh(
@@ -375,42 +374,42 @@ export class AuthController {
 	}
 
 	@HttpCode(HttpStatus.OK)
-	@Post(swaggerConst.routes.logout.route)
+	@Post(Swagger.Routes.Logout.Route)
 	@ApiBearerAuth("Bearer")
 	@ApiOperation({
-		summary: swaggerConst.routes.logout.operation.summary,
-		description: swaggerConst.routes.logout.operation.descr,
+		summary: Swagger.Routes.Logout.Operation.Summary,
+		description: Swagger.Routes.Logout.Operation.Descr,
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.logout.responses.ok,
+		description: Swagger.Routes.Logout.Responses.Ok,
 		schema: { $ref: getSchemaPath(LogoutResponseSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: swaggerConst.routes.logout.responses.unauthorized,
+		description: Swagger.Routes.Logout.Responses.Unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public async logout(
 		@Req() req: Request,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<{ success: boolean }> {
-		const raw = req.cookies?.[refreshCookieName] as string | undefined;
+		const raw = req.cookies?.[RefreshCookieName] as string | undefined;
 		await this.authService.logout(raw);
 		this.clearRefreshCookie(res);
 		return { success: true };
 	}
 
-	@Get(swaggerConst.routes.me.route)
+	@Get(Swagger.Routes.Me.Route)
 	@ApiBearerAuth("Bearer")
 	@ApiOperation({
-		summary: swaggerConst.routes.me.operation.summary,
-		description: swaggerConst.routes.me.operation.descr,
+		summary: Swagger.Routes.Me.Operation.Summary,
+		description: Swagger.Routes.Me.Operation.Descr,
 	})
 	@ApiOkResponse({
-		description: swaggerConst.routes.me.responses.ok,
+		description: Swagger.Routes.Me.Responses.Ok,
 		schema: { $ref: getSchemaPath(AuthUserSchema) },
 	})
 	@ApiUnauthorizedResponse({
-		description: swaggerConst.routes.me.responses.unauthorized,
+		description: Swagger.Routes.Me.Responses.Unauthorized,
 		schema: { $ref: getSchemaPath(ErrorResponseSchema) },
 	})
 	public me(

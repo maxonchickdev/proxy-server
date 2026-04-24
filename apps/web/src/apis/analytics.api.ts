@@ -6,7 +6,7 @@ import type {
 import type { HttpClient } from "./helpers/http-client";
 import { httpClient } from "./helpers/http-client";
 
-export class AnalyticsApi {
+class AnalyticsApi {
 	constructor(private readonly http: HttpClient) {}
 
 	summary(endpointId: string) {

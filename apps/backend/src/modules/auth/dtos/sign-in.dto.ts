@@ -1,8 +1,8 @@
-import type { SignInType } from "@proxy-server/shared";
+import type { SignIn } from "@proxy-server/shared";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, MinLength } from "class-validator";
 
-export class SignInDto implements SignInType {
+export class SignInDto implements SignIn {
 	@ApiProperty({
 		description: "User email address",
 		example: "user@example.com",

@@ -1,5 +1,5 @@
-import type { VerifyEmailType } from "./verify-email.type";
+import type { VerifyEmail } from "./verify-email.type";
 
-export type ResetPasswordType = VerifyEmailType & {
+export type ResetPassword = VerifyEmail & {
 	newPassword: string;
 };

@@ -1,3 +1,3 @@
-import type { SignInType } from "./sign-in.type";
+import type { SignIn } from "./sign-in.type";
 
-export type ResendVerificationType = Omit<SignInType, "password">;
+export type ResendVerification = Omit<SignIn, "password">;

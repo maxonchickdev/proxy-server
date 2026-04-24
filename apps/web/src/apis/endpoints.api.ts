@@ -7,7 +7,7 @@ import type {
 import type { HttpClient } from "./helpers/http-client";
 import { httpClient } from "./helpers/http-client";
 
-export class EndpointsApi {
+class EndpointsApi {
 	constructor(private readonly http: HttpClient) {}
 
 	list(params?: { limit?: number; offset?: number }) {

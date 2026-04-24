@@ -1,6 +1,6 @@
 import type { CurrentUserPayload } from "../../common/types/current-user-payload.type";
-import type { SignInDto } from "./dto/sign-in.dto";
-import type { SignUpDto } from "./dto/sign-up.dto";
+import type { SignInDto } from "./dtos/sign-in.dto";
+import type { SignUpDto } from "./dtos/sign-up.dto";
 import type { AuthResponseType } from "./types/auth-response.type";
 import {
 	BadRequestException,
@@ -14,7 +14,7 @@ import {
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
-import { authCryptoConst } from "./consts/auth-crypto.const";
+import { AuthCrypto } from "./constsants/auth-crypto.constant";
 import { PasswordResetService } from "./password-reset.service";
 import { TokenService } from "./token.service";
 import { generateSixDigitCodeUtil } from "./utils/auth-code.util";
@@ -41,19 +41,17 @@ export class AuthService {
 
 		const passwordHash = await bcrypt.hash(
 			signUpDto.password,
-			authCryptoConst.saltRounds,
+			AuthCrypto.SaltRounds,
 		);
 
 		const plainCode = generateSixDigitCodeUtil();
 
 		const verificationCodeHash = await bcrypt.hash(
 			plainCode,
-			authCryptoConst.saltRounds,
+			AuthCrypto.SaltRounds,
 		);
 
-		const verificationExpiresAt = new Date(
-			Date.now() + authCryptoConst.codeTtlMs,
-		);
+		const verificationExpiresAt = new Date(Date.now() + AuthCrypto.CodeTtlMs);
 
 		await this.prismaService.user.create({
 			data: {
@@ -124,13 +122,13 @@ export class AuthService {
 		const plainCode = generateSixDigitCodeUtil();
 		const verificationCodeHash = await bcrypt.hash(
 			plainCode,
-			authCryptoConst.saltRounds,
+			AuthCrypto.SaltRounds,
 		);
 		await this.prismaService.user.update({
 			where: { id: user.id },
 			data: {
 				verificationCodeHash,
-				verificationExpiresAt: new Date(Date.now() + authCryptoConst.codeTtlMs),
+				verificationExpiresAt: new Date(Date.now() + AuthCrypto.CodeTtlMs),
 			},
 		});
 		await this.emailService

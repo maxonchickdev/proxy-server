@@ -8,7 +8,7 @@ import { JwtService } from "@nestjs/jwt";
 import { nanoid } from "nanoid";
 import { ConfigKey } from "../../common/constants/config-key.constant";
 import { PrismaService } from "../../core/prisma/prisma.service";
-import { refreshTokenNanoidLength } from "./consts/refresh-token-nanoid-length.const";
+import { RefreshTokenNanoidLength } from "./constsants/refresh-token-nanoid-length.constant";
 import { parseDurationToMsUtil } from "./utils/duration.util";
 import { hashOpaqueTokenUtil } from "./utils/token-hash.util";
 
@@ -106,7 +106,7 @@ export class TokenService {
 	): Promise<AuthResponseType & { refreshToken: string }> {
 		const payload: JwtPayloadType = { sub: user.id, email: user.email };
 		const accessToken = this.jwtService.sign(payload);
-		const rawRefresh = nanoid(refreshTokenNanoidLength);
+		const rawRefresh = nanoid(RefreshTokenNanoidLength);
 		const tokenHash = hashOpaqueTokenUtil(rawRefresh);
 		const expiresAt = new Date(Date.now() + this.refreshExpiresMs);
 		await this.prismaService.refreshToken.create({

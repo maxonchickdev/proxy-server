@@ -1,11 +1,11 @@
 import { randomInt } from "node:crypto";
-import { authVerificationConst } from "../consts/auth-verification.const";
+import { AuthVerification } from "../constsants/auth-verification.constant";
 
 export function generateSixDigitCodeUtil(): string {
 	return String(
 		randomInt(
-			authVerificationConst.sixDigitCodeMinInclusive,
-			authVerificationConst.sixDigitCodeMaxInclusive,
+			AuthVerification.SixDigitCodeMinInclusive,
+			AuthVerification.SixDigitCodeMaxInclusive,
 		),
 	);
 }

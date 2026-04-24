@@ -2,7 +2,7 @@ import type { HttpClient } from "./helpers/http-client";
 import type { NotificationChannelDto } from "./types/notification-channel-dto.type";
 import { httpClient } from "./helpers/http-client";
 
-export class NotificationsApi {
+class NotificationsApi {
 	constructor(private readonly http: HttpClient) {}
 
 	channels(params?: { limit?: number; offset?: number }) {

@@ -1,4 +1,4 @@
-export type SignUpType = {
+export type SignUp = {
 	email: string;
 	password: string;
 	name: string | null;

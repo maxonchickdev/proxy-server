@@ -1,7 +1,7 @@
 import type { UserDto } from "@proxy-server/shared";
 import type { RefreshSessionResultType } from "../types/refresh-session-result.type";
-import { toApiUrl } from "./api-url.helper";
 import { parseResponseHelper } from "./parse-response.helper";
+import { toApiUrl } from "./to-api-url.helper";
 
 let refreshInFlight: Promise<RefreshSessionResultType> | null = null;
 

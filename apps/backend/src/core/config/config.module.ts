@@ -14,7 +14,7 @@ import { swaggerRegister } from "./registers/swagger.register";
 @Module({
 	imports: [
 		CoreConfigModule.forRoot({
-			envFilePath: [".env", "../.env", "../../.env"],
+			envFilePath: [".env"],
 			isGlobal: true,
 			load: [
 				environmentRegister,

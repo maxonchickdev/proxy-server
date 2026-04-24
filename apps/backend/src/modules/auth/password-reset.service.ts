@@ -7,7 +7,7 @@ import {
 import * as bcrypt from "bcrypt";
 import { PrismaService } from "../../core/prisma/prisma.service";
 import { EmailService } from "../email/email.service";
-import { authCryptoConst } from "./consts/auth-crypto.const";
+import { AuthCrypto } from "./constsants/auth-crypto.constant";
 import { generateSixDigitCodeUtil } from "./utils/auth-code.util";
 
 @Injectable()
@@ -30,15 +30,13 @@ export class PasswordResetService {
 		const plainCode = generateSixDigitCodeUtil();
 		const passwordResetCodeHash = await bcrypt.hash(
 			plainCode,
-			authCryptoConst.saltRounds,
+			AuthCrypto.SaltRounds,
 		);
 		await this.prismaService.user.update({
 			where: { id: user.id },
 			data: {
 				passwordResetCodeHash,
-				passwordResetExpiresAt: new Date(
-					Date.now() + authCryptoConst.codeTtlMs,
-				),
+				passwordResetExpiresAt: new Date(Date.now() + AuthCrypto.CodeTtlMs),
 			},
 		});
 		await this.emailService
@@ -69,10 +67,7 @@ export class PasswordResetService {
 		if (!ok) {
 			throw new UnauthorizedException("Invalid or expired reset code");
 		}
-		const passwordHash = await bcrypt.hash(
-			newPassword,
-			authCryptoConst.saltRounds,
-		);
+		const passwordHash = await bcrypt.hash(newPassword, AuthCrypto.SaltRounds);
 		await this.prismaService.$transaction([
 			this.prismaService.user.update({
 				where: { id: user.id },

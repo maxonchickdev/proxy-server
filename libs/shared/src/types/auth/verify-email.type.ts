@@ -1,5 +1,5 @@
-import type { SignInType } from "./sign-in.type";
+import type { SignIn } from "./sign-in.type";
 
-export type VerifyEmailType = Pick<SignInType, "email"> & {
+export type VerifyEmail = Pick<SignIn, "email"> & {
 	code: string;
 };

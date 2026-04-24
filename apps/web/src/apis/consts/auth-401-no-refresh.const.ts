@@ -1,4 +1,4 @@
-import { toApiUrl } from "../helpers/api-url.helper";
+import { toApiUrl } from "../helpers/to-api-url.helper";
 
 export const auth401NoRefreshConst = new Set([
 	toApiUrl("/auth/sign-in"),

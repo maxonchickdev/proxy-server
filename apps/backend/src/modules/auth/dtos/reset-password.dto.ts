@@ -1,8 +1,8 @@
-import type { ResetPasswordType } from "@proxy-server/shared";
+import type { ResetPassword } from "@proxy-server/shared";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsString, Length, Matches, MinLength } from "class-validator";
 
-export class ResetPasswordDto implements ResetPasswordType {
+export class ResetPasswordDto implements ResetPassword {
 	@ApiProperty({ example: "user@example.com" })
 	@IsEmail()
 	email!: string;

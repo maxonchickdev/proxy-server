@@ -8,7 +8,6 @@ const config: KnipConfig = {
 			ignoreDependencies: ["@prisma/client", "tsconfig-paths"],
 			ignoreBinaries: ["compodoc"],
 			ignoreFiles: [
-				"src/core/rate-limit/rate-limit.module.ts",
 				"src/core/schedule/schedule.module.ts",
 				"src/modules/email/email.constants.ts",
 			],
@@ -17,13 +16,6 @@ const config: KnipConfig = {
 			project: ["src/**/*.{ts,tsx}"],
 			entry: ["index.html"],
 			ignoreDependencies: ["zod"],
-			ignore: [
-				"src/apis/analytics.api.ts",
-				"src/apis/auth.api.ts",
-				"src/apis/endpoints.api.ts",
-				"src/apis/logs.api.ts",
-				"src/apis/notifications.api.ts",
-			],
 		},
 		"libs/shared": {
 			project: ["src/**/*.ts"],
