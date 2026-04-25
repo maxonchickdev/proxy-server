@@ -2,7 +2,6 @@
 	"name": "proxy-server",
 	"version": "1.0.0",
 	"description": "Proxy Server",
-	"type": "module",
 	"scripts": {
 		"docker:local:up": "docker compose --env-file apps/backend/.env -f docker-compose.local.yml up -d --no-color --timestamps --wait --wait-timeout 20",
 		"docker:local:down": "docker compose --env-file apps/backend/.env -f docker-compose.local.yml down -v",
