@@ -57,7 +57,7 @@ jobs:
           strip_components: 1
           overwrite: true  
 
-      - name: Install production deps, Prisma client, and start backend and web applications (PM2)
+      - name: Install staging deps, Prisma client, and start backend and web applications (PM2)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
@@ -72,4 +72,4 @@ jobs:
             npm ci
             npm run db:generate -w apps/backend
             pm2 delete all 2>/dev/null || true
-            pm2 start ecosystem.config.js --env production
+            pm2 start ecosystem.config.js --env staging
