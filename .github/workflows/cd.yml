@@ -1,0 +1,110 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ec2-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DEPLOY_PATH: /var/www/proxy
+  RELEASE_RETENTION: "5"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run db:generate -w apps/backend
+
+      - name: Build backend and web
+        run: |
+          set -euo pipefail
+          npm run build -w apps/backend
+          npm run build -w apps/web
+
+      - name: Prepare release archive
+        run: |
+          set -euo pipefail
+          tar czf release.tgz \
+            --exclude='./.git' \
+            --exclude='./node_modules' \
+            --exclude='./.github' \
+            --exclude='./.cursor' \
+            .
+
+      - name: Prepare directories on server
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          port: ${{ vars.EC2_SSH_PORT || '22' }}
+          script: |
+            set -euo pipefail
+            sudo mkdir -p "${{ env.DEPLOY_PATH }}/releases" "${{ env.DEPLOY_PATH }}/shared"
+            sudo chown -R "$USER:$USER" "${{ env.DEPLOY_PATH }}"
+
+      - name: Upload bundle
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          port: ${{ vars.EC2_SSH_PORT || '22' }}
+          source: "release.tgz"
+          target: ${{ env.DEPLOY_PATH }}
+
+      - name: Activate release, migrate, restart PM2
+        env:
+          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
+          GITHUB_SHA: ${{ github.sha }}
+          RELEASE_RETENTION: ${{ env.RELEASE_RETENTION }}
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          port: ${{ vars.EC2_SSH_PORT || '22' }}
+          command_timeout: 25m
+          envs: DEPLOY_PATH,GITHUB_SHA,RELEASE_RETENTION
+          script_path: .github/scripts/ec2-activate-release.sh
+
+      - name: Smoke check — API health
+        uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          port: ${{ vars.EC2_SSH_PORT || '22' }}
+          script: |
+            set -euo pipefail
+            curl -fsS \
+              --connect-timeout 5 \
+              --max-time 15 \
+              --retry 5 \
+              --retry-delay 2 \
+              http://127.0.0.1:3000/api/v1/health/live | grep -q ok
