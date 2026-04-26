@@ -47,14 +47,17 @@ jobs:
           npm run build -w apps/web
 
       - name: Prepare release archive
+        id: release-archive
         run: |
           set -euo pipefail
-          tar czf release.tgz \
+          ARCHIVE="${RUNNER_TEMP}/release.tgz"
+          tar czf "${ARCHIVE}" \
             --exclude='./.git' \
             --exclude='./node_modules' \
             --exclude='./.github' \
             --exclude='./.cursor' \
-            .
+            -C "${GITHUB_WORKSPACE}" .
+          echo "path=${ARCHIVE}" >> "${GITHUB_OUTPUT}"
 
       - name: Prepare directories on server
         uses: appleboy/ssh-action@v1.2.5
@@ -75,7 +78,7 @@ jobs:
           username: ${{ secrets.AWS_EC2_USERNAME }}
           key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
           port: ${{ vars.EC2_SSH_PORT || '22' }}
-          source: "release.tgz"
+          source: ${{ steps.release-archive.outputs.path }}
           target: ${{ env.DEPLOY_PATH }}
 
       - name: Activate release, migrate, restart PM2
