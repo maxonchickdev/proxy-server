@@ -53,17 +53,17 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: ".,!.git,!node_modules" 
+          source: ".,!.git,!node_modules"
           target: ${{ env.DEPLOY_PATH }}
-          strip_components: 1  
+          strip_components: 1
           overwrite: true  
 
       - name: Install production deps, Prisma client, and start backend (PM2)
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}  
-          username: ${{ secrets.EC2_USERNAME }}  
-          key: ${{ secrets.EC2_PRIVATE_KEY }}  
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
             set -e
             export NVM_DIR="$HOME/.nvm"
