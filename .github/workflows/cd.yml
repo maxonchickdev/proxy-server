@@ -1,113 +1,75 @@
-name: CD
-
+name: Continuous Deployment
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
-
-concurrency:
-  group: deploy-ec2-${{ github.ref }}
-  cancel-in-progress: true
-
-permissions:
-  contents: read
 
 env:
   DEPLOY_PATH: /var/www/proxy
-  RELEASE_RETENTION: "5"
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 45
-
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v2
         with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: package-lock.json
+          node-version: 24
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate Prisma client
-        run: npm run db:generate -w apps/backend
-
-      - name: Build backend and web
-        run: |
-          set -euo pipefail
-          npm run build -w apps/backend
-          npm run build -w apps/web
-
-      - name: Prepare release archive
-        id: release-archive
-        run: |
-          set -euo pipefail
-          ARCHIVE="${RUNNER_TEMP}/release.tgz"
-          tar czf "${ARCHIVE}" \
-            --exclude='./.git' \
-            --exclude='./node_modules' \
-            --exclude='./.github' \
-            --exclude='./.cursor' \
-            -C "${GITHUB_WORKSPACE}" .
-          echo "path=${ARCHIVE}" >> "${GITHUB_OUTPUT}"
-
-      - name: Prepare directories on server
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.AWS_EC2_HOST }}
-          username: ${{ secrets.AWS_EC2_USERNAME }}
-          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-          port: ${{ vars.EC2_SSH_PORT || '22' }}
-          script: |
-            set -euo pipefail
-            sudo mkdir -p "${{ env.DEPLOY_PATH }}/releases" "${{ env.DEPLOY_PATH }}/shared"
-            sudo chown -R "$USER:$USER" "${{ env.DEPLOY_PATH }}"
-
-      - name: Upload bundle
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.AWS_EC2_HOST }}
-          username: ${{ secrets.AWS_EC2_USERNAME }}
-          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-          port: ${{ vars.EC2_SSH_PORT || '22' }}
-          source: ${{ steps.release-archive.outputs.path }}
-          target: ${{ env.DEPLOY_PATH }}
-
-      - name: Activate release, migrate, restart PM2
+      - name: Apply migrations && Generate Prisma client
         env:
-          DEPLOY_PATH: ${{ env.DEPLOY_PATH }}
-          GITHUB_SHA: ${{ github.sha }}
-          RELEASE_RETENTION: ${{ env.RELEASE_RETENTION }}
-        uses: appleboy/ssh-action@v1.2.5
-        with:
-          host: ${{ secrets.AWS_EC2_HOST }}
-          username: ${{ secrets.AWS_EC2_USERNAME }}
-          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-          port: ${{ vars.EC2_SSH_PORT || '22' }}
-          command_timeout: 25m
-          envs: DEPLOY_PATH,GITHUB_SHA,RELEASE_RETENTION
-          script_path: .github/scripts/ec2-activate-release.sh
+          POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        run: npm run db:migrate:deploy -w apps/backend && npm run db:generate -w apps/backend
 
-      - name: Smoke check — API health
-        uses: appleboy/ssh-action@v1.2.5
+      - name: Build backend and web application
+        run: npm run build -w apps/backend && npm run build -w apps/web
+
+      - name: Check SSH connection
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.AWS_EC2_HOST }}
           username: ${{ secrets.AWS_EC2_USERNAME }}
           key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
-          port: ${{ vars.EC2_SSH_PORT || '22' }}
+
+      - name: Create target directory
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
           script: |
-            set -euo pipefail
-            curl -fsS \
-              --connect-timeout 5 \
-              --max-time 15 \
-              --retry 5 \
-              --retry-delay 2 \
-              http://127.0.0.1:3000/api/v1/health/live | grep -q ok
+            sudo mkdir -p ${{ env.DEPLOY_PATH }}
+            sudo chown -R ${{ secrets.AWS_EC2_USERNAME }}:${{ secrets.AWS_EC2_USERNAME }} ${{ env.DEPLOY_PATH }}
+      - name: Deploy to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          source: ".,!.git,!node_modules"
+          target: ${{ env.DEPLOY_PATH }}
+          strip_components: 1
+          overwrite: true  
+
+      - name: Install production deps, Prisma client, and start backend and web applications (PM2)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USERNAME }}
+          key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
+          script: |
+            set -e
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+            cd ${{ env.DEPLOY_PATH }}
+            npm ci
+            npm run db:generate -w apps/backend
+            pm2 delete all 2>/dev/null || true
+            pm2 start ecosystem.config.js --env production
