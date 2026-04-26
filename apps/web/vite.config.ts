@@ -34,6 +34,7 @@ export default defineConfig(({ mode }) => {
 			},
 		},
 		server: {
+			allowedHosts: [env.AWS_PUBLIC_DNS],
 			proxy: {
 				"/api/v1": {
 					target: apiTarget,
