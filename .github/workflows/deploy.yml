@@ -20,15 +20,15 @@ jobs:
           node-version: 24
 
       - name: Install dependencies
-        run: npm i
+        run: npm ci
 
       - name: Apply migrations && Generate Prisma client
         env:
           POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
         run: npm run db:migrate:deploy -w apps/backend && npm run db:generate -w apps/backend
 
-      - name: Build backend application
-        run: npm run build -w apps/backend
+      - name: Build backend and web application
+        run: npm run build -w apps/backend && npm run build -w apps/web
 
       - name: Check SSH connection
         uses: appleboy/ssh-action@master
@@ -58,7 +58,7 @@ jobs:
           strip_components: 1
           overwrite: true  
 
-      - name: Install production deps, Prisma client, and start backend (PM2)
+      - name: Install production deps, Prisma client, and start backend and web applications (PM2)
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -70,8 +70,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
             cd ${{ env.DEPLOY_PATH }}
-            npm ci --omit=dev
+            npm ci
             npm run db:generate -w apps/backend
             pm2 delete all 2>/dev/null || true
             pm2 start ecosystem.config.js --env production
-            pm2 ls
