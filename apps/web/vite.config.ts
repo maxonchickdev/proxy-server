@@ -27,6 +27,9 @@ export default defineConfig(({ mode }) => {
 		optimizeDeps: {
 			exclude: ["@proxy-server/shared"],
 		},
+		preview: {
+			allowedHosts: [env.AWS_PUBLIC_DNS],
+		},
 		resolve: {
 			alias: {
 				"@": resolve(webRoot, "src"),
