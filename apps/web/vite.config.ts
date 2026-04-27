@@ -1,4 +1,4 @@
-import { dirname, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react-swc";
@@ -10,12 +10,44 @@ const monorepoRoot = resolve(webRoot, "../..");
 const sharedSrcIndex = resolve(monorepoRoot, "libs/shared/src/index.ts");
 
 export default defineConfig(({ mode }) => {
-	const env = loadEnv(mode, process.cwd(), "");
+	const env = loadEnv(mode, join(process.cwd(), "..", ".."), "");
 
 	const apiUrl =
 		env.NODE_ENV === "development"
-			? "http://localhost:3000"
-			: "http://ec2-16-170-170-8.eu-north-1.compute.amazonaws.com:3000";
+			? `http://localhost:${env.APP_PORT}`
+			: `http://${env.AWS_PUBLIC_DNS}:${env.APP_PORT}`;
+
+	const previewProxyTarget =
+		process.env.API_PROXY_TARGET ??
+		(env.NODE_ENV === "development"
+			? `http://localhost:${env.APP_PORT}`
+			: `http://${env.AWS_PUBLIC_DNS}:${env.APP_PORT}`);
+
+	const apiProxy = {
+		"/api/v1": {
+			target: apiUrl,
+			changeOrigin: true,
+			secure: true,
+		},
+		"/r": {
+			target: apiUrl,
+			changeOrigin: true,
+			secure: true,
+		},
+	} as const;
+
+	const previewProxy = {
+		"/api/v1": {
+			target: previewProxyTarget,
+			changeOrigin: true,
+			secure: false,
+		},
+		"/r": {
+			target: previewProxyTarget,
+			changeOrigin: true,
+			secure: false,
+		},
+	} as const;
 
 	return {
 		root: process.cwd(),
@@ -28,7 +60,8 @@ export default defineConfig(({ mode }) => {
 			exclude: ["@proxy-server/shared"],
 		},
 		preview: {
-			allowedHosts: [env.AWS_PUBLIC_DNS],
+			allowedHosts: true,
+			proxy: previewProxy,
 		},
 		resolve: {
 			alias: {
@@ -38,18 +71,7 @@ export default defineConfig(({ mode }) => {
 		},
 		server: {
 			allowedHosts: [env.AWS_PUBLIC_DNS],
-			proxy: {
-				"/api/v1": {
-					target: apiUrl,
-					changeOrigin: true,
-					secure: true,
-				},
-				"/r": {
-					target: apiUrl,
-					changeOrigin: true,
-					secure: true,
-				},
-			},
+			proxy: apiProxy,
 		},
 	};
 });

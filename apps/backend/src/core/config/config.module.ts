@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { Module } from "@nestjs/common";
 import { ConfigModule as CoreConfigModule } from "@nestjs/config";
 import Joi from "joi";
@@ -15,7 +16,7 @@ import { swaggerRegister } from "./registers/swagger.register";
 @Module({
 	imports: [
 		CoreConfigModule.forRoot({
-			envFilePath: [".env"],
+			envFilePath: [join("..", "..", ".env")],
 			isGlobal: true,
 			load: [
 				environmentRegister,

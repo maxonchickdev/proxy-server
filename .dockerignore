@@ -1,0 +1,27 @@
+# Dependencies (installed in image)
+node_modules
+**/node_modules
+
+# VCS and editor
+.git
+.cursor
+**/.DS_Store
+
+# Build outputs from host (built inside image)
+dist
+**/dist
+
+# Caches and tooling artifacts
+coverage
+**/.tsbuildinfo*
+**/compodoc
+**/*.log
+
+# Secrets — inject at runtime, not in build context
+**/.env
+**/.env.*
+!**/.env.example
+
+# Large / irrelevant for images
+**/*.md
+!README.md

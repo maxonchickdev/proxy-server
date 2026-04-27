@@ -1,18 +1,18 @@
 services:
-  proxy-server-redis:
-    container_name: proxy-server-redis
+  proxy-server-redis-local:
+    container_name: proxy-server-redis-local
     image: redis:8.0.2-alpine
     restart: unless-stopped
     ports:
       - ${REDIS_PORT}:${REDIS_PORT}
     volumes:
-      - proxy-server-redis-data:/data
+      - proxy-server-redis-data-local:/data
     environment:
       REDIS_PORT: ${REDIS_PORT}
       REDIS_DATABASES: ${REDIS_DATABASES}
-    env_file: apps/backend/.env
+    env_file: .env
     networks:
-      - proxy-server-network
+      - proxy-server-network-local
     healthcheck:
       test:
         [
@@ -23,10 +23,10 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
-    hostname: proxy-server-redis
+    hostname: proxy-server-redis-local
 
-  proxy-server-redis-insight:
-    container_name: proxy-server-redis-insight
+  proxy-server-redis-insight-local:
+    container_name: proxy-server-redis-insight-local
     image: redislabs/redisinsight:latest
     restart: always
     depends_on:
@@ -35,54 +35,54 @@ services:
     ports:
       - ${RI_PORT}:${RI_PORT}
     volumes:
-      - proxy-server-redis-insight-data:/usr/src/app/redisinsight/api/data
+      - proxy-server-redis-insight-data-local:/usr/src/app/redisinsight/api/data
     environment:
       REDISINSIGHT_DISABLE_ENCRYPTION: ${RI_DISABLE_ENCRYPTION}
-    env_file: apps/backend/.env
+    env_file: .env
     networks:
-      - proxy-server-network
+      - proxy-server-network-local
     command: |
       sh -c " mkdir -p /usr/src/app/redisinsight/api/data && chown -R node:node /usr/src/app/redisinsight/api/data && ./docker-entry.sh "
-    hostname: proxy-server-redis-insight
+    hostname: proxy-server-redis-insight-local
     user: "0:0"
 
-  proxy-server-postgres:
-    container_name: proxy-server-postgres
+  proxy-server-postgres-local:
+    container_name: proxy-server-postgres-local
     image: postgres:17.5-alpine3.22
     restart: always
     ports:
       - ${POSTGRES_PORT}:${POSTGRES_PORT}
     volumes:
-      - proxy-server-postgres-data:/var/lib/postgresql/data
+      - proxy-server-postgres-data-local:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       PGUSER: ${POSTGRES_USER}
-    env_file: apps/backend/.env
+    env_file: .env
     networks:
-      - proxy-server-network
+      - proxy-server-network-local
     healthcheck:
       test: pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
-    hostname: proxy-server-postgres
+    hostname: proxy-server-postgres-local
 
 volumes:
-  proxy-server-redis-data:
-    name: proxy-server-redis-data
+  proxy-server-redis-data-local:
+    name: proxy-server-redis-data-local
     driver: local
-  proxy-server-redis-insight-data:
-    name: proxy-server-redis-insight-data
+  proxy-server-redis-insight-data-local:
+    name: proxy-server-redis-insight-data-local
     driver: local
-  proxy-server-postgres-data:
-    name: proxy-server-postgres-data
+  proxy-server-postgres-data-local:
+    name: proxy-server-postgres-data-local
     driver: local
 
 networks:
-  proxy-server-network:
-    name: proxy-server-network
+  proxy-server-network-local:
+    name: proxy-server-network-local
     driver: bridge
     attachable: true
